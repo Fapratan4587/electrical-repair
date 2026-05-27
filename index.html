@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Engineering — Electrical Repair System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
   --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .page{display:none;min-height:100vh}.page.active{display:block}
 
 /* ======= HOME ======= */
@@ -32,17 +32,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .brand-divider{width:1px;height:20px;background:var(--border2)}
 .brand-text{font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.04em}
 .home-date{font-size:12px;color:var(--text3)}
-.home-body{display:grid;place-items:center;padding:2rem 1rem}
+.home-body{display:grid;place-items:center;padding:1.5rem 1rem}
 .home-center{width:100%;max-width:540px}
 .home-hero{text-align:center;margin-bottom:2.5rem}
 .home-icon{width:64px;height:64px;background:var(--red);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;margin:0 auto 1.25rem;box-shadow:0 8px 24px rgba(232,25,44,0.3)}
 .home-hero h1{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
 .home-hero p{font-size:14px;color:var(--text2)}
-.home-countdown{font-size:12px;color:var(--text3);display:none;align-items:center;justify-content:center;gap:6px;margin-bottom:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:6px 14px;width:fit-content;margin-left:auto;margin-right:auto}
+.home-countdown{font-size:12px;color:var(--text3);display:none;align-items:center;justify-content:center;gap:6px;margin-bottom:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:6px 14px;max-width:100%;margin-left:auto;margin-right:auto}
 .home-countdown.show{display:flex}
 .home-cd-time{font-family:var(--mono);font-weight:500;color:var(--text);font-size:12px}
 
-.dept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.dept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;width:100%}
 .dept-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:1.5rem 1.25rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
 .dept-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity .2s}
 .dept-card:hover{border-color:var(--border2);transform:translateY(-3px) scale(1.01);box-shadow:0 8px 24px rgba(0,0,0,0.12)}
@@ -176,11 +176,11 @@ tr:nth-child(even) td{background:var(--surface2)}tr:hover td{background:#F0EDE8}
 tr.urg td{border-left:3px solid var(--red)}
 
 /* FORMS */
-.fbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.fbar{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
 .srch{position:relative}
 .srch i{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text3);pointer-events:none}
 .srch input{padding:8px 12px 8px 32px}
-input,select,textarea{font-size:13px;padding:9px 12px;border-radius:var(--r2);border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-family:var(--font);width:100%;transition:border-color .15s}
+input,select,textarea{font-size:13px;padding:9px 12px;border-radius:var(--r2);border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-family:var(--font);width:100%;transition:border-color .15s;-webkit-appearance:none;appearance:none}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red);background:#fff}
 textarea{min-height:72px;resize:vertical}
 .fcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:1.25rem}
@@ -197,7 +197,7 @@ textarea{min-height:72px;resize:vertical}
 
 /* STATUS CARDS */
 .status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1.25rem}
-.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;box-shadow:var(--sh);position:relative;overflow:hidden}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;box-shadow:var(--sh);position:relative;overflow:hidden}
 .sc::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px}
 .sc-urgent::before{background:var(--red)}
 .sc-done::before{background:#16A34A}
@@ -221,7 +221,7 @@ textarea{min-height:72px;resize:vertical}
 .df-dot{width:7px;height:7px;border-radius:50%}
 
 /* URGENT TOGGLE */
-.urgent-wrap{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--red-light);border:1px solid #FCA5A5;border-radius:var(--r2)}
+.urgent-wrap{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--red-light);border:1px solid #FCA5A5;border-radius:var(--r2)}
 .toggle-sw{position:relative;width:40px;height:22px;flex-shrink:0}
 .toggle-sw input{opacity:0;width:0;height:0;position:absolute}
 .toggle-sl{position:absolute;cursor:pointer;inset:0;background:#D1D5DB;border-radius:99px;transition:.25s}
@@ -239,15 +239,103 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
 .skel{background:var(--border);border-radius:4px;height:14px;animation:skel 1s ease infinite}
 @keyframes skel{0%,100%{opacity:.4}50%{opacity:.9}}
 @keyframes spin{to{transform:rotate(360deg)}}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+#toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
 #toast.show{opacity:1}
 
 @media(max-width:768px){
+  /* HOME */
+  .home-topbar{padding:0 1rem}
+  .brand-text{font-size:11px}
+  .home-hero h1{font-size:20px}
+  .dept-grid{grid-template-columns:1fr 1fr}
+  .dept-admin-card{grid-column:1/-1}
+  .dept-card{padding:1.1rem .9rem}
+  .dept-icon{width:44px;height:44px;border-radius:12px}
+  .dept-name{font-size:13px}
+
+  /* TOPBAR */
+  .topbar{height:52px;padding:0 1rem;position:sticky;top:0;z-index:100}
+  .topbar-logo{height:18px}
+  .topbar-title{font-size:12px}
+  .topbar-r{gap:4px}
+  .topbar-r .btn{font-size:11px;padding:5px 8px}
+  .topbar-r .btn i{font-size:13px}
+  .topbar-r .btn span,.topbar-r .btn-text{display:none}
+  .sync-pill{padding:4px 8px;font-size:10px}
+
+  /* NAV */
+  .tab-nav{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;margin-bottom:1rem}
+  .tab-nav::-webkit-scrollbar{display:none}
+  .tnb{padding:7px 12px;font-size:12px;white-space:nowrap;flex-shrink:0}
+
+  /* WRAP */
+  .wrap{padding:1rem .75rem}
+
+  /* KPI */
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+  .kpi-card{padding:.8rem .9rem}
+  .kpi-val{font-size:22px}
+  .kpi-label{font-size:10px}
+
+  /* CHARTS */
+  .chart-row{grid-template-columns:1fr;gap:8px;margin-bottom:1rem}
+  .card{padding:.9rem}
+
+  /* DEPT FILTER */
+  .dept-filter-row{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .dept-filter-row::-webkit-scrollbar{display:none}
+  .df-btn{flex-shrink:0;font-size:11px;padding:5px 12px}
+
+  /* TABLE */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{table-layout:auto;min-width:600px}
+  th{padding:8px 10px;font-size:10px}
+  td{padding:8px 10px;font-size:12px}
+
+  /* FILTER BAR */
+  .fbar{gap:6px}
+  .fbar select{font-size:12px;padding:6px 8px}
+  .srch input{width:140px;font-size:12px}
+  .mla{margin-left:0;width:100%;justify-content:flex-end}
+
+  /* FORM */
+  .fgg{grid-template-columns:1fr}
+  .fg.full{grid-column:1}
+  .fhdr{padding:.75rem 1rem}
+  .fbody{padding:.9rem}
+  .fftr{padding:.75rem 1rem;flex-wrap:wrap;gap:6px}
+  .fftr .btn{flex:1;justify-content:center}
+
+  /* STATUS CARDS */
+  .status-grid{grid-template-columns:1fr;gap:10px}
+
+  /* RESET BAR */
+  .reset-bar{font-size:11px;padding:7px 12px}
+
+  /* ALERT BAR */
+  .alert-bar{font-size:12px}
+
+  /* MODAL */
+  .modal-box,.edit-box{padding:1.25rem;width:95%;max-height:85vh;overflow-y:auto}
+  .efg input,.efg select,.efg textarea{font-size:14px}
+  .modal-btns{gap:6px}
+  .modal-btns .btn{flex:1;justify-content:center}
+
+  /* EQUIP */
+  .equip-cols{grid-template-columns:1fr 1fr 70px 24px}
+  .equip-row{grid-template-columns:1fr 1fr 70px 24px}
+
+  /* MISC */
+  .empty{padding:2rem .75rem}
+  #toast{width:90%;text-align:center;white-space:normal}
+}
+
+@media(max-width:400px){
+  .dept-grid{grid-template-columns:1fr}
+  .dept-admin-card{grid-column:1}
   .kpi-grid{grid-template-columns:1fr 1fr}
-  .chart-row{grid-template-columns:1fr}
-  .fgg{grid-template-columns:1fr}.fg.full{grid-column:1}
-  .dept-grid{grid-template-columns:1fr}.dept-admin-card{grid-column:1}
-  .topbar-r .btn:not(.primary):not(.red){display:none}
+  .home-hero h1{font-size:18px}
+  .home-icon{width:52px;height:52px;font-size:22px}
 }
 </style>
 </head>
@@ -411,7 +499,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
     <div class="topbar-r">
       <span id="user-dept-badge" class="badge"></span>
       <div class="sync-pill"><span class="sdot" id="u-sdot"></span><span id="u-stxt">พร้อมใช้งาน</span></div>
-      <button class="btn" onclick="goHome()"><i class="ti ti-home"></i>หน้าหลัก</button>
+      <button class="btn" onclick="goHome()"><i class="ti ti-home"></i><span class="btn-text">หน้าหลัก</span></button>
     </div>
   </div>
   <div class="wrap">
@@ -472,11 +560,11 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
     </div>
     <div class="topbar-r">
       <div class="sync-pill"><span class="sdot syncing" id="a-sdot"></span><span id="a-stxt">กำลังโหลด...</span></div>
-      <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i>Sync</button>
+      <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i><span class="btn-text">Sync</span></button>
       
-      <button class="btn outline-blue" onclick="exportCurrentPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
-      <button class="btn outline-red" onclick="confirmClearAll()"><i class="ti ti-trash"></i>ล้างข้อมูล</button>
-      <button class="btn primary" onclick="adminLogout()"><i class="ti ti-logout"></i>ออก</button>
+      <button class="btn outline-blue" onclick="exportCurrentPDF()"><i class="ti ti-file-type-pdf"></i><span class="btn-text">PDF</span></button>
+      <button class="btn outline-red" onclick="confirmClearAll()"><i class="ti ti-trash"></i><span class="btn-text">ล้างข้อมูล</span></button>
+      <button class="btn primary" onclick="adminLogout()"><i class="ti ti-logout"></i><span class="btn-text">ออก</span></button>
     </div>
   </div>
   <div class="wrap">
@@ -500,7 +588,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
         <div class="kpi-card kpi-done"><div class="ktop"><span class="kpi-label">เสร็จสิ้น</span></div><div class="skel" style="width:40%;height:28px"></div></div>
         <div class="kpi-card kpi-urgent"><div class="ktop"><span class="kpi-label">เร่งด่วน</span></div><div class="skel" style="width:40%;height:28px"></div></div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px"><div class="dept-filter-row" id="dept-filter-row" style="margin-bottom:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div class="dept-filter-row" id="dept-filter-row" style="margin-bottom:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
         <button class="df-btn active" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
         <button class="df-btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span class="df-dot" style="background:#1877F2"></span>Assembly</button>
         <button class="df-btn" id="df-Grinding" onclick="setDeptFilter('Grinding',this)"><span class="df-dot" style="background:#16A34A"></span>Grinding</button>
