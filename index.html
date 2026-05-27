@@ -3,314 +3,390 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ระบบงานซ่อมไฟฟ้า</title>
+<title>MT Engineering — Electrical Repair System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#fff;--bg2:#f7f7f5;--bg3:#f0efed;--text:#1a1a1a;--text2:#6b6b6b;--border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);--r:10px;--r2:7px;--sh:0 1px 3px rgba(0,0,0,0.08)}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2)}}
+:root{
+  --red:#E8192C;--red-dark:#B5121F;--red-light:#FFECEE;
+  --bg:#F4F3F0;--surface:#FFFFFF;--surface2:#F9F8F6;
+  --text:#0D0D0D;--text2:#5A5A5A;--text3:#9A9A9A;
+  --border:#E5E3DF;--border2:#D0CEC9;
+  --r:12px;--r2:8px;--r3:6px;
+  --sh:0 1px 4px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);
+  --sh2:0 2px 8px rgba(0,0,0,0.08),0 8px 32px rgba(0,0,0,0.06);
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
 .page{display:none;min-height:100vh}.page.active{display:block}
 
-/* HOME */
-.home-wrap{max-width:520px;margin:0 auto;padding:3rem 1rem}
-.home-logo{width:56px;height:56px;background:#1a1a1a;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;margin:0 auto 1rem}
-.home-title{font-size:22px;font-weight:700;text-align:center;margin-bottom:6px}
-.home-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:1.5rem}
-.home-countdown{font-size:12px;color:var(--text2);text-align:center;margin-bottom:1.25rem;display:none;align-items:center;justify-content:center;gap:5px}
+/* ======= HOME ======= */
+.home-page{min-height:100vh;display:grid;grid-template-rows:auto 1fr;background:var(--bg)}
+.home-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+.home-brand{display:flex;align-items:center;gap:12px}
+.nachi-logo{height:22px;width:auto}
+.brand-divider{width:1px;height:20px;background:var(--border2)}
+.brand-text{font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.04em}
+.home-date{font-size:12px;color:var(--text3)}
+.home-body{display:grid;place-items:center;padding:2rem 1rem}
+.home-center{width:100%;max-width:540px}
+.home-hero{text-align:center;margin-bottom:2.5rem}
+.home-icon{width:64px;height:64px;background:var(--red);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;margin:0 auto 1.25rem;box-shadow:0 8px 24px rgba(232,25,44,0.3)}
+.home-hero h1{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.home-hero p{font-size:14px;color:var(--text2)}
+.home-countdown{font-size:12px;color:var(--text3);display:none;align-items:center;justify-content:center;gap:6px;margin-bottom:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:6px 14px;width:fit-content;margin-left:auto;margin-right:auto}
 .home-countdown.show{display:flex}
-.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.role-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1.25rem 1rem;text-align:center;cursor:pointer;transition:all .15s;box-shadow:var(--sh);position:relative}
-.role-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,0.12)}
-.role-card.admin-card{grid-column:1/-1;border-color:#DDD8F5;background:#f5f4fe}
-.role-icon{font-size:28px;margin-bottom:8px;display:block}
-.role-name{font-size:15px;font-weight:600;margin-bottom:2px}
-.role-desc{font-size:11px;color:var(--text2)}
-.dept-Assembly .role-icon{color:#378ADD}
-.dept-Grinding .role-icon{color:#1D9E75}
-.dept-FG .role-icon{color:#EF9F27}
-.dept-admin .role-icon{color:#7F77DD}
-.pending-dot{position:absolute;top:10px;right:10px;background:#E24B4A;color:#fff;font-size:10px;font-weight:700;min-width:20px;height:20px;padding:0 5px;border-radius:99px;display:none;align-items:center;justify-content:center}
+.home-cd-time{font-family:var(--mono);font-weight:500;color:var(--text);font-size:12px}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
+.dept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.dept-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.dept-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity .2s}
+.dept-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--sh2)}
+.dept-card:hover::before{opacity:1}
+.dept-Assembly::before{background:linear-gradient(90deg,#1877F2,#42A1F8)}
+.dept-Grinding::before{background:linear-gradient(90deg,#16A34A,#4ADE80)}
+.dept-FG::before{background:linear-gradient(90deg,#EA580C,#FB923C)}
+.dept-admin-card{grid-column:1/-1;background:linear-gradient(135deg,#1a1a1a 0%,#2d1a1a 100%);border-color:#333}
+.dept-admin-card:hover{border-color:#555}
+.dept-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
+.dept-Assembly .dept-icon{background:#EFF6FF;color:#1877F2}
+.dept-Grinding .dept-icon{background:#F0FDF4;color:#16A34A}
+.dept-FG .dept-icon{background:#FFF7ED;color:#EA580C}
+.dept-admin-card .dept-icon{background:rgba(232,25,44,0.15);color:var(--red)}
+.dept-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.dept-desc{font-size:11px;color:var(--text3)}
+.dept-admin-card .dept-name,.dept-admin-card .dept-desc{color:#fff}
+.dept-admin-card .dept-desc{color:rgba(255,255,255,0.5)}
+.dept-badge-count{position:absolute;top:10px;right:10px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:20px;height:20px;padding:0 5px;border-radius:99px;display:none;align-items:center;justify-content:center;font-family:var(--mono)}
+
+/* ======= MODAL ======= */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:999;padding:1rem}
 .modal-overlay.show{display:flex}
-.modal{background:var(--bg);border-radius:var(--r);padding:1.5rem;width:90%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
-.modal-title{font-size:16px;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
-.modal input{font-size:14px;padding:10px 12px;border-radius:var(--r2);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);width:100%;font-family:inherit;margin-bottom:10px}
-.modal input:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,0.15)}
-.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
-.modal-err{font-size:12px;color:#E24B4A;margin-bottom:8px;display:none}
+.modal-box{background:var(--surface);border-radius:var(--r);padding:1.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border)}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+.modal-input{font-size:14px;padding:10px 12px;border-radius:var(--r2);border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);width:100%;font-family:var(--font);margin-bottom:10px;transition:border-color .15s}
+.modal-input:focus{outline:none;border-color:var(--red);background:#fff}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-err{font-size:12px;color:var(--red);margin-bottom:8px;display:none;padding:6px 10px;background:var(--red-light);border-radius:var(--r3)}
 .modal-err.show{display:block}
 
 /* EDIT MODAL */
-.edit-modal{background:var(--bg);border-radius:var(--r);padding:1.5rem;width:90%;max-width:460px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto}
-.edit-modal-info{background:var(--bg2);border-radius:var(--r2);padding:10px 12px;margin-bottom:1rem;font-size:12px;color:var(--text2);line-height:1.7}
-.edit-modal-info strong{color:var(--text);font-size:13px}
+.edit-box{background:var(--surface);border-radius:var(--r);padding:1.5rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border)}
+.edit-info{background:var(--surface2);border-radius:var(--r2);padding:12px 14px;margin-bottom:1.25rem;border-left:3px solid var(--red)}
+.edit-info strong{font-size:14px;display:block;margin-bottom:4px}
+.edit-info span{font-size:12px;color:var(--text2);line-height:1.6}
 .efg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-.efg label{font-size:12px;font-weight:500;color:var(--text2)}
-.efg input,.efg select{font-size:13px;padding:9px 10px;border-radius:var(--r2);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit;width:100%}
-.efg input:focus,.efg select:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,0.15)}
+.efg label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.efg input,.efg select{font-size:13px;padding:9px 11px;border-radius:var(--r2);border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-family:var(--font);width:100%;transition:border-color .15s}
+.efg input:focus,.efg select:focus{outline:none;border-color:var(--red);background:#fff}
+.equip-section{border-top:1px solid var(--border);padding-top:14px;margin-top:4px}
+.equip-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:5px;margin-bottom:10px}
+.equip-cols{display:grid;grid-template-columns:1fr 1fr 80px 24px;gap:6px;margin-bottom:4px}
+.equip-col-hdr{font-size:10px;color:var(--text3);font-weight:500}
+.equip-row{display:grid;grid-template-columns:1fr 1fr 80px 24px;gap:6px;margin-bottom:6px;align-items:center}
+.equip-row input{font-size:12px;padding:7px 9px;border-radius:var(--r3);border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-family:var(--font)}
+.equip-row input:focus{outline:none;border-color:var(--red);background:#fff}
+.eq-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;transition:all .12s}
+.eq-del:hover{color:var(--red);background:var(--red-light)}
+.equip-total{background:var(--surface2);border-radius:var(--r2);padding:8px 12px;font-size:12px;display:flex;justify-content:space-between;margin-top:4px}
+.equip-total strong{color:var(--text);font-weight:600}
 
-/* COMMON */
-.wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1rem}
-.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px}
-.hdr-l{display:flex;align-items:center;gap:10px}
-.logo{width:36px;height:36px;background:#1a1a1a;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;flex-shrink:0}
-.htitle{font-size:15px;font-weight:600}
-.hsub{font-size:12px;color:var(--text2);margin-top:1px}
-.hdr-r{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.dept-badge{font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px}
-.dept-Assembly-badge{background:#E6F1FB;color:#0C447C}
-.dept-Grinding-badge{background:#EAF3DE;color:#27500A}
-.dept-FG-badge{background:#FAEEDA;color:#633806}
-.sbadge{font-size:11px;display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;background:var(--bg);border:0.5px solid var(--border);color:var(--text2)}
-.sdot{width:6px;height:6px;border-radius:50%;background:#639922;flex-shrink:0}
-.sdot.syncing{background:#EF9F27;animation:pulse 1s infinite}
-.sdot.error{background:#E24B4A}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.nav{display:flex;gap:3px;margin-bottom:1.25rem;background:var(--bg);border:0.5px solid var(--border);padding:4px;border-radius:var(--r);width:fit-content;box-shadow:var(--sh)}
-.nb{padding:7px 14px;border:none;background:none;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:7px;display:flex;align-items:center;gap:5px;transition:all .15s;font-family:inherit}
-.nb.active{background:var(--bg2);color:var(--text);box-shadow:var(--sh)}
-.nb:hover:not(.active){color:var(--text);background:var(--bg2)}
-.ndot{width:6px;height:6px;background:#E24B4A;border-radius:50%}
+/* ======= COMMON ======= */
+.wrap{max-width:1140px;margin:0 auto;padding:1.5rem 1.25rem}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-l{display:flex;align-items:center;gap:12px}
+.topbar-logo{height:20px;width:auto}
+.topbar-divider{width:1px;height:18px;background:var(--border2)}
+.topbar-title{font-size:13px;font-weight:600;color:var(--text2)}
+.topbar-r{display:flex;align-items:center;gap:6px}
+.sync-pill{font-size:11px;display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.sdot{width:6px;height:6px;border-radius:50%;background:#16A34A;flex-shrink:0}
+.sdot.syncing{background:#EA580C;animation:pulse .8s infinite}
+.sdot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.tab-nav{display:flex;gap:2px;padding:4px;background:var(--surface2);border-radius:var(--r2);width:fit-content;margin-bottom:1.5rem;border:1px solid var(--border)}
+.tnb{padding:7px 16px;border:none;background:none;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:6px;display:flex;align-items:center;gap:5px;transition:all .15s;font-family:var(--font)}
+.tnb.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid var(--border)}
+.tnb:hover:not(.active){color:var(--text);background:rgba(0,0,0,0.03)}
+.ndot{width:6px;height:6px;background:var(--red);border-radius:50%}
 .tab{display:none}.tab.active{display:block}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--r2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);transition:all .12s;white-space:nowrap}
-.btn:hover{background:var(--bg2);color:var(--text)}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.btn.pri{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-.btn.pri:hover{opacity:.85}
-.btn.success{background:#EAF3DE;color:#27500A;border-color:#97C459}
-.btn.success:hover{background:#C0DD97}
-.btn.danger-btn{background:#FCEBEB;color:#791F1F;border-color:#F09595}
-.btn.xl{border-color:#3B6D11;color:#3B6D11;background:#EAF3DE}
-.btn.xl:hover{background:#C0DD97}
-.btn.pf{border-color:#0C447C;color:#0C447C;background:#E6F1FB}
-.btn.pf:hover{background:#B5D4F4}
-.btn.ic{width:28px;height:28px;padding:0;justify-content:center}
-.btn.ic:hover{background:var(--bg2)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r2);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--text);color:#fff;border-color:var(--text)}
+.btn.primary:hover{opacity:.85}
+.btn.red{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.red:hover{background:var(--red-dark)}
+.btn.green{background:#16A34A;color:#fff;border-color:#16A34A}
+.btn.green:hover{background:#15803D}
+.btn.outline-red{border-color:#FCA5A5;color:var(--red);background:var(--red-light)}
+.btn.outline-red:hover{background:#FFD7DA}
+.btn.outline-green{border-color:#86EFAC;color:#16A34A;background:#F0FDF4}
+.btn.outline-green:hover{background:#DCFCE7}
+.btn.outline-blue{border-color:#93C5FD;color:#1877F2;background:#EFF6FF}
+.btn.outline-blue:hover{background:#DBEAFE}
+.btn.icon{width:30px;height:30px;padding:0;justify-content:center;border-radius:var(--r3)}
 .mla{margin-left:auto;display:flex;gap:6px}
 
 /* KPI */
-.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.1rem}
-.kpi{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1rem;box-shadow:var(--sh)}
-.ktop{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.klabel{font-size:11px;color:var(--text2)}
-.kico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
-.kval{font-size:24px;font-weight:600;line-height:1}
-.kfoot{font-size:11px;color:var(--text2);margin-top:3px}
-.cr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.1rem}
-.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1.1rem;box-shadow:var(--sh)}
-.ctitle{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.legrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.25rem;box-shadow:var(--sh);position:relative;overflow:hidden}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-all::after{background:linear-gradient(90deg,#0D0D0D,#5A5A5A)}
+.kpi-inprog::after{background:linear-gradient(90deg,#1877F2,#42A1F8)}
+.kpi-done::after{background:linear-gradient(90deg,#16A34A,#4ADE80)}
+.kpi-urgent::after{background:linear-gradient(90deg,#E8192C,#FB923C)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.kpi-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.kpi-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.kpi-val{font-size:28px;font-weight:700;line-height:1;letter-spacing:-1px}
+.kpi-foot{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* CHARTS */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;box-shadow:var(--sh)}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.legrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)}
 .legdot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.badge{display:inline-flex;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:500}
-.bw{background:#FAEEDA;color:#633806}.bd{background:#E6F1FB;color:#0C447C}.bk{background:#EAF3DE;color:#27500A}.bu{background:#FCEBEB;color:#791F1F}
-.tw{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem;box-shadow:var(--sh)}
+
+/* TABLE */
+.badge{display:inline-flex;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500}
+.b-wait{background:#FEF3C7;color:#92400E}
+.b-doing{background:#EFF6FF;color:#1D4ED8}
+.b-done{background:#F0FDF4;color:#166534}
+.b-urgent{background:var(--red-light);color:var(--red-dark)}
+.tw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;box-shadow:var(--sh)}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
-th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text2);border-bottom:0.5px solid var(--border);background:var(--bg2);text-transform:uppercase;letter-spacing:.04em}
-td{padding:9px 12px;border-bottom:0.5px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+th{text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);border-bottom:1px solid var(--border);background:var(--surface2);text-transform:uppercase;letter-spacing:.06em}
+td{padding:10px 14px;border-bottom:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--bg2)}
-tr.urg td{border-left:3px solid #E24B4A}
+tr:hover td{background:var(--surface2)}
+tr.urg td{border-left:3px solid var(--red)}
+
+/* FORMS */
 .fbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
 .srch{position:relative}
-.srch i{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text2);pointer-events:none}
-.srch input{padding:7px 10px 7px 30px}
-input,select,textarea{font-size:13px;padding:8px 10px;border-radius:var(--r2);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit;width:100%}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,0.15)}
+.srch i{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text3);pointer-events:none}
+.srch input{padding:8px 12px 8px 32px}
+input,select,textarea{font-size:13px;padding:9px 12px;border-radius:var(--r2);border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-family:var(--font);width:100%;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red);background:#fff}
 textarea{min-height:72px;resize:vertical}
-.fcard{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:1rem}
-.fhdr{padding:.9rem 1.2rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:8px}
+.fcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:1.25rem}
+.fhdr{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--surface2)}
 .fhtitle{font-size:14px;font-weight:600}
-.fbody{padding:1.2rem}
-.fgg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fbody{padding:1.25rem}
+.fgg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fg.full{grid-column:1/-1}
-.fg label{font-size:12px;font-weight:500;color:var(--text2)}
-.fftr{padding:.9rem 1.2rem;border-top:0.5px solid var(--border);display:flex;gap:8px;justify-content:flex-end;align-items:center;background:var(--bg2)}
-.sving{font-size:12px;color:var(--text2);display:none;align-items:center;gap:5px;margin-right:auto}
+.fg label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.fftr{padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;align-items:center;background:var(--surface2)}
+.sving{font-size:12px;color:var(--text2);display:none;align-items:center;gap:6px;margin-right:auto}
 .sving.show{display:flex}
-@keyframes spin{to{transform:rotate(360deg)}}
 
 /* STATUS CARDS */
-.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:1rem}
-.status-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1rem;box-shadow:var(--sh)}
-.status-card.urgent-card{border-color:#F09595;border-left:4px solid #E24B4A}
-.status-card.done-card{border-color:#97C459;border-left:4px solid #639922;background:#fafff6}
-.sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
-.sc-id{font-size:11px;font-family:monospace;color:var(--text2)}
-.sc-loc{font-size:14px;font-weight:600;margin-bottom:2px}
-.sc-type{font-size:12px;color:var(--text2);margin-bottom:6px}
-.sc-detail{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px;white-space:normal}
-.sc-footer{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text2)}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1.25rem}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;box-shadow:var(--sh);position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px}
+.sc-urgent::before{background:var(--red)}
+.sc-done::before{background:#16A34A}
+.sc-default::before{background:var(--border2)}
+.sc-done{background:linear-gradient(135deg,#fff 0%,#f0fdf4 100%)}
+.sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;padding-left:4px}
+.sc-id{font-size:10px;font-family:var(--mono);color:var(--text3)}
+.sc-loc{font-size:14px;font-weight:600;margin-bottom:2px;padding-left:4px}
+.sc-type{font-size:12px;color:var(--text2);margin-bottom:8px;padding-left:4px}
+.sc-detail{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px;white-space:normal;padding-left:4px}
+.sc-footer{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding-left:4px}
 
-/* RESET COUNTDOWN */
-.reset-bar{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r2);padding:8px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);box-shadow:var(--sh)}
-.reset-time{font-weight:600;color:var(--text);margin-left:auto;font-family:monospace}
+/* RESET BAR */
+.reset-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:8px 14px;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);box-shadow:var(--sh)}
+.reset-time{font-family:var(--mono);font-weight:600;color:var(--text);margin-left:auto}
+
+/* DEPT FILTER */
+.dept-filter-row{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.df-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);transition:all .15s}
+.df-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.df-dot{width:7px;height:7px;border-radius:50%}
 
 /* URGENT TOGGLE */
-.urgent-toggle{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FCEBEB;border:0.5px solid #F09595;border-radius:var(--r2)}
-.toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0}
-.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
-.toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:99px;transition:.3s}
-.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
-input:checked+.toggle-slider{background:#E24B4A}
-input:checked+.toggle-slider:before{transform:translateX(18px)}
-.abar{background:#FCEBEB;border:0.5px solid #F09595;border-radius:var(--r2);padding:10px 14px;margin-bottom:1rem;display:none;align-items:flex-start;gap:10px}
-.abar.show{display:flex}
-.empty{text-align:center;padding:2.5rem 1rem;color:var(--text2);font-size:13px}
-.empty i{font-size:28px;display:block;margin-bottom:8px}
-.skel{background:var(--bg2);border-radius:4px;height:14px;animation:skel 1.2s ease-in-out infinite}
-@keyframes skel{0%,100%{opacity:.5}50%{opacity:1}}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:9px 20px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.urgent-wrap{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--red-light);border:1px solid #FCA5A5;border-radius:var(--r2)}
+.toggle-sw{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle-sw input{opacity:0;width:0;height:0;position:absolute}
+.toggle-sl{position:absolute;cursor:pointer;inset:0;background:#D1D5DB;border-radius:99px;transition:.25s}
+.toggle-sl:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+input:checked+.toggle-sl{background:var(--red)}
+input:checked+.toggle-sl:before{transform:translateX(18px)}
+
+/* ALERT BAR */
+.alert-bar{background:var(--red-light);border:1px solid #FCA5A5;border-radius:var(--r2);padding:10px 14px;margin-bottom:1.25rem;display:none;align-items:flex-start;gap:10px}
+.alert-bar.show{display:flex}
+
+/* MISC */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:13px}
+.empty i{font-size:32px;display:block;margin-bottom:10px;opacity:.4}
+.skel{background:var(--border);border-radius:4px;height:14px;animation:skel 1s ease infinite}
+@keyframes skel{0%,100%{opacity:.4}50%{opacity:.9}}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
 #toast.show{opacity:1}
-@media(max-width:700px){.kg{grid-template-columns:1fr 1fr}.cr{grid-template-columns:1fr}.fgg{grid-template-columns:1fr}.fg.full{grid-column:1}.role-grid{grid-template-columns:1fr}.role-card.admin-card{grid-column:1}}
+
+@media(max-width:768px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .chart-row{grid-template-columns:1fr}
+  .fgg{grid-template-columns:1fr}.fg.full{grid-column:1}
+  .dept-grid{grid-template-columns:1fr}.dept-admin-card{grid-column:1}
+  .topbar-r .btn:not(.primary):not(.red){display:none}
+}
 </style>
 </head>
 <body>
 
-<!-- HOME -->
+<!-- ======= HOME PAGE ======= -->
 <div id="page-home" class="page active">
-  <div class="home-wrap">
-    <div class="home-logo"><i class="ti ti-bolt"></i></div>
-    <div class="home-title">ระบบงานซ่อมไฟฟ้า</div>
-    <div class="home-sub">เลือกแผนกหรือเข้าสู่ระบบ Admin</div>
-    <div class="home-countdown" id="home-countdown-bar">
-      <i class="ti ti-clock" style="font-size:13px;color:#EF9F27"></i>
-      รายการจะรีเซ็ตอัตโนมัติใน <strong id="home-cdown" style="color:var(--text)"></strong>
+  <div class="home-page">
+    <div class="home-topbar">
+      <div class="home-brand">
+        <img src="data:image/png;base64,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" alt="NACHI" class="nachi-logo">
+        <div class="brand-divider"></div>
+        <span class="brand-text">FAC4 · MT Engineering</span>
+      </div>
+      <span class="home-date" id="home-date"></span>
     </div>
-    <div class="role-grid">
-      <div class="role-card dept-Assembly" onclick="enterUser('Assembly')">
-        <span class="pending-dot" id="dot-Assembly"></span>
-        <span class="role-icon"><i class="ti ti-building-factory"></i></span>
-        <div class="role-name">Assembly</div>
-        <div class="role-desc">แจ้งซ่อม & ติดตามสถานะ</div>
-      </div>
-      <div class="role-card dept-Grinding" onclick="enterUser('Grinding')">
-        <span class="pending-dot" id="dot-Grinding"></span>
-        <span class="role-icon"><i class="ti ti-settings"></i></span>
-        <div class="role-name">Grinding</div>
-        <div class="role-desc">แจ้งซ่อม & ติดตามสถานะ</div>
-      </div>
-      <div class="role-card dept-FG" onclick="enterUser('Frist grinding')">
-        <span class="pending-dot" id="dot-FG"></span>
-        <span class="role-icon"><i class="ti ti-tool"></i></span>
-        <div class="role-name">Frist grinding</div>
-        <div class="role-desc">แจ้งซ่อม & ติดตามสถานะ</div>
-      </div>
-      <div class="role-card admin-card dept-admin" onclick="showAdminLogin()">
-        <span class="role-icon"><i class="ti ti-shield-lock"></i></span>
-        <div class="role-name">Admin</div>
-        <div class="role-desc">จัดการงานซ่อมทั้งหมด · Dashboard · Export</div>
+    <div class="home-body">
+      <div class="home-center">
+        <div class="home-hero">
+          <div class="home-icon"><i class="ti ti-bolt"></i></div>
+          <h1>ระบบงานซ่อมไฟฟ้า</h1>
+          <p>Electrical Maintenance Management System</p>
+        </div>
+        <div class="home-countdown" id="home-countdown-bar">
+          <i class="ti ti-clock" style="font-size:13px"></i>
+          รีเซ็ตอัตโนมัติใน
+          <span class="home-cd-time" id="home-cdown"></span>
+        </div>
+        <div class="dept-grid">
+          <div class="dept-card dept-Assembly" onclick="enterUser('Assembly')">
+            <span class="dept-badge-count" id="dot-Assembly"></span>
+            <div class="dept-icon"><i class="ti ti-building-factory"></i></div>
+            <div class="dept-name">Assembly</div>
+            <div class="dept-desc">แจ้งซ่อม & ติดตามสถานะ</div>
+          </div>
+          <div class="dept-card dept-Grinding" onclick="enterUser('Grinding')">
+            <span class="dept-badge-count" id="dot-Grinding"></span>
+            <div class="dept-icon"><i class="ti ti-settings"></i></div>
+            <div class="dept-name">Grinding</div>
+            <div class="dept-desc">แจ้งซ่อม & ติดตามสถานะ</div>
+          </div>
+          <div class="dept-card dept-FG" onclick="enterUser('Frist grinding')">
+            <span class="dept-badge-count" id="dot-FG"></span>
+            <div class="dept-icon"><i class="ti ti-tool"></i></div>
+            <div class="dept-name">Frist grinding</div>
+            <div class="dept-desc">แจ้งซ่อม & ติดตามสถานะ</div>
+          </div>
+          <div class="dept-card dept-admin-card" onclick="showAdminLogin()">
+            <div class="dept-icon"><i class="ti ti-shield-lock"></i></div>
+            <div class="dept-name">Admin</div>
+            <div class="dept-desc">จัดการงานซ่อม · Dashboard · Export</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ADMIN LOGIN MODAL -->
+<!-- ======= MODALS ======= -->
 <div class="modal-overlay" id="admin-modal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-shield-lock" style="color:#7F77DD"></i>Admin Login</div>
+  <div class="modal-box">
+    <div class="modal-title"><i class="ti ti-shield-lock" style="color:var(--red)"></i>Admin Login</div>
     <div class="modal-err" id="login-err">รหัสผ่านไม่ถูกต้อง</div>
-    <input type="password" id="admin-pw" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="password" class="modal-input" id="admin-pw" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()">
     <div class="modal-btns">
       <button class="btn" onclick="closeAdminModal()">ยกเลิก</button>
-      <button class="btn pri" onclick="doLogin()"><i class="ti ti-login"></i>เข้าสู่ระบบ</button>
+      <button class="btn red" onclick="doLogin()"><i class="ti ti-login"></i>เข้าสู่ระบบ</button>
     </div>
   </div>
 </div>
 
-<!-- EDIT MODAL (Admin) -->
 <div class="modal-overlay" id="edit-modal">
-  <div class="edit-modal">
-    <div class="modal-title"><i class="ti ti-edit" style="color:#378ADD"></i>อัปเดตงานซ่อม</div>
-    <div class="edit-modal-info" id="edit-info"></div>
-    <div class="efg">
-      <label>ช่างผู้ซ่อม</label>
-      <input id="e-tech" placeholder="ชื่อช่าง / ทีม">
-    </div>
+  <div class="edit-box">
+    <div class="modal-title"><i class="ti ti-edit" style="color:#1877F2"></i>อัปเดตงานซ่อม</div>
+    <div class="edit-info" id="edit-info"></div>
+    <div class="efg"><label>ช่างผู้ซ่อม</label><input id="e-tech" placeholder="ชื่อช่าง / ทีม"></div>
     <div class="efg">
       <label>สถานะ</label>
       <select id="e-status">
-        <option>รอดำเนินการ</option>
-        <option>กำลังดำเนินการ</option>
-        <option>เสร็จสิ้น</option>
-        <option>เร่งด่วน</option>
+        <option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option>
       </select>
     </div>
-    <div class="efg">
-      <label>วันที่ซ่อมเสร็จ</label>
-      <input type="date" id="e-donedate">
-    </div>
-    <div style="border-top:0.5px solid var(--border);margin:4px 0 12px;padding-top:12px">
-      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:5px"><i class="ti ti-package" style="font-size:14px;color:#EF9F27"></i>อุปกรณ์ที่เปลี่ยน (ถ้ามี)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 90px 20px;gap:6px;margin-bottom:4px;padding:0 2px">
-        <span style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">ชื่ออุปกรณ์</span>
-        <span style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">Model / รุ่น</span>
-        <span style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">ราคา (บ.)</span>
+    <div class="efg"><label>วันที่ซ่อมเสร็จ</label><input type="date" id="e-donedate"></div>
+    <div class="equip-section">
+      <div class="equip-label"><i class="ti ti-package" style="font-size:13px;color:#EA580C"></i>อุปกรณ์ที่เปลี่ยน (ถ้ามี)</div>
+      <div class="equip-cols">
+        <span class="equip-col-hdr">ชื่ออุปกรณ์</span>
+        <span class="equip-col-hdr">Model / รุ่น</span>
+        <span class="equip-col-hdr">ราคา (บ.)</span>
         <span></span>
       </div>
       <div id="equip-list"></div>
-      <button class="btn" onclick="addEquipRow()" style="font-size:12px;padding:5px 10px;margin-top:4px"><i class="ti ti-plus"></i>เพิ่มอุปกรณ์</button>
+      <button class="btn" onclick="addEquipRow()" style="font-size:12px;padding:5px 12px;margin-top:2px"><i class="ti ti-plus"></i>เพิ่มอุปกรณ์</button>
+      <div class="equip-total" style="margin-top:8px"><span style="color:var(--text2);font-size:12px">ค่าอุปกรณ์รวม</span><strong id="equip-total">0 บาท</strong></div>
     </div>
-    <div style="background:var(--bg2);border-radius:var(--r2);padding:8px 12px;font-size:12px;display:flex;justify-content:space-between;align-items:center">
-      <span style="color:var(--text2)">ค่าอุปกรณ์รวม</span>
-      <span style="font-weight:600;color:var(--text)" id="equip-total">0 บาท</span>
-    </div>
-    <div class="sving" id="e-sving" style="margin-bottom:8px"><i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:13px"></i>กำลังบันทึก...</div>
-    <div class="modal-btns">
+    <div class="sving" id="e-sving" style="margin:10px 0 0"><i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:13px"></i>กำลังบันทึก...</div>
+    <div class="modal-btns" style="margin-top:14px">
       <button class="btn" onclick="closeEditModal()">ยกเลิก</button>
-      <button class="btn success" onclick="saveEdit()" id="e-save-btn"><i class="ti ti-check"></i>บันทึกการซ่อม</button>
+      <button class="btn green" onclick="saveEdit()" id="e-save-btn"><i class="ti ti-check"></i>บันทึกการซ่อม</button>
     </div>
   </div>
 </div>
 
-<!-- USER PAGE -->
+<!-- ======= USER PAGE ======= -->
 <div id="page-user" class="page">
-  <div class="wrap">
-    <div class="hdr">
-      <div class="hdr-l">
-        <div class="logo"><i class="ti ti-bolt"></i></div>
-        <div>
-          <div class="htitle">ระบบแจ้งซ่อมไฟฟ้า</div>
-          <div class="hsub" id="user-dept-sub"></div>
-        </div>
-      </div>
-      <div class="hdr-r">
-        <span class="dept-badge" id="user-dept-badge"></span>
-        <div class="sbadge"><span class="sdot" id="u-sdot"></span><span id="u-stxt">พร้อมใช้งาน</span></div>
-        <button class="btn" onclick="goHome()"><i class="ti ti-home"></i>หน้าหลัก</button>
-      </div>
+  <div class="topbar">
+    <div class="topbar-l">
+      <img src="data:image/png;base64,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" alt="NACHI" class="topbar-logo">
+      <div class="topbar-divider"></div>
+      <span class="topbar-title">ระบบแจ้งซ่อมไฟฟ้า</span>
     </div>
+    <div class="topbar-r">
+      <span id="user-dept-badge" class="badge"></span>
+      <div class="sync-pill"><span class="sdot" id="u-sdot"></span><span id="u-stxt">พร้อมใช้งาน</span></div>
+      <button class="btn" onclick="goHome()"><i class="ti ti-home"></i>หน้าหลัก</button>
+    </div>
+  </div>
+  <div class="wrap">
     <div class="reset-bar">
-      <i class="ti ti-clock-hour-4" style="color:#EF9F27"></i>
-      <span>รายการจะรีเซ็ตอัตโนมัติทุก 24 ชั่วโมง</span>
+      <i class="ti ti-clock-hour-4" style="color:#EA580C"></i>
+      <span>รายการรีเซ็ตอัตโนมัติทุก 24 ชั่วโมง</span>
       <span class="reset-time" id="u-countdown">--:--:--</span>
     </div>
-    <div class="nav">
-      <button class="nb active" onclick="uGoTab('report',this)"><i class="ti ti-plus"></i>แจ้งซ่อม</button>
-      <button class="nb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i>ติดตามสถานะ</button>
+    <div class="tab-nav">
+      <button class="tnb active" onclick="uGoTab('report',this)"><i class="ti ti-plus"></i>แจ้งซ่อม</button>
+      <button class="tnb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i>ติดตามสถานะ</button>
     </div>
     <div id="utab-report" class="tab active">
       <div class="fcard">
-        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text2)"></i><span class="fhtitle">แจ้งซ่อมไฟฟ้า — <span id="u-form-dept"></span></span></div>
+        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">แจ้งซ่อมไฟฟ้า — <span id="u-form-dept" style="color:var(--red)"></span></span></div>
         <div class="fbody">
           <div class="fgg">
             <div class="fg"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" placeholder="ชื่อ-นามสกุล"></div>
-            <div class="fg"><label>แผนก</label><input id="u-dept-display" readonly style="background:var(--bg2)"></div>
+            <div class="fg"><label>แผนก</label><input id="u-dept-display" readonly style="background:var(--surface2);cursor:default"></div>
             <div class="fg"><label>สถานที่ / จุดที่เสีย *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
             <div class="fg"><label>ประเภทงาน *</label>
               <select id="u-type"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select>
             </div>
             <div class="fg full"><label>รายละเอียดอาการเสีย *</label><textarea id="u-detail" placeholder="อธิบายอาการ เช่น ไฟดับทั้งไลน์ เครื่องไม่ทำงาน..."></textarea></div>
             <div class="fg full">
-              <div class="urgent-toggle">
-                <label class="toggle-switch"><input type="checkbox" id="u-urgent"><span class="toggle-slider"></span></label>
-                <span style="font-size:13px;font-weight:500;color:#791F1F"><i class="ti ti-alert-triangle"></i> แจ้งเร่งด่วน — ส่งผลต่อการผลิต</span>
+              <div class="urgent-wrap">
+                <label class="toggle-sw"><input type="checkbox" id="u-urgent"><span class="toggle-sl"></span></label>
+                <span style="font-size:13px;font-weight:500;color:var(--red-dark)"><i class="ti ti-alert-triangle"></i> แจ้งเร่งด่วน — ส่งผลต่อการผลิต</span>
               </div>
             </div>
             <div class="fg"><label>วันที่แจ้ง</label><input type="date" id="u-date"></div>
@@ -319,7 +395,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
         <div class="fftr">
           <div class="sving" id="u-sving"><i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:13px"></i>กำลังส่ง...</div>
           <button class="btn" onclick="uClearForm()">ล้างข้อมูล</button>
-          <button class="btn pri" onclick="uSubmit()" id="u-btn-save"><i class="ti ti-send"></i>ส่งแจ้งซ่อม</button>
+          <button class="btn red" onclick="uSubmit()" id="u-btn-save"><i class="ti ti-send"></i>ส่งแจ้งซ่อม</button>
         </div>
       </div>
     </div>
@@ -333,97 +409,81 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   </div>
 </div>
 
-<!-- ADMIN PAGE -->
+<!-- ======= ADMIN PAGE ======= -->
 <div id="page-admin" class="page">
+  <div class="topbar">
+    <div class="topbar-l">
+      <img src="data:image/png;base64,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" alt="NACHI" class="topbar-logo">
+      <div class="topbar-divider"></div>
+      <span class="topbar-title">Admin — MT Engineering</span>
+    </div>
+    <div class="topbar-r">
+      <div class="sync-pill"><span class="sdot syncing" id="a-sdot"></span><span id="a-stxt">กำลังโหลด...</span></div>
+      <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i>Sync</button>
+      <button class="btn outline-green" onclick="exportCurrentExcel()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
+      <button class="btn outline-blue" onclick="exportCurrentPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
+      <button class="btn outline-red" onclick="confirmClearAll()"><i class="ti ti-trash"></i>ล้างข้อมูล</button>
+      <button class="btn primary" onclick="adminLogout()"><i class="ti ti-logout"></i>ออก</button>
+    </div>
+  </div>
   <div class="wrap">
-    <div class="hdr">
-      <div class="hdr-l">
-        <div class="logo" style="background:#4C4089"><i class="ti ti-shield-lock"></i></div>
-        <div><div class="htitle">Admin — ระบบงานซ่อมไฟฟ้า</div><div class="hsub" id="a-hdate"></div></div>
-      </div>
-      <div class="hdr-r">
-        <div class="sbadge"><span class="sdot syncing" id="a-sdot"></span><span id="a-stxt">กำลังโหลด...</span></div>
-        <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i>Sync</button>
-        <button class="btn xl" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
-        <button class="btn pf" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
-        <button class="btn danger-btn" onclick="confirmClearAll()" title="ลบข้อมูลทดสอบทั้งหมด"><i class="ti ti-trash"></i>ล้างข้อมูลทั้งหมด</button>
-        <button class="btn danger-btn" onclick="adminLogout()"><i class="ti ti-logout"></i>ออกจากระบบ</button>
-      </div>
+    <div id="a-abar" class="alert-bar">
+      <i class="ti ti-alert-triangle" style="color:var(--red);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--red-dark);margin-bottom:2px">มีงานเร่งด่วน</div><div style="font-size:12px;color:var(--red-dark);line-height:1.6" id="a-alist"></div></div>
+      <button style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px" onclick="document.getElementById('a-abar').classList.remove('show')">×</button>
     </div>
-    <div id="a-abar" class="abar">
-      <i class="ti ti-alert-triangle" style="color:#A32D2D;font-size:16px;flex-shrink:0;margin-top:1px"></i>
-      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#791F1F;margin-bottom:2px">มีงานเร่งด่วน</div><div style="font-size:12px;color:#A32D2D;line-height:1.6" id="a-alist"></div></div>
-      <button style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:18px" onclick="document.getElementById('a-abar').classList.remove('show')">×</button>
-    </div>
-    <div class="nav">
-      <button class="nb active" onclick="aGoTab('dash',this)"><i class="ti ti-layout-dashboard"></i>ภาพรวม</button>
-      <button class="nb" onclick="aGoTab('list',this)"><i class="ti ti-list-details"></i>รายการงาน</button>
-      <button class="nb" onclick="aGoTab('urgent',this)"><i class="ti ti-alert-triangle"></i>เร่งด่วน<span class="ndot" id="a-ndot" style="display:none"></span></button>
-      <button class="nb" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
+    <div class="tab-nav">
+      <button class="tnb active" onclick="aGoTab('dash',this)"><i class="ti ti-layout-dashboard"></i>ภาพรวม</button>
+      <button class="tnb" onclick="aGoTab('list',this)"><i class="ti ti-list-details"></i>รายการงาน</button>
+      <button class="tnb" onclick="aGoTab('urgent',this)"><i class="ti ti-alert-triangle"></i>เร่งด่วน<span class="ndot" id="a-ndot" style="display:none"></span></button>
+      <button class="tnb" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
     </div>
 
-    <!-- DASH -->
+    <!-- DASH TAB -->
     <div id="atab-dash" class="tab active">
-      <div class="kg" id="a-kpis">
-        <div class="kpi"><div class="skel" style="width:60%;margin-bottom:8px"></div><div class="skel" style="width:40%;height:24px"></div></div>
-        <div class="kpi"><div class="skel" style="width:60%;margin-bottom:8px"></div><div class="skel" style="width:40%;height:24px"></div></div>
-        <div class="kpi"><div class="skel" style="width:60%;margin-bottom:8px"></div><div class="skel" style="width:40%;height:24px"></div></div>
-        <div class="kpi"><div class="skel" style="width:60%;margin-bottom:8px"></div><div class="skel" style="width:40%;height:24px"></div></div>
+      <div class="kpi-grid" id="a-kpis">
+        <div class="kpi-card kpi-all"><div class="ktop"><span class="kpi-label">ทั้งหมด</span></div><div class="skel" style="width:40%;height:28px"></div></div>
+        <div class="kpi-card kpi-inprog"><div class="ktop"><span class="kpi-label">ดำเนินการ</span></div><div class="skel" style="width:40%;height:28px"></div></div>
+        <div class="kpi-card kpi-done"><div class="ktop"><span class="kpi-label">เสร็จสิ้น</span></div><div class="skel" style="width:40%;height:28px"></div></div>
+        <div class="kpi-card kpi-urgent"><div class="ktop"><span class="kpi-label">เร่งด่วน</span></div><div class="skel" style="width:40%;height:28px"></div></div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
-        <button class="btn pri" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
-        <button class="btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span style="width:8px;height:8px;border-radius:50%;background:#378ADD;display:inline-block"></span>Assembly</button>
-        <button class="btn" id="df-Grinding" onclick="setDeptFilter('Grinding',this)"><span style="width:8px;height:8px;border-radius:50%;background:#639922;display:inline-block"></span>Grinding</button>
-        <button class="btn" id="df-FG" onclick="setDeptFilter('Frist grinding',this)"><span style="width:8px;height:8px;border-radius:50%;background:#EF9F27;display:inline-block"></span>Frist grinding</button>
+      <div class="dept-filter-row" id="dept-filter-row">
+        <button class="df-btn active" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
+        <button class="df-btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span class="df-dot" style="background:#1877F2"></span>Assembly</button>
+        <button class="df-btn" id="df-Grinding" onclick="setDeptFilter('Grinding',this)"><span class="df-dot" style="background:#16A34A"></span>Grinding</button>
+        <button class="df-btn" id="df-FG" onclick="setDeptFilter('Frist grinding',this)"><span class="df-dot" style="background:#EA580C"></span>Frist grinding</button>
       </div>
-      <div class="cr">
-        <div class="card"><div class="ctitle"><i class="ti ti-chart-donut" style="font-size:14px;color:var(--text2)"></i>สถานะงาน</div><div class="legrow" id="a-legS"></div><div style="position:relative;height:160px"><canvas id="a-cS" role="img" aria-label="สถานะ"></canvas></div></div>
-        <div class="card"><div class="ctitle"><i class="ti ti-chart-bar" style="font-size:14px;color:var(--text2)"></i>แผนก</div><div class="legrow" id="a-legD"></div><div style="position:relative;height:160px"><canvas id="a-cD" role="img" aria-label="แผนก"></canvas></div></div>
+      <div class="chart-row">
+        <div class="card"><div class="card-title"><i class="ti ti-chart-donut" style="font-size:14px;color:var(--text3)"></i>สถานะงาน</div><div class="legrow" id="a-legS"></div><div style="position:relative;height:170px"><canvas id="a-cS" role="img" aria-label="สถานะ"></canvas></div></div>
+        <div class="card"><div class="card-title"><i class="ti ti-chart-bar" style="font-size:14px;color:var(--text3)"></i>แผนก</div><div class="legrow" id="a-legD"></div><div style="position:relative;height:170px"><canvas id="a-cD" role="img" aria-label="แผนก"></canvas></div></div>
       </div>
-      <div class="card" style="margin-bottom:0;border-radius:var(--r) var(--r) 0 0;border-bottom:none"><div class="ctitle" style="margin-bottom:0"><i class="ti ti-clock" style="font-size:14px;color:var(--text2)"></i>งานล่าสุด</div></div>
+      <div class="card" style="margin-bottom:0;border-radius:var(--r) var(--r) 0 0;border-bottom:none"><div class="card-title" style="margin-bottom:0"><i class="ti ti-clock" style="font-size:14px;color:var(--text3)"></i>งานล่าสุด</div></div>
       <div class="tw" style="border-radius:0 0 var(--r) var(--r)">
-        <table><thead><tr><th style="width:75px">รหัส</th><th style="width:100px">แผนก</th><th style="width:100px">ผู้แจ้ง</th><th style="width:120px">สถานที่</th><th style="width:100px">ประเภท</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th>วันที่</th></tr></thead><tbody id="a-recBody"></tbody></table>
+        <table><thead><tr><th style="width:75px">รหัส</th><th style="width:105px">แผนก</th><th style="width:110px">ผู้แจ้ง</th><th style="width:120px">สถานที่</th><th style="width:110px">ประเภท</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th>วันที่</th></tr></thead><tbody id="a-recBody"></tbody></table>
       </div>
     </div>
 
-    <!-- LIST — เรียงตามผู้แจ้ง -->
+    <!-- LIST TAB -->
     <div id="atab-list" class="tab">
       <div class="fbar">
-        <div class="srch"><i class="ti ti-search"></i><input type="text" placeholder="ค้นหาผู้แจ้ง / สถานที่..." id="a-fsearch" oninput="aRenderList()" style="width:180px"></div>
+        <div class="srch"><i class="ti ti-search"></i><input type="text" placeholder="ค้นหาผู้แจ้ง / สถานที่..." id="a-fsearch" oninput="aRenderList()" style="width:190px"></div>
         <select id="a-fdept" onchange="aRenderList()" style="width:auto"><option value="">ทุกแผนก</option><option>Assembly</option><option>Grinding</option><option>Frist grinding</option></select>
         <select id="a-fst" onchange="aRenderList()" style="width:auto"><option value="">สถานะทั้งหมด</option><option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option></select>
-        <div class="mla">
-          <button class="btn xl" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
-          <button class="btn pf" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
-        </div>
       </div>
       <div class="tw">
-        <table>
-          <thead><tr>
-            <th style="width:72px">รหัส</th>
-            <th style="width:105px">ผู้แจ้ง</th>
-            <th style="width:100px">แผนก</th>
-            <th style="width:120px">สถานที่</th>
-            <th style="width:100px">ประเภท</th>
-            <th style="width:130px">รายละเอียด</th>
-            <th style="width:95px">สถานะ</th>
-            <th style="width:90px">ช่าง</th>
-            <th style="width:82px">วันที่แจ้ง</th>
-            <th style="width:82px">วันที่เสร็จ</th>
-            <th style="width:55px">จัดการ</th>
-          </tr></thead>
-          <tbody id="a-listBody"></tbody>
-        </table>
+        <table><thead><tr>
+          <th style="width:72px">รหัส</th><th style="width:110px">ผู้แจ้ง</th><th style="width:100px">แผนก</th><th style="width:120px">สถานที่</th><th style="width:100px">ประเภท</th><th style="width:130px">รายละเอียด</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th style="width:80px">วันที่แจ้ง</th><th style="width:80px">วันที่เสร็จ</th><th style="width:50px">แก้ไข</th>
+        </tr></thead><tbody id="a-listBody"></tbody></table>
       </div>
     </div>
 
-    <!-- URGENT -->
+    <!-- URGENT TAB -->
     <div id="atab-urgent" class="tab"><div id="a-urgentContent"></div></div>
 
-    <!-- ADD NEW -->
+    <!-- ADD TAB -->
     <div id="atab-addnew" class="tab">
       <div class="fcard">
-        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text2)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
+        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
         <div class="fbody">
           <div class="fgg">
             <div class="fg"><label>แผนก *</label><select id="a-fl-dept"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>Frist grinding</option><option>อื่น ๆ</option></select></div>
@@ -440,7 +500,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
         <div class="fftr">
           <div class="sving" id="a-sving"><i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:13px"></i>กำลังบันทึก...</div>
           <button class="btn" onclick="aClearForm()">ล้างข้อมูล</button>
-          <button class="btn pri" onclick="aSaveJob()" id="a-btnSave"><i class="ti ti-device-floppy"></i>บันทึก</button>
+          <button class="btn red" onclick="aSaveJob()" id="a-btnSave"><i class="ti ti-device-floppy"></i>บันทึก</button>
         </div>
       </div>
     </div>
@@ -450,56 +510,51 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbzRDKgSM5m06iFAVSlISsyYJTqNniuW8iqzULElsQw0JkqrMPLnkF5vHcs2Yd5FWh4NVg/exec';
-const ADMIN_PW = 'admin1234';
-const RESET_HOURS = 24;
-const STORE_KEY = 'elec_local_v2';
-const RESET_KEY = 'elec_reset_v2';
+const API='https://script.google.com/macros/s/AKfycbzRDKgSM5m06iFAVSlISsyYJTqNniuW8iqzULElsQw0JkqrMPLnkF5vHcs2Yd5FWh4NVg/exec';
+const ADMIN_PW='admin1234';
+const STORE_KEY='elec_local_v3';
+const RESET_KEY='elec_reset_v3';
+const RESET_HOURS=24;
+const NACHI_LOGO='data:image/png;base64,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';
 
-let allJobs = [], localJobs = [];
-let currentDept = '', deptFilter = '';
-let editingJob = null;
-let cS = null, cD = null, countdownTimer = null;
+let allJobs=[],localJobs=[];
+let currentDept='',deptFilter='';
+let editingJob=null,cS=null,cD=null,countdownTimer=null;
+let currentAdminTab='dash';
 
-// ---- LOCAL STORAGE + RESET ----
-function getResetTime(){ const t=localStorage.getItem(RESET_KEY); return t?parseInt(t):null; }
-function setResetTime(){ const t=Date.now()+RESET_HOURS*3600000; localStorage.setItem(RESET_KEY,t); return t; }
-function checkAndReset(){
-  const rt=getResetTime();
-  if(!rt){ setResetTime(); return false; }
-  if(Date.now()>rt){
-    localStorage.removeItem(STORE_KEY); setResetTime(); localJobs=[];
-    toast('รีเซ็ตรายการแจ้งซ่อมอัตโนมัติแล้ว (24 ชม.)'); return true;
-  }
+// ---- LOCAL / RESET ----
+function getRT(){const t=localStorage.getItem(RESET_KEY);return t?parseInt(t):null;}
+function setRT(){const t=Date.now()+RESET_HOURS*3600000;localStorage.setItem(RESET_KEY,t);return t;}
+function checkReset(){
+  const rt=getRT();if(!rt){setRT();return false;}
+  if(Date.now()>rt){localStorage.removeItem(STORE_KEY);setRT();localJobs=[];toast('รีเซ็ตรายการอัตโนมัติ (24 ชม.)');return true;}
   return false;
 }
-function loadLocal(){ checkAndReset(); try{ localJobs=JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ localJobs=[]; } }
-function saveLocal(){ localStorage.setItem(STORE_KEY,JSON.stringify(localJobs)); }
+function loadLocal(){checkReset();try{localJobs=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');}catch(e){localJobs=[];}}
+function saveLocal(){localStorage.setItem(STORE_KEY,JSON.stringify(localJobs));}
 
 function startCountdown(){
-  if(countdownTimer) clearInterval(countdownTimer);
+  if(countdownTimer)clearInterval(countdownTimer);
   function tick(){
-    const rt=getResetTime(); if(!rt) return;
+    const rt=getRT();if(!rt)return;
     const diff=rt-Date.now();
-    if(diff<=0){ checkAndReset(); uRenderTrack(); updateHomeDots(); return; }
-    const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), s=Math.floor((diff%60000)/1000);
+    if(diff<=0){checkReset();uRenderTrack();updateHomeDots();return;}
+    const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
     const str=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    const uel=document.getElementById('u-countdown'), hel=document.getElementById('home-cdown');
-    if(uel) uel.textContent=str;
-    if(hel) hel.textContent=str;
+    const uel=document.getElementById('u-countdown'),hel=document.getElementById('home-cdown');
+    if(uel)uel.textContent=str;if(hel)hel.textContent=str;
   }
-  tick(); countdownTimer=setInterval(tick,1000);
+  tick();countdownTimer=setInterval(tick,1000);
 }
 
 function updateHomeDots(){
   loadLocal();
   const bar=document.getElementById('home-countdown-bar');
-  bar.classList.toggle('show', localJobs.length>0);
+  bar.classList.toggle('show',localJobs.length>0);
   [['Assembly','dot-Assembly'],['Grinding','dot-Grinding'],['Frist grinding','dot-FG']].forEach(([dept,dotId])=>{
-    const el=document.getElementById(dotId);
-    if(!el) return;
-    const count=localJobs.filter(j=>j.dept===dept&&j.status!=='เสร็จสิ้น').length;
-    if(count>0){ el.textContent=count; el.style.display='flex'; } else { el.style.display='none'; }
+    const el=document.getElementById(dotId);if(!el)return;
+    const c=localJobs.filter(j=>j.dept===dept&&j.status!=='เสร็จสิ้น').length;
+    if(c>0){el.textContent=c;el.style.display='flex';}else el.style.display='none';
   });
 }
 
@@ -517,129 +572,80 @@ function callAPI(payload){
 }
 
 // ---- UTILS ----
-function genId(){ return 'E'+String(Date.now()).slice(-5); }
-function toast(msg,dur){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),dur||2400); }
-function bdg(s){ const m={รอดำเนินการ:'bw',กำลังดำเนินการ:'bd',เสร็จสิ้น:'bk',เร่งด่วน:'bu'}; return `<span class="badge ${m[s]||'bw'}">${s}</span>`; }
-function deptBadge(d){ const c=d==='Assembly'?'dept-Assembly-badge':d==='Grinding'?'dept-Grinding-badge':d==='Frist grinding'?'dept-FG-badge':''; return `<span class="badge ${c}" style="${c?'':'background:var(--bg2);color:var(--text2)'}">${d||'—'}</span>`; }
-function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function genId(){return 'E'+String(Date.now()).slice(-5);}
+function toast(msg,dur){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur||2400);}
+function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent'};return '<span class="badge '+( m[s]||'b-wait')+'">'+s+'</span>';}
+function deptBadge(d){const c=d==='Assembly'?'b-doing':d==='Grinding'?'b-done':d==='Frist grinding'?'b-wait':'';return '<span class="badge '+c+'" style="'+(c?'':'background:#F3F4F6;color:#6B7280')+'">'+(d||'—')+'</span>';}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{return JSON.parse(note.replace('[EQUIP]',''));}catch(e){return[];}}
 
 // ---- HOME ----
-function goHome(){ updateHomeDots(); showPage('page-home'); }
-
+function goHome(){updateHomeDots();showPage('page-home');}
 function enterUser(dept){
-  currentDept=dept; loadLocal();
+  currentDept=dept;loadLocal();
   document.getElementById('u-dept-display').value=dept;
   document.getElementById('u-form-dept').textContent=dept;
-  document.getElementById('user-dept-sub').textContent='แผนก '+dept;
-  document.getElementById('user-dept-badge').textContent=dept;
-  const bc=dept==='Assembly'?'dept-Assembly-badge':dept==='Grinding'?'dept-Grinding-badge':'dept-FG-badge';
-  document.getElementById('user-dept-badge').className='dept-badge '+bc;
+  const badge=document.getElementById('user-dept-badge');
+  badge.textContent=dept;
+  badge.className='badge '+(dept==='Assembly'?'b-doing':dept==='Grinding'?'b-done':'b-wait');
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('u-reporter').value='';
-  showPage('page-user'); startCountdown(); uRenderTrack();
+  showPage('page-user');startCountdown();uRenderTrack();
 }
 
 // ---- ADMIN LOGIN ----
-function showAdminLogin(){ document.getElementById('admin-pw').value=''; document.getElementById('login-err').classList.remove('show'); document.getElementById('admin-modal').classList.add('show'); setTimeout(()=>document.getElementById('admin-pw').focus(),100); }
-function closeAdminModal(){ document.getElementById('admin-modal').classList.remove('show'); }
+function showAdminLogin(){document.getElementById('admin-pw').value='';document.getElementById('login-err').classList.remove('show');document.getElementById('admin-modal').classList.add('show');setTimeout(()=>document.getElementById('admin-pw').focus(),100);}
+function closeAdminModal(){document.getElementById('admin-modal').classList.remove('show');}
 function doLogin(){
   if(document.getElementById('admin-pw').value===ADMIN_PW){
     closeAdminModal();
-    document.getElementById('a-hdate').textContent=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
     document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
-    showPage('page-admin'); aLoad();
-  } else { document.getElementById('login-err').classList.add('show'); document.getElementById('admin-pw').value=''; document.getElementById('admin-pw').focus(); }
+    showPage('page-admin');aLoad();
+  }else{document.getElementById('login-err').classList.add('show');document.getElementById('admin-pw').value='';document.getElementById('admin-pw').focus();}
 }
-function adminLogout(){ goHome(); }
-
-function addEquipRow(name='',model='',price=''){
-  const div=document.createElement('div');
-  div.className='equip-row';
-  div.style.cssText='display:grid;grid-template-columns:1fr 1fr 90px 20px;gap:6px;margin-bottom:6px;align-items:center';
-  div.innerHTML=`
-    <input class="eq-name" placeholder="ชื่ออุปกรณ์ *" value="${name}" oninput="updateEquipTotal()" style="font-size:12px;padding:7px 9px">
-    <input class="eq-model" placeholder="Model / รุ่น" value="${model}" style="font-size:12px;padding:7px 9px">
-    <input class="eq-price" type="number" placeholder="ราคา (บ.)" value="${price}" min="0" oninput="updateEquipTotal()" style="font-size:12px;padding:7px 9px">
-    <button onclick="this.parentElement.remove();updateEquipTotal()" style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:18px;line-height:1;padding:0">×</button>`;
-  document.getElementById('equip-list').appendChild(div);
-  div.querySelector('.eq-name').focus();
-}
-
-function updateEquipTotal(){
-  let total=0;
-  document.querySelectorAll('.eq-price').forEach(el=>{ total+=parseFloat(el.value)||0; });
-  document.getElementById('equip-total').textContent=total.toLocaleString()+' บาท';
-}
-
-function confirmClearAll(){
-  const cnt=allJobs.length;
-  if(cnt===0){ toast('ไม่มีข้อมูลในระบบ'); return; }
-  if(!confirm('⚠ ยืนยันลบข้อมูลทั้งหมด '+cnt+' รายการ?\n\nข้อมูลใน Google Sheets และ local จะถูกลบทั้งหมด\nไม่สามารถย้อนกลับได้')) return;
-  clearAllJobs();
-}
-
-async function clearAllJobs(){
-  setSS('a-sdot','a-stxt','syncing');
-  document.getElementById('a-btnR').disabled=true;
-  const ids=allJobs.map(j=>j.id);
-  let ok=0,fail=0;
-  toast('กำลังลบข้อมูล...',8000);
-  for(const id of ids){
-    try{ await callAPI({action:'delete',id}); ok++; }
-    catch(e){ fail++; }
-  }
-  allJobs=[];
-  localStorage.removeItem(STORE_KEY);
-  localStorage.removeItem(RESET_KEY);
-  localJobs=[];
-  setResetTime();
-  updateHomeDots();
-  setSS('a-sdot','a-stxt','ok');
-  document.getElementById('a-btnR').disabled=false;
-  aCheckAlerts(); aRenderDash(); aRenderList();
-  toast('ลบสำเร็จ '+ok+' รายการ'+(fail>0?' (ล้มเหลว '+fail+')':''),3000);
-}
+function adminLogout(){goHome();}
 
 // ---- EDIT MODAL ----
 function openEditModal(id){
-  editingJob = allJobs.find(j=>j.id===id);
-  if(!editingJob) return;
-  document.getElementById('edit-info').innerHTML=`
-    <strong>${editingJob.location}</strong> — ${editingJob.type}<br>
-    <span>ผู้แจ้ง: ${editingJob.reporter||'—'} &nbsp;|&nbsp; แผนก: ${editingJob.dept||'—'}</span><br>
-    <span>รายละเอียด: ${editingJob.detail}</span>`;
+  editingJob=allJobs.find(j=>j.id===id);if(!editingJob)return;
+  document.getElementById('edit-info').innerHTML='<strong>'+editingJob.location+' — '+editingJob.type+'</strong><span>ผู้แจ้ง: '+(editingJob.reporter||'—')+' | แผนก: '+(editingJob.dept||'—')+'<br>รายละเอียด: '+editingJob.detail+'</span>';
   document.getElementById('e-tech').value=editingJob.tech||'';
   document.getElementById('e-status').value=editingJob.status||'รอดำเนินการ';
   document.getElementById('e-donedate').value=editingJob.doneDate||'';
-  // load existing equipment from note field
   document.getElementById('equip-list').innerHTML='';
-  if(editingJob.note && editingJob.note.startsWith('[EQUIP]')){
-    try{
-      const equips=JSON.parse(editingJob.note.replace('[EQUIP]',''));
-      equips.forEach(eq=>addEquipRow(eq.name,eq.model||'',eq.price));
-    }catch(e){ addEquipRow(); }
-  }
+  const equips=parseEquip(editingJob.note);
+  if(equips.length)equips.forEach(eq=>addEquipRow(eq.name,eq.model||'',eq.price));
   updateEquipTotal();
   document.getElementById('e-sving').style.display='none';
   document.getElementById('e-save-btn').disabled=false;
   document.getElementById('edit-modal').classList.add('show');
 }
-function closeEditModal(){ document.getElementById('edit-modal').classList.remove('show'); editingJob=null; }
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');editingJob=null;}
+
+function addEquipRow(name='',model='',price=''){
+  const div=document.createElement('div');
+  div.className='equip-row';
+  div.innerHTML='<input class="eq-name" placeholder="ชื่ออุปกรณ์" value="'+name+'" oninput="updateEquipTotal()"><input class="eq-model" placeholder="Model/รุ่น" value="'+model+'"><input class="eq-price" type="number" placeholder="ราคา" value="'+price+'" min="0" oninput="updateEquipTotal()"><button class="eq-del" onclick="this.parentElement.remove();updateEquipTotal()"><i class="ti ti-x"></i></button>';
+  document.getElementById('equip-list').appendChild(div);
+  div.querySelector('.eq-name').focus();
+}
+function updateEquipTotal(){
+  let t=0;document.querySelectorAll('.eq-price').forEach(el=>{t+=parseFloat(el.value)||0;});
+  document.getElementById('equip-total').textContent=t.toLocaleString()+' บาท';
+}
 
 async function saveEdit(){
-  if(!editingJob) return;
+  if(!editingJob)return;
   editingJob.tech=document.getElementById('e-tech').value.trim();
   editingJob.status=document.getElementById('e-status').value;
   editingJob.doneDate=document.getElementById('e-donedate').value;
-  // collect equipment
   const rows=document.querySelectorAll('.equip-row');
-  const equips=[];
-  let totalCost=0;
+  const equips=[];let totalCost=0;
   rows.forEach(row=>{
     const name=row.querySelector('.eq-name').value.trim();
     const model=row.querySelector('.eq-model').value.trim();
     const price=parseFloat(row.querySelector('.eq-price').value)||0;
-    if(name){ equips.push({name,model,price}); totalCost+=price; }
+    if(name){equips.push({name,model,price});totalCost+=price;}
   });
   editingJob.cost=totalCost;
   editingJob.note=equips.length?'[EQUIP]'+JSON.stringify(equips):'';
@@ -648,20 +654,13 @@ async function saveEdit(){
   setSS('a-sdot','a-stxt','syncing');
   try{
     await callAPI({...editingJob,action:'update'});
-    // sync to local jobs too so user sees updated status
     const li=localJobs.findIndex(j=>j.id===editingJob.id);
-    if(li!==-1){ localJobs[li].status=editingJob.status; localJobs[li].tech=editingJob.tech; localJobs[li].doneDate=editingJob.doneDate; saveLocal(); }
+    if(li!==-1){localJobs[li].status=editingJob.status;localJobs[li].tech=editingJob.tech;localJobs[li].doneDate=editingJob.doneDate;saveLocal();}
     const ai=allJobs.findIndex(j=>j.id===editingJob.id);
-    if(ai!==-1) allJobs[ai]={...editingJob};
-    setSS('a-sdot','a-stxt','ok');
-    closeEditModal();
-    aCheckAlerts(); aRenderList(); aRenderDash();
-    updateHomeDots();
+    if(ai!==-1)allJobs[ai]={...editingJob};
+    setSS('a-sdot','a-stxt','ok');closeEditModal();aCheckAlerts();aRenderList();aRenderDash();updateHomeDots();
     toast(editingJob.status==='เสร็จสิ้น'?'✓ อัปเดตเสร็จสิ้นแล้ว':'อัปเดตสำเร็จ');
-  }catch(e){
-    setSS('a-sdot','a-stxt','error');
-    toast('บันทึกไม่สำเร็จ กรุณาลองใหม่');
-  }
+  }catch(e){setSS('a-sdot','a-stxt','error');toast('บันทึกไม่สำเร็จ');}
   document.getElementById('e-sving').style.display='none';
   document.getElementById('e-save-btn').disabled=false;
 }
@@ -669,17 +668,16 @@ async function saveEdit(){
 // ---- USER ----
 function uGoTab(id,btn){
   document.querySelectorAll('#page-user .tab').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('#page-user .nb').forEach(e=>e.classList.remove('active'));
-  document.getElementById('utab-'+id).classList.add('active'); btn.classList.add('active');
-  if(id==='track') uRenderTrack();
+  document.querySelectorAll('#page-user .tnb').forEach(e=>e.classList.remove('active'));
+  document.getElementById('utab-'+id).classList.add('active');btn.classList.add('active');
+  if(id==='track')uRenderTrack();
 }
-
 async function uSubmit(){
   const reporter=document.getElementById('u-reporter').value.trim();
   const loc=document.getElementById('u-location').value.trim();
   const typ=document.getElementById('u-type').value;
   const det=document.getElementById('u-detail').value.trim();
-  if(!reporter||!loc||!typ||!det){ toast('⚠ กรุณากรอกข้อมูลที่จำเป็น'); return; }
+  if(!reporter||!loc||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
   const isUrgent=document.getElementById('u-urgent').checked;
   const j={id:genId(),dept:currentDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:document.getElementById('u-date').value,doneDate:'',note:'',created:Date.now(),action:'add'};
   document.getElementById('u-btn-save').disabled=true;
@@ -688,74 +686,39 @@ async function uSubmit(){
   document.getElementById('u-stxt').textContent='กำลังส่ง...';
   try{
     await callAPI(j);
-    const lj={...j}; delete lj.action;
-    localJobs.unshift(lj); saveLocal();
+    const lj={...j};delete lj.action;localJobs.unshift(lj);saveLocal();
     uClearForm();
-    document.getElementById('u-sdot').className='sdot';
-    document.getElementById('u-stxt').textContent='ส่งแล้ว';
+    document.getElementById('u-sdot').className='sdot';document.getElementById('u-stxt').textContent='ส่งแล้ว';
     toast(isUrgent?'🚨 แจ้งเร่งด่วนสำเร็จ!':'ส่งแจ้งซ่อมสำเร็จ');
-    uRenderTrack(); updateHomeDots();
-  }catch(e){
-    document.getElementById('u-sdot').className='sdot error';
-    document.getElementById('u-stxt').textContent='ส่งไม่สำเร็จ';
-    toast('ส่งไม่สำเร็จ กรุณาลองใหม่');
-  }
-  document.getElementById('u-btn-save').disabled=false;
-  document.getElementById('u-sving').classList.remove('show');
+    uRenderTrack();updateHomeDots();
+  }catch(e){document.getElementById('u-sdot').className='sdot error';document.getElementById('u-stxt').textContent='ส่งไม่สำเร็จ';toast('ส่งไม่สำเร็จ กรุณาลองใหม่');}
+  document.getElementById('u-btn-save').disabled=false;document.getElementById('u-sving').classList.remove('show');
 }
-
 function uClearForm(){
-  document.getElementById('u-location').value='';
-  document.getElementById('u-type').selectedIndex=0;
-  document.getElementById('u-detail').value='';
-  document.getElementById('u-urgent').checked=false;
+  document.getElementById('u-location').value='';document.getElementById('u-type').selectedIndex=0;
+  document.getElementById('u-detail').value='';document.getElementById('u-urgent').checked=false;
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
 }
-
 async function uLoadJobs(){
-  document.getElementById('u-track-content').innerHTML=`<div class="empty"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>กำลังโหลด...</div>`;
-  document.getElementById('u-sdot').className='sdot syncing';
-  document.getElementById('u-stxt').textContent='กำลังโหลด...';
+  document.getElementById('u-track-content').innerHTML='<div class="empty"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>กำลังโหลด...</div>';
+  document.getElementById('u-sdot').className='sdot syncing';document.getElementById('u-stxt').textContent='กำลังโหลด...';
   try{
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
       const apiMine=data.filter(r=>r.dept===currentDept);
-      // update local status from API
-      localJobs=localJobs.map(lj=>{
-        const found=apiMine.find(aj=>aj.id===lj.id);
-        return found?{...lj,status:found.status,tech:found.tech||lj.tech,doneDate:found.doneDate||lj.doneDate}:lj;
-      });
-      apiMine.forEach(aj=>{ if(!localJobs.find(lj=>lj.id===aj.id)) localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',created:parseInt(aj.created)||0}); });
-      saveLocal();
-      document.getElementById('u-sdot').className='sdot';
-      document.getElementById('u-stxt').textContent='อัปเดตแล้ว';
-      uRenderTrack(); updateHomeDots();
+      localJobs=localJobs.map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate}:lj;});
+      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',created:parseInt(aj.created)||0});});
+      saveLocal();document.getElementById('u-sdot').className='sdot';document.getElementById('u-stxt').textContent='อัปเดตแล้ว';
+      uRenderTrack();updateHomeDots();
     }
-  }catch(e){
-    document.getElementById('u-sdot').className='sdot error';
-    document.getElementById('u-stxt').textContent='ใช้ข้อมูล local';
-    uRenderTrack();
-  }
+  }catch(e){document.getElementById('u-sdot').className='sdot error';document.getElementById('u-stxt').textContent='ใช้ข้อมูล local';uRenderTrack();}
 }
-
 function uRenderTrack(){
   const fs=document.getElementById('u-filter-status').value;
   const mine=localJobs.filter(j=>j.dept===currentDept&&(!fs||j.status===fs));
   const c=document.getElementById('u-track-content');
-  if(!mine.length){ c.innerHTML=`<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>`; return; }
-  c.innerHTML=`<div class="status-grid">${mine.map(j=>`
-    <div class="status-card ${j.status==='เร่งด่วน'?'urgent-card':j.status==='เสร็จสิ้น'?'done-card':''}">
-      <div class="sc-top"><span class="sc-id">${j.id}</span>${bdg(j.status)}</div>
-      <div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>${j.location}</div>
-      <div class="sc-type">${j.type}</div>
-      <div class="sc-detail">${j.detail}</div>
-      <div class="sc-footer">
-        <span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>${j.reporter||'—'}</span>
-        <span>${j.date||'—'}</span>
-      </div>
-      ${j.tech?`<div style="font-size:11px;color:${j.status==='เสร็จสิ้น'?'#3B6D11':'var(--text2)'};margin-top:6px;padding-top:6px;border-top:0.5px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: ${j.tech}</div>`:''}
-      ${j.doneDate?`<div style="font-size:11px;color:#3B6D11;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: ${j.doneDate}</div>`:''}
-    </div>`).join('')}</div>`;
+  if(!mine.length){c.innerHTML='<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>';return;}
+  c.innerHTML='<div class="status-grid">'+mine.map(j=>'<div class="sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default')+'"><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div><div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+(j.date||'—')+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+j.doneDate+'</div>':'')+'</div>').join('')+'</div>';
 }
 
 // ---- ADMIN ----
@@ -765,156 +728,191 @@ function setSS(dot,txt,state){
 }
 function setDeptFilter(dept,btn){
   deptFilter=dept;
-  document.querySelectorAll('[id^="df-"]').forEach(b=>b.classList.remove('pri'));
-  btn.classList.add('pri');
-  aRenderDash(); aRenderList();
+  document.querySelectorAll('[id^="df-"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');aRenderDash();aRenderList();
 }
 function aGoTab(id,btn){
+  currentAdminTab=id;
   document.querySelectorAll('#page-admin .tab').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('#page-admin .nb').forEach(e=>e.classList.remove('active'));
-  document.getElementById('atab-'+id).classList.add('active'); btn.classList.add('active');
-  if(id==='dash') aRenderDash();
-  if(id==='list') aRenderList();
-  if(id==='urgent') aRenderUrgent();
+  document.querySelectorAll('#page-admin .tnb').forEach(e=>e.classList.remove('active'));
+  document.getElementById('atab-'+id).classList.add('active');btn.classList.add('active');
+  if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();
 }
-
 async function aLoad(){
-  setSS('a-sdot','a-stxt','syncing');
-  document.getElementById('a-btnR').disabled=true;
+  setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;
   try{
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
       allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',created:parseInt(r.created)||0}));
-      setSS('a-sdot','a-stxt','ok');
-      toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
-      aCheckAlerts(); aRenderDash(); aRenderList();
-    } else throw new Error();
-  }catch(e){ setSS('a-sdot','a-stxt','error'); toast('เชื่อมต่อไม่ได้'); }
+      setSS('a-sdot','a-stxt','ok');toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
+      aCheckAlerts();aRenderDash();aRenderList();
+    }else throw new Error();
+  }catch(e){setSS('a-sdot','a-stxt','error');toast('เชื่อมต่อไม่ได้');}
   document.getElementById('a-btnR').disabled=false;
 }
-
 function aCheckAlerts(){
   const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
   document.getElementById('a-ndot').style.display=urg.length?'block':'none';
   const bar=document.getElementById('a-abar');
-  if(urg.length){ document.getElementById('a-alist').innerHTML=urg.slice(0,5).map(j=>`• [${j.dept||'?'}] ${j.id} — ${j.location}${j.reporter?' โดย '+j.reporter:''}`).join('<br>'); bar.classList.add('show'); }
+  if(urg.length){document.getElementById('a-alist').innerHTML=urg.slice(0,5).map(j=>'• ['+( j.dept||'?')+'] '+j.id+' — '+j.location+(j.reporter?' โดย '+j.reporter:'')).join('<br>');bar.classList.add('show');}
   else bar.classList.remove('show');
 }
-
-function getFiltered(){ return deptFilter?allJobs.filter(j=>j.dept===deptFilter):allJobs; }
-
+function getFiltered(){return deptFilter?allJobs.filter(j=>j.dept===deptFilter):allJobs;}
 function aRenderDash(){
   const fj=getFiltered();
   const total=fj.length,done=fj.filter(j=>j.status==='เสร็จสิ้น').length,urgent=fj.filter(j=>j.status==='เร่งด่วน').length,inprog=fj.filter(j=>j.status==='กำลังดำเนินการ').length,cost=fj.reduce((s,j)=>s+(j.cost||0),0);
-  document.getElementById('a-kpis').innerHTML=`
-    <div class="kpi"><div class="ktop"><span class="klabel">${deptFilter||'ทุกแผนก'}</span><span class="kico" style="background:#F1EFE8;color:#444441"><i class="ti ti-clipboard-list"></i></span></div><div class="kval">${total}</div><div class="kfoot">รายการ</div></div>
-    <div class="kpi"><div class="ktop"><span class="klabel">กำลังดำเนินการ</span><span class="kico" style="background:#E6F1FB;color:#185FA5"><i class="ti ti-progress"></i></span></div><div class="kval" style="color:#185FA5">${inprog}</div><div class="kfoot">${total?Math.round(inprog/total*100):0}%</div></div>
-    <div class="kpi"><div class="ktop"><span class="klabel">เสร็จสิ้น</span><span class="kico" style="background:#EAF3DE;color:#3B6D11"><i class="ti ti-circle-check"></i></span></div><div class="kval" style="color:#3B6D11">${done}</div><div class="kfoot">${total?Math.round(done/total*100):0}%</div></div>
-    <div class="kpi"><div class="ktop"><span class="klabel">เร่งด่วน</span><span class="kico" style="background:#FCEBEB;color:#A32D2D"><i class="ti ti-alert-triangle"></i></span></div><div class="kval" style="color:#A32D2D">${urgent}</div><div class="kfoot">ค่าใช้จ่าย ${cost.toLocaleString()} บ.</div></div>`;
-  const sts=['รอดำเนินการ','กำลังดำเนินการ','เสร็จสิ้น','เร่งด่วน'],sC=['#EF9F27','#378ADD','#639922','#E24B4A'],sD=sts.map(s=>fj.filter(j=>j.status===s).length);
-  document.getElementById('a-legS').innerHTML=sts.map((s,i)=>`<span class="leg"><span class="legdot" style="background:${sC[i]}"></span>${s} ${sD[i]}</span>`).join('');
-  if(cS) cS.destroy();
-  cS=new Chart(document.getElementById('a-cS'),{type:'doughnut',data:{labels:sts,datasets:[{data:sD,backgroundColor:sC,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
-  const depts=['Assembly','Grinding','Frist grinding'],dC=['#378ADD','#639922','#EF9F27'],dD=depts.map(d=>allJobs.filter(j=>j.dept===d).length);
-  document.getElementById('a-legD').innerHTML=depts.map((d,i)=>`<span class="leg"><span class="legdot" style="background:${dC[i]}"></span>${d} ${dD[i]}</span>`).join('');
-  if(cD) cD.destroy();
-  cD=new Chart(document.getElementById('a-cD'),{type:'bar',data:{labels:depts,datasets:[{data:dD,backgroundColor:dC,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}}}}});
+  document.getElementById('a-kpis').innerHTML=
+    '<div class="kpi-card kpi-all"><div class="kpi-top"><span class="kpi-label">'+(deptFilter||'ทุกแผนก')+'</span><span class="kpi-ico" style="background:#F3F4F6"><i class="ti ti-clipboard-list"></i></span></div><div class="kpi-val">'+total+'</div><div class="kpi-foot">รายการ</div></div>'+
+    '<div class="kpi-card kpi-inprog"><div class="kpi-top"><span class="kpi-label">กำลังดำเนินการ</span><span class="kpi-ico" style="background:#EFF6FF;color:#1877F2"><i class="ti ti-progress"></i></span></div><div class="kpi-val" style="color:#1877F2">'+inprog+'</div><div class="kpi-foot">'+(total?Math.round(inprog/total*100):0)+'%</div></div>'+
+    '<div class="kpi-card kpi-done"><div class="kpi-top"><span class="kpi-label">เสร็จสิ้น</span><span class="kpi-ico" style="background:#F0FDF4;color:#16A34A"><i class="ti ti-circle-check"></i></span></div><div class="kpi-val" style="color:#16A34A">'+done+'</div><div class="kpi-foot">'+(total?Math.round(done/total*100):0)+'%</div></div>'+
+    '<div class="kpi-card kpi-urgent"><div class="kpi-top"><span class="kpi-label">เร่งด่วน</span><span class="kpi-ico" style="background:var(--red-light);color:var(--red)"><i class="ti ti-alert-triangle"></i></span></div><div class="kpi-val" style="color:var(--red)">'+urgent+'</div><div class="kpi-foot">ค่าอุปกรณ์ '+cost.toLocaleString()+' บ.</div></div>';
+  const sts=['รอดำเนินการ','กำลังดำเนินการ','เสร็จสิ้น','เร่งด่วน'],sC=['#F59E0B','#1877F2','#16A34A','#E8192C'],sD=sts.map(s=>fj.filter(j=>j.status===s).length);
+  document.getElementById('a-legS').innerHTML=sts.map((s,i)=>'<span class="leg"><span class="legdot" style="background:'+sC[i]+'"></span>'+s+' '+sD[i]+'</span>').join('');
+  if(cS)cS.destroy();
+  cS=new Chart(document.getElementById('a-cS'),{type:'doughnut',data:{labels:sts,datasets:[{data:sD,backgroundColor:sC,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
+  const depts=['Assembly','Grinding','Frist grinding'],dC=['#1877F2','#16A34A','#EA580C'],dD=depts.map(d=>allJobs.filter(j=>j.dept===d).length);
+  document.getElementById('a-legD').innerHTML=depts.map((d,i)=>'<span class="leg"><span class="legdot" style="background:'+dC[i]+'"></span>'+d+' '+dD[i]+'</span>').join('');
+  if(cD)cD.destroy();
+  cD=new Chart(document.getElementById('a-cD'),{type:'bar',data:{labels:depts,datasets:[{data:dD,backgroundColor:dC,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.04)'}}}}});
   const rb=document.getElementById('a-recBody');
-  rb.innerHTML=fj.slice(0,6).map(j=>`<tr class="${j.status==='เร่งด่วน'?'urg':''}"><td style="font-family:monospace;font-size:11px;color:var(--text2)">${j.id}</td><td>${deptBadge(j.dept)}</td><td style="font-weight:500">${j.reporter||'—'}</td><td>${j.location}</td><td>${j.type}</td><td>${bdg(j.status)}</td><td>${j.tech||'—'}</td><td style="font-size:11px;color:var(--text2)">${j.date||'—'}</td></tr>`).join('')||`<tr><td colspan="8"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>`;
+  rb.innerHTML=fj.slice(0,6).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+( j.date||'—')+'</td></tr>').join('')||'<tr><td colspan="8"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
 }
-
-// เรียงตามผู้แจ้ง
 function aRenderList(){
   const fd=document.getElementById('a-fdept').value,fs=document.getElementById('a-fst').value,fq=document.getElementById('a-fsearch').value.toLowerCase();
-  let fil=allJobs.filter(j=>{
-    if(fd&&j.dept!==fd)return false;
-    if(fs&&j.status!==fs)return false;
-    if(fq&&![j.reporter,j.location,j.detail,j.type,j.tech,j.dept].join(' ').toLowerCase().includes(fq))return false;
-    return true;
-  });
-  // เรียงตามผู้แจ้ง ก->ฮ
+  let fil=allJobs.filter(j=>{if(fd&&j.dept!==fd)return false;if(fs&&j.status!==fs)return false;if(fq&&![j.reporter,j.location,j.detail,j.type,j.tech,j.dept].join(' ').toLowerCase().includes(fq))return false;return true;});
   fil.sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
   const b=document.getElementById('a-listBody');
-  if(!fil.length){ b.innerHTML=`<tr><td colspan="11"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>`; return; }
-  b.innerHTML=fil.map(j=>`<tr class="${j.status==='เร่งด่วน'?'urg':''}">
-    <td style="font-family:monospace;font-size:11px;color:var(--text2)">${j.id}</td>
-    <td style="font-weight:500">${j.reporter||'—'}</td>
-    <td>${deptBadge(j.dept)}</td>
-    <td>${j.location}</td>
-    <td>${j.type}</td>
-    <td style="color:var(--text2)">${j.detail}</td>
-    <td>${bdg(j.status)}</td>
-    <td>${j.tech||'—'}</td>
-    <td style="font-size:11px;color:var(--text2)">${j.date||'—'}</td>
-    <td style="font-size:11px;color:${j.doneDate?'#3B6D11':'var(--text2)'}">${j.doneDate||'—'}</td>
-    <td>
-      <button class="btn ic" onclick="openEditModal('${j.id}')" title="อัปเดตการซ่อม" style="color:#185FA5;border-color:#B5D4F4;background:#E6F1FB">
-        <i class="ti ti-edit"></i>
-      </button>
-    </td>
-  </tr>`).join('');
+  if(!fil.length){b.innerHTML='<tr><td colspan="11"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>';return;}
+  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+( j.date||'—')+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+( j.doneDate||'—')+'</td><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td></tr>').join('');
 }
-
 function aRenderUrgent(){
   const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
   let html='';
   if(urg.length){
-    html+=`<p style="font-size:13px;font-weight:600;color:#791F1F;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle"></i>งานเร่งด่วน (${urg.length})</p>`;
-    html+=`<div class="status-grid">${urg.map(j=>`<div class="status-card urgent-card">
-      <div class="sc-top"><span class="sc-id">${j.id}</span>${deptBadge(j.dept)}</div>
-      <div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>${j.location}</div>
-      <div class="sc-type">${j.type}</div>
-      <div class="sc-detail">${j.detail}</div>
-      ${j.reporter?`<div style="font-size:11px;color:#A32D2D;margin-bottom:4px"><i class="ti ti-user" style="font-size:11px"></i> ผู้แจ้ง: ${j.reporter}</div>`:''}
-      <button class="btn success" style="width:100%;justify-content:center;margin-top:8px" onclick="openEditModal('${j.id}')"><i class="ti ti-edit"></i>อัปเดตการซ่อม</button>
-    </div>`).join('')}</div>`;
-  } else {
-    html=`<div class="empty" style="padding:3rem"><i class="ti ti-circle-check" style="color:#639922;font-size:36px"></i><div style="margin-top:8px">ไม่มีงานเร่งด่วน</div></div>`;
-  }
+    html='<p style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:10px;display:flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle"></i>งานเร่งด่วน ('+urg.length+')</p>';
+    html+='<div class="status-grid">'+urg.map(j=>'<div class="sc sc-urgent"><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+deptBadge(j.dept)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.reporter?'<div style="font-size:11px;color:var(--red);margin-bottom:6px"><i class="ti ti-user" style="font-size:11px"></i> '+j.reporter+'</div>':'')+'<button class="btn green" style="width:100%;justify-content:center" onclick="openEditModal(\''+j.id+'\')"><i class="ti ti-edit"></i>อัปเดตการซ่อม</button></div>').join('')+'</div>';
+  }else{html='<div class="empty" style="padding:4rem"><i class="ti ti-circle-check" style="color:#16A34A;font-size:40px;opacity:1"></i><div style="margin-top:10px;font-size:14px">ไม่มีงานเร่งด่วน</div></div>';}
   document.getElementById('a-urgentContent').innerHTML=html;
 }
-
 async function aSaveJob(){
   const dept=document.getElementById('a-fl-dept').value,loc=document.getElementById('a-fl').value.trim(),typ=document.getElementById('a-ft').value,det=document.getElementById('a-fd').value.trim();
-  if(!dept||!loc||!typ||!det){ toast('⚠ กรุณากรอกข้อมูลที่จำเป็น'); return; }
+  if(!dept||!loc||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
   const j={id:genId(),dept,reporter:document.getElementById('a-fl-reporter').value.trim(),location:loc,type:typ,detail:det,status:document.getElementById('a-fst2').value,priority:'ปานกลาง',tech:document.getElementById('a-ftech').value.trim(),cost:0,date:document.getElementById('a-fdate').value,doneDate:document.getElementById('a-fdone').value,note:'',created:Date.now()};
   document.getElementById('a-btnSave').disabled=true;document.getElementById('a-sving').classList.add('show');setSS('a-sdot','a-stxt','syncing');
-  try{
-    await callAPI({...j,action:'add'});
-    allJobs.unshift(j); setSS('a-sdot','a-stxt','ok'); aClearForm(); aCheckAlerts(); toast('เพิ่มงานสำเร็จ'); aRenderDash(); aRenderList();
-  }catch(e){ setSS('a-sdot','a-stxt','error'); toast('บันทึกไม่สำเร็จ'); }
+  try{await callAPI({...j,action:'add'});allJobs.unshift(j);setSS('a-sdot','a-stxt','ok');aClearForm();aCheckAlerts();toast('เพิ่มงานสำเร็จ');aRenderDash();aRenderList();}
+  catch(e){setSS('a-sdot','a-stxt','error');toast('บันทึกไม่สำเร็จ');}
   document.getElementById('a-btnSave').disabled=false;document.getElementById('a-sving').classList.remove('show');
 }
-
 function aClearForm(){
   ['a-fl-dept','a-ft','a-fst2'].forEach(id=>document.getElementById(id).selectedIndex=0);
   ['a-fl-reporter','a-fl','a-fd','a-ftech','a-fdate','a-fdone'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
 }
 
-function exportExcel(){
-  const src=allJobs.length?allJobs:localJobs;
-  if(!src.length){ toast('ไม่มีข้อมูล'); return; }
-  const ws=XLSX.utils.aoa_to_sheet([['รหัสงาน','ผู้แจ้ง','แผนก','สถานที่','ประเภทงาน','รายละเอียด','สถานะ','ช่าง','วันที่แจ้ง','วันที่เสร็จ'],...src.map(j=>[j.id,j.reporter||'',j.dept||'',j.location,j.type,j.detail,j.status,j.tech||'',j.date||'',j.doneDate||''])]);
-  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,'งานซ่อมไฟฟ้า',ws);
-  XLSX.writeFile(wb,'งานซ่อมไฟฟ้า_'+new Date().toISOString().slice(0,10)+'.xlsx'); toast('ดาวน์โหลด Excel สำเร็จ');
+// ---- CLEAR ALL ----
+function confirmClearAll(){
+  const cnt=allJobs.length;
+  if(cnt===0){toast('ไม่มีข้อมูลในระบบ');return;}
+  if(!confirm('⚠ ยืนยันลบข้อมูลทั้งหมด '+cnt+' รายการ?\n\nข้อมูลใน Google Sheets และ local จะถูกลบทั้งหมด\nไม่สามารถย้อนกลับได้'))return;
+  clearAllJobs();
+}
+async function clearAllJobs(){
+  setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;
+  const ids=allJobs.map(j=>j.id);let ok=0,fail=0;
+  toast('กำลังลบข้อมูล...',8000);
+  for(const id of ids){try{await callAPI({action:'delete',id});ok++;}catch(e){fail++;}}
+  allJobs=[];localStorage.removeItem(STORE_KEY);localStorage.removeItem(RESET_KEY);localJobs=[];setRT();updateHomeDots();
+  setSS('a-sdot','a-stxt','ok');document.getElementById('a-btnR').disabled=false;
+  aCheckAlerts();aRenderDash();aRenderList();
+  toast('ลบสำเร็จ '+ok+' รายการ'+(fail>0?' (ล้มเหลว '+fail+')':''),3000);
 }
 
-function exportPDF(){
-  const src=allJobs.length?allJobs:localJobs;
-  if(!src.length){ toast('ไม่มีข้อมูล'); return; }
-  const total=src.length,done=src.filter(j=>j.status==='เสร็จสิ้น').length,urgent=src.filter(j=>j.status==='เร่งด่วน').length;
+// ---- EXPORT (ตามหน้าที่เลือก) ----
+function getBrandHeader(){return 'NACHI FAC4 — MT Engineering\nระบบงานซ่อมไฟฟ้า\nสร้างเมื่อ '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+function exportCurrentExcel(){
+  const tab=currentAdminTab;
+  const date=new Date().toISOString().slice(0,10);
+  if(tab==='dash'||tab==='list'||tab==='addnew'){
+    const src=tab==='dash'?getFiltered():allJobs;
+    if(!src.length){toast('ไม่มีข้อมูล');return;}
+    const sorted=tab==='list'?[...src].sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th')):src;
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([
+      ['NACHI FAC4 — MT Engineering'],
+      ['รายงาน: '+(tab==='dash'?'ภาพรวม'+(deptFilter?' ('+deptFilter+')':''):'รายการงานซ่อมทั้งหมด')],
+      ['สร้างเมื่อ: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})],
+      [],
+      ['รหัสงาน','ผู้แจ้ง','แผนก','สถานที่','ประเภทงาน','รายละเอียด','สถานะ','ช่าง','วันที่แจ้ง','วันที่เสร็จ','ค่าอุปกรณ์','อุปกรณ์'],
+      ...sorted.map(j=>{
+        const eq=parseEquip(j.note);
+        const eqStr=eq.map(e=>e.name+(e.model?' ('+e.model+')':'')+' '+e.price+'บ.').join(', ');
+        return [j.id,j.reporter||'',j.dept||'',j.location,j.type,j.detail,j.status,j.tech||'',j.date||'',j.doneDate||'',j.cost||0,eqStr];
+      })
+    ]);
+    XLSX.utils.book_append_sheet(wb,'งานซ่อมไฟฟ้า',ws);
+    XLSX.writeFile(wb,'NACHI_FAC4_'+(tab==='dash'?'Dashboard':'รายการงาน')+'_'+date+'.xlsx');
+    toast('ดาวน์โหลด Excel สำเร็จ');
+  } else if(tab==='urgent'){
+    const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
+    if(!urg.length){toast('ไม่มีงานเร่งด่วน');return;}
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([
+      ['NACHI FAC4 — รายงานงานเร่งด่วน'],
+      ['สร้างเมื่อ: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})],
+      [],
+      ['รหัสงาน','ผู้แจ้ง','แผนก','สถานที่','ประเภทงาน','รายละเอียด','วันที่แจ้ง'],
+      ...urg.map(j=>[j.id,j.reporter||'',j.dept||'',j.location,j.type,j.detail,j.date||''])
+    ]);
+    XLSX.utils.book_append_sheet(wb,'งานเร่งด่วน',ws);
+    XLSX.writeFile(wb,'NACHI_FAC4_เร่งด่วน_'+date+'.xlsx');
+    toast('ดาวน์โหลด Excel เร่งด่วนสำเร็จ');
+  }
+}
+
+function exportCurrentPDF(){
+  const tab=currentAdminTab;
   const date=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
-  const sorted=[...src].sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
-  const rows=sorted.map(j=>`<tr style="border-bottom:1px solid #eee"><td style="padding:5px 7px;font-size:10px;color:#666;font-family:monospace">${j.id}</td><td style="padding:5px 7px;font-size:11px;font-weight:600">${j.reporter||'—'}</td><td style="padding:5px 7px;font-size:11px">${j.dept||'—'}</td><td style="padding:5px 7px;font-size:11px">${j.location}</td><td style="padding:5px 7px;font-size:11px">${j.type}</td><td style="padding:5px 7px"><span style="background:${j.status==='เสร็จสิ้น'?'#EAF3DE':j.status==='เร่งด่วน'?'#FCEBEB':j.status==='กำลังดำเนินการ'?'#E6F1FB':'#FAEEDA'};color:${j.status==='เสร็จสิ้น'?'#27500A':j.status==='เร่งด่วน'?'#791F1F':j.status==='กำลังดำเนินการ'?'#0C447C':'#633806'};padding:1px 6px;border-radius:99px;font-size:10px">${j.status}</span></td><td style="padding:5px 7px;font-size:11px">${j.tech||'—'}</td><td style="padding:5px 7px;font-size:11px">${j.doneDate||'—'}</td></tr>`).join('');
+  let title='',rows='',headers='',src=[];
+  if(tab==='dash'||tab==='addnew'){
+    src=getFiltered();title='รายงานภาพรวม'+(deptFilter?' — '+deptFilter:'— ทุกแผนก');
+    const total=src.length,done=src.filter(j=>j.status==='เสร็จสิ้น').length,urgent=src.filter(j=>j.status==='เร่งด่วน').length,cost=src.reduce((s,j)=>s+(j.cost||0),0);
+    const kpiHtml='<div class="kr"><div class="kk"><div class="kv">'+total+'</div><div class="kl">ทั้งหมด</div></div><div class="kk"><div class="kv" style="color:#16A34A">'+done+'</div><div class="kl">เสร็จสิ้น</div></div><div class="kk"><div class="kv" style="color:#E8192C">'+urgent+'</div><div class="kl">เร่งด่วน</div></div><div class="kk"><div class="kv">'+cost.toLocaleString()+'</div><div class="kl">ค่าอุปกรณ์ (บ.)</div></div></div>';
+    headers='<th>รหัส</th><th>ผู้แจ้ง</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>สถานะ</th><th>ช่าง</th><th>วันที่</th>';
+    rows=src.map(j=>'<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td><td style="font-weight:600">'+( j.reporter||'—')+'</td><td>'+( j.dept||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td><span style="background:'+( j.status==='เสร็จสิ้น'?'#F0FDF4':j.status==='เร่งด่วน'?'#FEF2F2':'#EFF6FF')+';color:'+( j.status==='เสร็จสิ้น'?'#166534':j.status==='เร่งด่วน'?'#991B1B':'#1E40AF')+';padding:2px 8px;border-radius:99px;font-size:10px">'+j.status+'</span></td><td>'+( j.tech||'—')+'</td><td style="font-size:10px;color:#888">'+( j.date||'—')+'</td></tr>').join('');
+    openPDF(title,date,kpiHtml,headers,rows);
+  } else if(tab==='list'){
+    src=[...allJobs].sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
+    title='รายการงานซ่อมทั้งหมด (เรียงตามผู้แจ้ง)';
+    headers='<th>รหัส</th><th>ผู้แจ้ง</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>รายละเอียด</th><th>สถานะ</th><th>ช่าง</th><th>วันที่แจ้ง</th><th>วันที่เสร็จ</th>';
+    rows=src.map(j=>'<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td><td style="font-weight:600">'+( j.reporter||'—')+'</td><td>'+( j.dept||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td style="color:#555">'+j.detail.slice(0,40)+(j.detail.length>40?'...':'')+'</td><td><span style="background:'+( j.status==='เสร็จสิ้น'?'#F0FDF4':j.status==='เร่งด่วน'?'#FEF2F2':'#EFF6FF')+';color:'+( j.status==='เสร็จสิ้น'?'#166534':j.status==='เร่งด่วน'?'#991B1B':'#1E40AF')+';padding:2px 8px;border-radius:99px;font-size:10px">'+j.status+'</span></td><td>'+( j.tech||'—')+'</td><td style="font-size:10px;color:#888">'+( j.date||'—')+'</td><td style="font-size:10px;color:'+(j.doneDate?'#16A34A':'#888')+'">'+( j.doneDate||'—')+'</td></tr>').join('');
+    openPDF(title,date,'',headers,rows);
+  } else if(tab==='urgent'){
+    src=allJobs.filter(j=>j.status==='เร่งด่วน');
+    if(!src.length){toast('ไม่มีงานเร่งด่วน');return;}
+    title='รายงานงานเร่งด่วน';
+    headers='<th>รหัส</th><th>ผู้แจ้ง</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>รายละเอียด</th><th>วันที่แจ้ง</th>';
+    rows=src.map(j=>'<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td><td style="font-weight:600">'+( j.reporter||'—')+'</td><td>'+( j.dept||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td style="color:#555">'+j.detail.slice(0,50)+(j.detail.length>50?'...':'')+'</td><td style="font-size:10px;color:#888">'+( j.date||'—')+'</td></tr>').join('');
+    openPDF(title,date,'',headers,rows);
+  }
+}
+
+function openPDF(title,date,kpiHtml,headers,rows){
+  if(!rows){toast('ไม่มีข้อมูล');return;}
   const w=window.open('','_blank');
-  if(w){w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>รายงาน</title><style>body{font-family:sans-serif;padding:24px;color:#1a1a1a}h1{font-size:18px;font-weight:700;margin-bottom:4px}.sub{color:#666;font-size:12px;margin-bottom:20px}.kr{display:flex;gap:12px;margin-bottom:20px}.kk{background:#f8f8f8;border-radius:8px;padding:10px 14px;flex:1;text-align:center}.kv{font-size:20px;font-weight:700;margin-bottom:2px}.kl{font-size:10px;color:#888}table{width:100%;border-collapse:collapse}th{background:#f4f4f4;padding:6px 7px;font-size:10px;text-align:left;border-bottom:2px solid #e0e0e0;text-transform:uppercase}</style></head><body><h1>รายงานงานซ่อมไฟฟ้า</h1><p class="sub">สร้างเมื่อ ${date} · ${total} รายการ (เรียงตามผู้แจ้ง)</p><div class="kr"><div class="kk"><div class="kv">${total}</div><div class="kl">ทั้งหมด</div></div><div class="kk"><div class="kv" style="color:#27500A">${done}</div><div class="kl">เสร็จสิ้น</div></div><div class="kk"><div class="kv" style="color:#791F1F">${urgent}</div><div class="kl">เร่งด่วน</div></div></div><table><thead><tr><th>รหัส</th><th>ผู้แจ้ง</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>สถานะ</th><th>ช่าง</th><th>วันที่เสร็จ</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();toast('เปิดหน้า PDF แล้ว');}
-  else toast('กรุณาอนุญาต popup');
+  if(!w){toast('กรุณาอนุญาต popup');return;}
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+title+'</title><style>@import url(\'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap\');body{font-family:"DM Sans",sans-serif;padding:32px;color:#0D0D0D;font-size:13px;max-width:1100px;margin:0 auto}.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #E8192C}.logo-text{font-size:22px;font-weight:700;color:#E8192C;letter-spacing:-1px}.meta{text-align:right;font-size:11px;color:#888}.report-title{font-size:16px;font-weight:700;margin-bottom:4px;color:#0D0D0D}.kr{display:flex;gap:12px;margin-bottom:24px}.kk{background:#F9F8F6;border-radius:8px;padding:12px 16px;flex:1;text-align:center;border-top:3px solid #E8192C}.kv{font-size:22px;font-weight:700;margin-bottom:2px}.kl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#F4F3F0;padding:8px 10px;font-size:10px;text-align:left;border-bottom:2px solid #E5E3DF;text-transform:uppercase;letter-spacing:.06em;color:#5A5A5A}td{padding:8px 10px;border-bottom:1px solid #E5E3DF}tr:nth-child(even) td{background:#FAFAF9}@media print{body{padding:16px}}</style></head><body>');
+  w.document.write('<div class="header"><div><div class="logo-text">NACHI</div><div style="font-size:12px;font-weight:600;color:#5A5A5A;margin-top:2px">FAC4 · MT Engineering</div></div><div class="meta"><div class="report-title">'+title+'</div><div>สร้างเมื่อ '+date+'</div></div></div>');
+  if(kpiHtml)w.document.write(kpiHtml);
+  w.document.write('<table><thead><tr>'+headers+'</tr></thead><tbody>'+rows+'</tbody></table>');
+  w.document.write('<script>window.onload=()=>window.print()<\/script></body></html>');
+  w.document.close();toast('เปิดหน้า PDF แล้ว — กด Ctrl+P');
 }
 
 // INIT
-loadLocal(); updateHomeDots(); startCountdown();
+document.getElementById('home-date').textContent=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
 document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
+loadLocal();updateHomeDots();startCountdown();
 </script>
 </body>
 </html>
