@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
 :root{
   --red:#E8192C;--red-dark:#B5121F;--red-light:#FFECEE;
@@ -473,7 +473,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
     <div class="topbar-r">
       <div class="sync-pill"><span class="sdot syncing" id="a-sdot"></span><span id="a-stxt">กำลังโหลด...</span></div>
       <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i>Sync</button>
-      <button class="btn outline-green" onclick="exportCurrentExcel()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
+      
       <button class="btn outline-blue" onclick="exportCurrentPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
       <button class="btn outline-red" onclick="confirmClearAll()"><i class="ti ti-trash"></i>ล้างข้อมูล</button>
       <button class="btn primary" onclick="adminLogout()"><i class="ti ti-logout"></i>ออก</button>
@@ -505,7 +505,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
         <button class="df-btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span class="df-dot" style="background:#1877F2"></span>Assembly</button>
         <button class="df-btn" id="df-Grinding" onclick="setDeptFilter('Grinding',this)"><span class="df-dot" style="background:#16A34A"></span>Grinding</button>
         <button class="df-btn" id="df-FG" onclick="setDeptFilter('Frist grinding',this)"><span class="df-dot" style="background:#EA580C"></span>Frist grinding</button>
-      </div><button class="btn outline-blue" onclick="exportCurrentPDF()" style="height:fit-content"><i class="ti ti-printer"></i>พิมพ์ภาพรวม</button></div>
+      </div><button class="btn outline-blue" onclick="printDash()" style="height:fit-content"><i class="ti ti-printer"></i>พิมพ์ภาพรวม</button></div>
       </div>
       <div class="chart-row">
         <div class="card"><div class="card-title"><i class="ti ti-chart-donut" style="font-size:14px;color:var(--text3)"></i>สถานะงาน</div><div class="legrow" id="a-legS"></div><div style="position:relative;height:170px"><canvas id="a-cS" role="img" aria-label="สถานะ"></canvas></div></div>
@@ -886,44 +886,85 @@ async function clearAllJobs(){
 // ---- EXPORT (ตามหน้าที่เลือก) ----
 function getBrandHeader(){return 'NACHI Factory 4 — Engineering\nระบบงานซ่อมไฟฟ้า\nสร้างเมื่อ '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});}
 
-function exportCurrentExcel(){
-  const tab=currentAdminTab;
-  const date=new Date().toISOString().slice(0,10);
-  if(tab==='dash'||tab==='list'||tab==='addnew'){
-    const src=tab==='dash'?getFiltered():allJobs;
-    if(!src.length){toast('ไม่มีข้อมูล');return;}
-    const sorted=tab==='list'?[...src].sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th')):src;
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([
-      ['NACHI Factory 4 — Engineering'],
-      ['รายงาน: '+(tab==='dash'?'ภาพรวม'+(deptFilter?' ('+deptFilter+')':''):'รายการงานซ่อมทั้งหมด')],
-      ['สร้างเมื่อ: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})],
-      [],
-      ['รหัสงาน','ผู้แจ้ง','แผนก','สถานที่','ประเภทงาน','รายละเอียด','สถานะ','ช่าง','วันที่แจ้ง','วันที่เสร็จ','ค่าอุปกรณ์','อุปกรณ์'],
-      ...sorted.map(j=>{
-        const eq=parseEquip(j.note);
-        const eqStr=eq.map(e=>e.name+(e.model?' ('+e.model+')':'')+' '+e.price+'บ.').join(', ');
-        return [j.id,j.reporter||'',j.dept||'',j.location,j.type,j.detail,j.status,j.tech||'',j.date||'',j.doneDate||'',j.cost||0,eqStr];
-      })
-    ]);
-    XLSX.utils.book_append_sheet(wb,'งานซ่อมไฟฟ้า',ws);
-    XLSX.writeFile(wb,'NACHI_Factory 4_'+(tab==='dash'?'Dashboard':'รายการงาน')+'_'+date+'.xlsx');
-    toast('ดาวน์โหลด Excel สำเร็จ');
-  } else if(tab==='urgent'){
-    const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
-    if(!urg.length){toast('ไม่มีงานเร่งด่วน');return;}
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([
-      ['NACHI Factory 4 — รายงานงานเร่งด่วน'],
-      ['สร้างเมื่อ: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})],
-      [],
-      ['รหัสงาน','ผู้แจ้ง','แผนก','สถานที่','ประเภทงาน','รายละเอียด','วันที่แจ้ง'],
-      ...urg.map(j=>[j.id,j.reporter||'',j.dept||'',j.location,j.type,j.detail,j.date||''])
-    ]);
-    XLSX.utils.book_append_sheet(wb,'งานเร่งด่วน',ws);
-    XLSX.writeFile(wb,'NACHI_Factory 4_เร่งด่วน_'+date+'.xlsx');
-    toast('ดาวน์โหลด Excel เร่งด่วนสำเร็จ');
-  }
+
+
+function printDash(){
+  var style = '<style>body{font-family:"DM Sans",sans-serif;padding:24px;color:#0D0D0D;font-size:13px;max-width:1100px;margin:0 auto}'+
+    '.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #E8192C}'+
+    '.logo-text{font-size:20px;font-weight:700;color:#E8192C;letter-spacing:-1px}'+
+    '.meta{text-align:right;font-size:11px;color:#888}'+
+    '.report-title{font-size:15px;font-weight:700;margin-bottom:2px}'+
+    '.kpi-row{display:flex;gap:12px;margin-bottom:20px}'+
+    '.kk{background:#F9F8F6;border-radius:8px;padding:12px 16px;flex:1;text-align:center;border-top:3px solid #E8192C}'+
+    '.kv{font-size:22px;font-weight:700;margin-bottom:2px}.kl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em}'+
+    '.chart-row{display:flex;gap:16px;margin-bottom:20px}'+
+    '.chart-box{flex:1;background:#F9F8F6;border-radius:8px;padding:12px;border:1px solid #E5E3DF}'+
+    '.chart-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}'+
+    '.leg-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;font-size:11px;color:#555}'+
+    '.leg-dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px}'+
+    'table{width:100%;border-collapse:collapse;font-size:12px}'+
+    'th{background:#F4F3F0;padding:7px 10px;font-size:10px;text-align:left;border-bottom:2px solid #E5E3DF;text-transform:uppercase;letter-spacing:.06em;color:#5A5A5A;border-right:1px solid #E5E3DF}'+
+    'td{padding:7px 10px;border-bottom:1px solid #E5E3DF;border-right:1px solid #E5E3DF}'+
+    'tr:nth-child(even) td{background:#FAFAF9}'+
+    '@media print{body{padding:12px}}</style>';
+
+  var fj = getFiltered();
+  var total = fj.length;
+  var done = fj.filter(function(j){return j.status==='เสร็จสิ้น';}).length;
+  var urgent = fj.filter(function(j){return j.status==='เร่งด่วน';}).length;
+  var inprog = fj.filter(function(j){return j.status==='กำลังดำเนินการ';}).length;
+  var cost = fj.reduce(function(s,j){return s+(j.cost||0);},0);
+  var date = new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+
+  // KPI
+  var kpiHtml = '<div class="kpi-row">'+
+    '<div class="kk"><div class="kv">'+total+'</div><div class="kl">'+(deptFilter||'ทุกแผนก')+'</div></div>'+
+    '<div class="kk"><div class="kv" style="color:#1877F2">'+inprog+'</div><div class="kl">กำลังดำเนินการ</div></div>'+
+    '<div class="kk"><div class="kv" style="color:#16A34A">'+done+'</div><div class="kl">เสร็จสิ้น</div></div>'+
+    '<div class="kk"><div class="kv" style="color:#E8192C">'+urgent+'</div><div class="kl">เร่งด่วน</div></div>'+
+    '<div class="kk"><div class="kv">'+cost.toLocaleString()+'</div><div class="kl">ค่าอุปกรณ์ (บ.)</div></div>'+
+    '</div>';
+
+  // Status legend
+  var sts=['รอดำเนินการ','กำลังดำเนินการ','เสร็จสิ้น','เร่งด่วน'],sC=['#F59E0B','#1877F2','#16A34A','#E8192C'];
+  var legS=sts.map(function(s,i){return '<span><span class="leg-dot" style="background:'+sC[i]+'"></span>'+s+' '+fj.filter(function(j){return j.status===s;}).length+'</span>';}).join(' ');
+
+  // Dept legend
+  var depts=['Assembly','Grinding','Frist grinding'],dC=['#1877F2','#16A34A','#EA580C'];
+  var legD=depts.map(function(d,i){return '<span><span class="leg-dot" style="background:'+dC[i]+'"></span>'+d+' '+allJobs.filter(function(j){return j.dept===d;}).length+'</span>';}).join(' ');
+
+  // Recent table rows
+  var rows = fj.slice(0,20).map(function(j){
+    var stColor = j.status==='เสร็จสิ้น'?'#16A34A':j.status==='เร่งด่วน'?'#E8192C':j.status==='กำลังดำเนินการ'?'#1877F2':'#F59E0B';
+    return '<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td>'+
+      '<td>'+( j.dept||'—')+'</td>'+
+      '<td style="font-weight:600">'+( j.reporter||'—')+'</td>'+
+      '<td>'+j.location+'</td>'+
+      '<td>'+j.type+'</td>'+
+      '<td><span style="background:none;color:'+stColor+';font-weight:600;font-size:11px">'+j.status+'</span></td>'+
+      '<td>'+( j.tech||'—')+'</td>'+
+      '<td style="font-size:10px;color:#888">'+( j.date||'—')+'</td></tr>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>รายงานภาพรวม</title>'+style+'</head><body>'+
+    '<div class="header">'+
+    '<div><div class="logo-text">NACHI</div><div style="font-size:11px;font-weight:600;color:#5A5A5A;margin-top:2px">Factory 4 · Engineering</div></div>'+
+    '<div class="meta"><div class="report-title">รายงานภาพรวม'+(deptFilter?' — '+deptFilter:'')+'</div><div>สร้างเมื่อ '+date+'</div></div>'+
+    '</div>'+
+    kpiHtml+
+    '<div class="chart-row">'+
+    '<div class="chart-box"><div class="chart-title">สถานะงาน</div><div class="leg-row">'+legS+'</div></div>'+
+    '<div class="chart-box"><div class="chart-title">แผนก</div><div class="leg-row">'+legD+'</div></div>'+
+    '</div>'+
+    '<div style="font-size:11px;font-weight:700;color:#5A5A5A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">งานล่าสุด</div>'+
+    '<table><thead><tr><th>รหัส</th><th>แผนก</th><th>ผู้แจ้ง</th><th>สถานที่</th><th>ประเภท</th><th>สถานะ</th><th>ช่าง</th><th>วันที่</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table>'+
+    '<script>window.onload=function(){window.print();}<\/script>'+
+    '</body></html>';
+
+  var w = window.open('','_blank');
+  if(w){ w.document.write(html); w.document.close(); }
+  else toast('กรุณาอนุญาต popup');
 }
 
 function exportCurrentPDF(){
