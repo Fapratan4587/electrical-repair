@@ -248,6 +248,12 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
     </div>
     <div style="border-top:0.5px solid var(--border);margin:4px 0 12px;padding-top:12px">
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:5px"><i class="ti ti-package" style="font-size:14px;color:#EF9F27"></i>อุปกรณ์ที่เปลี่ยน (ถ้ามี)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 90px 20px;gap:6px;margin-bottom:4px;padding:0 2px">
+        <span style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">ชื่ออุปกรณ์</span>
+        <span style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">Model / รุ่น</span>
+        <span style="font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">ราคา (บ.)</span>
+        <span></span>
+      </div>
       <div id="equip-list"></div>
       <button class="btn" onclick="addEquipRow()" style="font-size:12px;padding:5px 10px;margin-top:4px"><i class="ti ti-plus"></i>เพิ่มอุปกรณ์</button>
     </div>
@@ -546,15 +552,15 @@ function doLogin(){
 }
 function adminLogout(){ goHome(); }
 
-function addEquipRow(name='',price=''){
+function addEquipRow(name='',model='',price=''){
   const div=document.createElement('div');
   div.className='equip-row';
-  div.style.cssText='display:flex;gap:6px;margin-bottom:6px;align-items:center';
+  div.style.cssText='display:grid;grid-template-columns:1fr 1fr 90px 20px;gap:6px;margin-bottom:6px;align-items:center';
   div.innerHTML=`
-    <input class="eq-name" placeholder="ชื่ออุปกรณ์" value="${name}" oninput="updateEquipTotal()" style="flex:2;font-size:12px;padding:7px 9px">
-    <input class="eq-price" type="number" placeholder="ราคา" value="${price}" min="0" oninput="updateEquipTotal()" style="flex:1;font-size:12px;padding:7px 9px">
-    <span style="font-size:11px;color:var(--text2);flex-shrink:0">บาท</span>
-    <button onclick="this.parentElement.remove();updateEquipTotal()" style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:16px;flex-shrink:0;line-height:1;padding:0 2px">×</button>`;
+    <input class="eq-name" placeholder="ชื่ออุปกรณ์ *" value="${name}" oninput="updateEquipTotal()" style="font-size:12px;padding:7px 9px">
+    <input class="eq-model" placeholder="Model / รุ่น" value="${model}" style="font-size:12px;padding:7px 9px">
+    <input class="eq-price" type="number" placeholder="ราคา (บ.)" value="${price}" min="0" oninput="updateEquipTotal()" style="font-size:12px;padding:7px 9px">
+    <button onclick="this.parentElement.remove();updateEquipTotal()" style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:18px;line-height:1;padding:0">×</button>`;
   document.getElementById('equip-list').appendChild(div);
   div.querySelector('.eq-name').focus();
 }
@@ -610,7 +616,7 @@ function openEditModal(id){
   if(editingJob.note && editingJob.note.startsWith('[EQUIP]')){
     try{
       const equips=JSON.parse(editingJob.note.replace('[EQUIP]',''));
-      equips.forEach(eq=>addEquipRow(eq.name,eq.price));
+      equips.forEach(eq=>addEquipRow(eq.name,eq.model||'',eq.price));
     }catch(e){ addEquipRow(); }
   }
   updateEquipTotal();
@@ -631,8 +637,9 @@ async function saveEdit(){
   let totalCost=0;
   rows.forEach(row=>{
     const name=row.querySelector('.eq-name').value.trim();
+    const model=row.querySelector('.eq-model').value.trim();
     const price=parseFloat(row.querySelector('.eq-price').value)||0;
-    if(name){ equips.push({name,price}); totalCost+=price; }
+    if(name){ equips.push({name,model,price}); totalCost+=price; }
   });
   editingJob.cost=totalCost;
   editingJob.note=equips.length?'[EQUIP]'+JSON.stringify(equips):'';
