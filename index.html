@@ -12,38 +12,47 @@
 @media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2)}}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh}
+.page{display:none;min-height:100vh}.page.active{display:block}
 
-/* PAGE SYSTEM */
-.page{display:none;min-height:100vh}
-.page.active{display:block}
-
-/* HOME PAGE */
-.home-wrap{max-width:500px;margin:0 auto;padding:3rem 1rem}
+/* HOME */
+.home-wrap{max-width:520px;margin:0 auto;padding:3rem 1rem}
 .home-logo{width:56px;height:56px;background:#1a1a1a;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;margin:0 auto 1rem}
 .home-title{font-size:22px;font-weight:700;text-align:center;margin-bottom:6px}
-.home-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:2rem}
-.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.role-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1.25rem 1rem;text-align:center;cursor:pointer;transition:all .15s;box-shadow:var(--sh)}
-.role-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
-.role-card.admin-card{grid-column:1/-1;border-color:#E6F1FB;background:#f0f7ff}
+.home-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:1.5rem}
+.home-countdown{font-size:12px;color:var(--text2);text-align:center;margin-bottom:1.25rem;display:none;align-items:center;justify-content:center;gap:5px}
+.home-countdown.show{display:flex}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.role-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1.25rem 1rem;text-align:center;cursor:pointer;transition:all .15s;box-shadow:var(--sh);position:relative}
+.role-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,0.12)}
+.role-card.admin-card{grid-column:1/-1;border-color:#DDD8F5;background:#f5f4fe}
 .role-icon{font-size:28px;margin-bottom:8px;display:block}
-.role-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.role-name{font-size:15px;font-weight:600;margin-bottom:2px}
 .role-desc{font-size:11px;color:var(--text2)}
 .dept-Assembly .role-icon{color:#378ADD}
 .dept-Grinding .role-icon{color:#1D9E75}
-.dept-Frist grinding .role-icon{color:#EF9F27}
+.dept-FG .role-icon{color:#EF9F27}
 .dept-admin .role-icon{color:#7F77DD}
+.pending-dot{position:absolute;top:10px;right:10px;background:#E24B4A;color:#fff;font-size:10px;font-weight:700;min-width:20px;height:20px;padding:0 5px;border-radius:99px;display:none;align-items:center;justify-content:center}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;display:none}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
 .modal-overlay.show{display:flex}
-.modal{background:var(--bg);border-radius:var(--r);padding:1.5rem;width:90%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
+.modal{background:var(--bg);border-radius:var(--r);padding:1.5rem;width:90%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
 .modal-title{font-size:16px;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
 .modal input{font-size:14px;padding:10px 12px;border-radius:var(--r2);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);width:100%;font-family:inherit;margin-bottom:10px}
 .modal input:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,0.15)}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
 .modal-err{font-size:12px;color:#E24B4A;margin-bottom:8px;display:none}
 .modal-err.show{display:block}
+
+/* EDIT MODAL */
+.edit-modal{background:var(--bg);border-radius:var(--r);padding:1.5rem;width:90%;max-width:440px;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
+.edit-modal-info{background:var(--bg2);border-radius:var(--r2);padding:10px 12px;margin-bottom:1rem;font-size:12px;color:var(--text2);line-height:1.7}
+.edit-modal-info strong{color:var(--text);font-size:13px}
+.efg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.efg label{font-size:12px;font-weight:500;color:var(--text2)}
+.efg input,.efg select{font-size:13px;padding:9px 10px;border-radius:var(--r2);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit;width:100%}
+.efg input:focus,.efg select:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,0.15)}
 
 /* COMMON */
 .wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1rem}
@@ -56,34 +65,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .dept-badge{font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px}
 .dept-Assembly-badge{background:#E6F1FB;color:#0C447C}
 .dept-Grinding-badge{background:#EAF3DE;color:#27500A}
-.dept-Frist grinding-badge{background:#FAEEDA;color:#633806}
-
+.dept-FG-badge{background:#FAEEDA;color:#633806}
 .sbadge{font-size:11px;display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;background:var(--bg);border:0.5px solid var(--border);color:var(--text2)}
 .sdot{width:6px;height:6px;border-radius:50%;background:#639922;flex-shrink:0}
 .sdot.syncing{background:#EF9F27;animation:pulse 1s infinite}
 .sdot.error{background:#E24B4A}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
 .nav{display:flex;gap:3px;margin-bottom:1.25rem;background:var(--bg);border:0.5px solid var(--border);padding:4px;border-radius:var(--r);width:fit-content;box-shadow:var(--sh)}
 .nb{padding:7px 14px;border:none;background:none;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:7px;display:flex;align-items:center;gap:5px;transition:all .15s;font-family:inherit}
 .nb.active{background:var(--bg2);color:var(--text);box-shadow:var(--sh)}
 .nb:hover:not(.active){color:var(--text);background:var(--bg2)}
 .ndot{width:6px;height:6px;background:#E24B4A;border-radius:50%}
 .tab{display:none}.tab.active{display:block}
-
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--r2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);transition:all .12s;white-space:nowrap}
 .btn:hover{background:var(--bg2);color:var(--text)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.pri{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 .btn.pri:hover{opacity:.85}
-.btn.danger{background:#FCEBEB;color:#791F1F;border-color:#F09595}
-.btn.danger:hover{background:#f7c1c1}
+.btn.success{background:#EAF3DE;color:#27500A;border-color:#97C459}
+.btn.success:hover{background:#C0DD97}
+.btn.danger-btn{background:#FCEBEB;color:#791F1F;border-color:#F09595}
 .btn.xl{border-color:#3B6D11;color:#3B6D11;background:#EAF3DE}
 .btn.xl:hover{background:#C0DD97}
 .btn.pf{border-color:#0C447C;color:#0C447C;background:#E6F1FB}
 .btn.pf:hover{background:#B5D4F4}
 .btn.ic{width:28px;height:28px;padding:0;justify-content:center}
-.btn.ic.del:hover{background:#FCEBEB;color:#791F1F;border-color:#F09595}
+.btn.ic:hover{background:var(--bg2)}
+.mla{margin-left:auto;display:flex;gap:6px}
 
 /* KPI */
 .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.1rem}
@@ -93,17 +101,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .kico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .kval{font-size:24px;font-weight:600;line-height:1}
 .kfoot{font-size:11px;color:var(--text2);margin-top:3px}
-
 .cr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.1rem}
 .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1.1rem;box-shadow:var(--sh)}
 .ctitle{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .legrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
 .leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)}
 .legdot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-
 .badge{display:inline-flex;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:500}
 .bw{background:#FAEEDA;color:#633806}.bd{background:#E6F1FB;color:#0C447C}.bk{background:#EAF3DE;color:#27500A}.bu{background:#FCEBEB;color:#791F1F}
-
 .tw{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem;box-shadow:var(--sh)}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
 th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text2);border-bottom:0.5px solid var(--border);background:var(--bg2);text-transform:uppercase;letter-spacing:.04em}
@@ -111,7 +116,6 @@ td{padding:9px 12px;border-bottom:0.5px solid var(--border);overflow:hidden;text
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg2)}
 tr.urg td{border-left:3px solid #E24B4A}
-
 .fbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
 .srch{position:relative}
 .srch i{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text2);pointer-events:none}
@@ -119,7 +123,6 @@ tr.urg td{border-left:3px solid #E24B4A}
 input,select,textarea{font-size:13px;padding:8px 10px;border-radius:var(--r2);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit;width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,0.15)}
 textarea{min-height:72px;resize:vertical}
-
 .fcard{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:1rem}
 .fhdr{padding:.9rem 1.2rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:8px}
 .fhtitle{font-size:14px;font-weight:600}
@@ -133,11 +136,11 @@ textarea{min-height:72px;resize:vertical}
 .sving.show{display:flex}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* USER STATUS CARDS */
-.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:1rem}
+/* STATUS CARDS */
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:1rem}
 .status-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1rem;box-shadow:var(--sh)}
 .status-card.urgent-card{border-color:#F09595;border-left:4px solid #E24B4A}
-.status-card.done-card{border-color:#97C459;border-left:4px solid #639922}
+.status-card.done-card{border-color:#97C459;border-left:4px solid #639922;background:#fafff6}
 .sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
 .sc-id{font-size:11px;font-family:monospace;color:var(--text2)}
 .sc-loc{font-size:14px;font-weight:600;margin-bottom:2px}
@@ -145,59 +148,56 @@ textarea{min-height:72px;resize:vertical}
 .sc-detail{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px;white-space:normal}
 .sc-footer{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text2)}
 
+/* RESET COUNTDOWN */
+.reset-bar{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r2);padding:8px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);box-shadow:var(--sh)}
+.reset-time{font-weight:600;color:var(--text);margin-left:auto;font-family:monospace}
+
 /* URGENT TOGGLE */
-.urgent-toggle{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FCEBEB;border:0.5px solid #F09595;border-radius:var(--r2);margin-bottom:4px}
+.urgent-toggle{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FCEBEB;border:0.5px solid #F09595;border-radius:var(--r2)}
 .toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0}
-.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
 .toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:99px;transition:.3s}
 .toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
 input:checked+.toggle-slider{background:#E24B4A}
 input:checked+.toggle-slider:before{transform:translateX(18px)}
-.toggle-label{font-size:13px;font-weight:500;color:#791F1F}
-
 .abar{background:#FCEBEB;border:0.5px solid #F09595;border-radius:var(--r2);padding:10px 14px;margin-bottom:1rem;display:none;align-items:flex-start;gap:10px}
 .abar.show{display:flex}
-
-.mla{margin-left:auto;display:flex;gap:6px}
-
 .empty{text-align:center;padding:2.5rem 1rem;color:var(--text2);font-size:13px}
 .empty i{font-size:28px;display:block;margin-bottom:8px}
 .skel{background:var(--bg2);border-radius:4px;height:14px;animation:skel 1.2s ease-in-out infinite}
 @keyframes skel{0%,100%{opacity:.5}50%{opacity:1}}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:9px 20px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 #toast.show{opacity:1}
-.pdot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
-
-@media(max-width:700px){
-  .kg{grid-template-columns:1fr 1fr}
-  .cr{grid-template-columns:1fr}
-  .fgg{grid-template-columns:1fr}
-  .fg.full{grid-column:1}
-  .role-grid{grid-template-columns:1fr}
-  .role-card.admin-card{grid-column:1}
-}
+@media(max-width:700px){.kg{grid-template-columns:1fr 1fr}.cr{grid-template-columns:1fr}.fgg{grid-template-columns:1fr}.fg.full{grid-column:1}.role-grid{grid-template-columns:1fr}.role-card.admin-card{grid-column:1}}
 </style>
 </head>
 <body>
 
-<!-- ========== HOME PAGE ========== -->
+<!-- HOME -->
 <div id="page-home" class="page active">
   <div class="home-wrap">
     <div class="home-logo"><i class="ti ti-bolt"></i></div>
     <div class="home-title">ระบบงานซ่อมไฟฟ้า</div>
     <div class="home-sub">เลือกแผนกหรือเข้าสู่ระบบ Admin</div>
+    <div class="home-countdown" id="home-countdown-bar">
+      <i class="ti ti-clock" style="font-size:13px;color:#EF9F27"></i>
+      รายการจะรีเซ็ตอัตโนมัติใน <strong id="home-cdown" style="color:var(--text)"></strong>
+    </div>
     <div class="role-grid">
       <div class="role-card dept-Assembly" onclick="enterUser('Assembly')">
+        <span class="pending-dot" id="dot-Assembly"></span>
         <span class="role-icon"><i class="ti ti-building-factory"></i></span>
         <div class="role-name">Assembly</div>
         <div class="role-desc">แจ้งซ่อม & ติดตามสถานะ</div>
       </div>
       <div class="role-card dept-Grinding" onclick="enterUser('Grinding')">
+        <span class="pending-dot" id="dot-Grinding"></span>
         <span class="role-icon"><i class="ti ti-settings"></i></span>
         <div class="role-name">Grinding</div>
         <div class="role-desc">แจ้งซ่อม & ติดตามสถานะ</div>
       </div>
-      <div class="role-card dept-Frist grinding" onclick="enterUser('Frist grinding')">
+      <div class="role-card dept-FG" onclick="enterUser('Frist grinding')">
+        <span class="pending-dot" id="dot-FG"></span>
         <span class="role-icon"><i class="ti ti-tool"></i></span>
         <div class="role-name">Frist grinding</div>
         <div class="role-desc">แจ้งซ่อม & ติดตามสถานะ</div>
@@ -211,7 +211,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   </div>
 </div>
 
-<!-- ========== ADMIN LOGIN MODAL ========== -->
+<!-- ADMIN LOGIN MODAL -->
 <div class="modal-overlay" id="admin-modal">
   <div class="modal">
     <div class="modal-title"><i class="ti ti-shield-lock" style="color:#7F77DD"></i>Admin Login</div>
@@ -224,20 +224,37 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   </div>
 </div>
 
-<!-- ========== USER NAME MODAL ========== -->
-<div class="modal-overlay" id="user-modal">
-  <div class="modal">
-    <div class="modal-title" id="user-modal-title"><i class="ti ti-user"></i>ระบุชื่อผู้แจ้ง</div>
-    <div class="modal-err" id="user-err">กรุณากรอกชื่อ</div>
-    <input type="text" id="user-name-input" placeholder="ชื่อ-นามสกุล" onkeydown="if(event.key==='Enter')confirmUser()">
+<!-- EDIT MODAL (Admin) -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="edit-modal">
+    <div class="modal-title"><i class="ti ti-edit" style="color:#378ADD"></i>อัปเดตงานซ่อม</div>
+    <div class="edit-modal-info" id="edit-info"></div>
+    <div class="efg">
+      <label>ช่างผู้ซ่อม</label>
+      <input id="e-tech" placeholder="ชื่อช่าง / ทีม">
+    </div>
+    <div class="efg">
+      <label>สถานะ</label>
+      <select id="e-status">
+        <option>รอดำเนินการ</option>
+        <option>กำลังดำเนินการ</option>
+        <option>เสร็จสิ้น</option>
+        <option>เร่งด่วน</option>
+      </select>
+    </div>
+    <div class="efg">
+      <label>วันที่ซ่อมเสร็จ</label>
+      <input type="date" id="e-donedate">
+    </div>
+    <div class="sving" id="e-sving" style="margin-bottom:8px"><i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:13px"></i>กำลังบันทึก...</div>
     <div class="modal-btns">
-      <button class="btn" onclick="closeUserModal()">ยกเลิก</button>
-      <button class="btn pri" onclick="confirmUser()"><i class="ti ti-arrow-right"></i>เข้าใช้งาน</button>
+      <button class="btn" onclick="closeEditModal()">ยกเลิก</button>
+      <button class="btn success" onclick="saveEdit()" id="e-save-btn"><i class="ti ti-check"></i>บันทึกการซ่อม</button>
     </div>
   </div>
 </div>
 
-<!-- ========== USER PAGE ========== -->
+<!-- USER PAGE -->
 <div id="page-user" class="page">
   <div class="wrap">
     <div class="hdr">
@@ -250,24 +267,26 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
       </div>
       <div class="hdr-r">
         <span class="dept-badge" id="user-dept-badge"></span>
-        <span class="sbadge"><span class="sdot" id="u-sdot"></span><span id="u-stxt">พร้อมใช้งาน</span></span>
+        <div class="sbadge"><span class="sdot" id="u-sdot"></span><span id="u-stxt">พร้อมใช้งาน</span></div>
         <button class="btn" onclick="goHome()"><i class="ti ti-home"></i>หน้าหลัก</button>
       </div>
     </div>
-
+    <div class="reset-bar">
+      <i class="ti ti-clock-hour-4" style="color:#EF9F27"></i>
+      <span>รายการจะรีเซ็ตอัตโนมัติทุก 24 ชั่วโมง</span>
+      <span class="reset-time" id="u-countdown">--:--:--</span>
+    </div>
     <div class="nav">
       <button class="nb active" onclick="uGoTab('report',this)"><i class="ti ti-plus"></i>แจ้งซ่อม</button>
       <button class="nb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i>ติดตามสถานะ</button>
     </div>
-
-    <!-- แจ้งซ่อม -->
     <div id="utab-report" class="tab active">
       <div class="fcard">
-        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text2)"></i><span class="fhtitle">แจ้งซ่อมไฟฟ้า</span></div>
+        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text2)"></i><span class="fhtitle">แจ้งซ่อมไฟฟ้า — <span id="u-form-dept"></span></span></div>
         <div class="fbody">
           <div class="fgg">
-            <div class="fg"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" placeholder="ชื่อ-นามสกุล" readonly style="background:var(--bg2)"></div>
-            <div class="fg"><label>แผนก</label><input id="u-dept" readonly style="background:var(--bg2)"></div>
+            <div class="fg"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" placeholder="ชื่อ-นามสกุล"></div>
+            <div class="fg"><label>แผนก</label><input id="u-dept-display" readonly style="background:var(--bg2)"></div>
             <div class="fg"><label>สถานที่ / จุดที่เสีย *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
             <div class="fg"><label>ประเภทงาน *</label>
               <select id="u-type"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select>
@@ -276,7 +295,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
             <div class="fg full">
               <div class="urgent-toggle">
                 <label class="toggle-switch"><input type="checkbox" id="u-urgent"><span class="toggle-slider"></span></label>
-                <span class="toggle-label"><i class="ti ti-alert-triangle"></i> แจ้งเร่งด่วน — ส่งผลต่อการผลิต</span>
+                <span style="font-size:13px;font-weight:500;color:#791F1F"><i class="ti ti-alert-triangle"></i> แจ้งเร่งด่วน — ส่งผลต่อการผลิต</span>
               </div>
             </div>
             <div class="fg"><label>วันที่แจ้ง</label><input type="date" id="u-date"></div>
@@ -289,51 +308,42 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
         </div>
       </div>
     </div>
-
-    <!-- ติดตามสถานะ -->
     <div id="utab-track" class="tab">
       <div class="fbar">
         <select id="u-filter-status" onchange="uRenderTrack()" style="width:auto"><option value="">สถานะทั้งหมด</option><option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option></select>
         <button class="btn" onclick="uLoadJobs()"><i class="ti ti-refresh"></i>รีเฟรช</button>
       </div>
-      <div id="u-track-content">
-        <div class="empty"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>กำลังโหลด...</div>
-      </div>
+      <div id="u-track-content"><div class="empty"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>กำลังโหลด...</div></div>
     </div>
   </div>
 </div>
 
-<!-- ========== ADMIN PAGE ========== -->
+<!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div class="wrap">
     <div class="hdr">
       <div class="hdr-l">
         <div class="logo" style="background:#4C4089"><i class="ti ti-shield-lock"></i></div>
-        <div>
-          <div class="htitle">Admin — ระบบงานซ่อมไฟฟ้า</div>
-          <div class="hsub" id="a-hdate"></div>
-        </div>
+        <div><div class="htitle">Admin — ระบบงานซ่อมไฟฟ้า</div><div class="hsub" id="a-hdate"></div></div>
       </div>
       <div class="hdr-r">
         <div class="sbadge"><span class="sdot syncing" id="a-sdot"></span><span id="a-stxt">กำลังโหลด...</span></div>
         <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i>Sync</button>
         <button class="btn xl" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
         <button class="btn pf" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
-        <button class="btn danger" onclick="adminLogout()"><i class="ti ti-logout"></i>ออกจากระบบ</button>
+        <button class="btn danger-btn" onclick="adminLogout()"><i class="ti ti-logout"></i>ออกจากระบบ</button>
       </div>
     </div>
-
     <div id="a-abar" class="abar">
       <i class="ti ti-alert-triangle" style="color:#A32D2D;font-size:16px;flex-shrink:0;margin-top:1px"></i>
       <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#791F1F;margin-bottom:2px">มีงานเร่งด่วน</div><div style="font-size:12px;color:#A32D2D;line-height:1.6" id="a-alist"></div></div>
       <button style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:18px" onclick="document.getElementById('a-abar').classList.remove('show')">×</button>
     </div>
-
     <div class="nav">
       <button class="nb active" onclick="aGoTab('dash',this)"><i class="ti ti-layout-dashboard"></i>ภาพรวม</button>
       <button class="nb" onclick="aGoTab('list',this)"><i class="ti ti-list-details"></i>รายการงาน</button>
       <button class="nb" onclick="aGoTab('urgent',this)"><i class="ti ti-alert-triangle"></i>เร่งด่วน<span class="ndot" id="a-ndot" style="display:none"></span></button>
-      <button class="nb" onclick="aGoTab('add',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
+      <button class="nb" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
     </div>
 
     <!-- DASH -->
@@ -344,12 +354,11 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
         <div class="kpi"><div class="skel" style="width:60%;margin-bottom:8px"></div><div class="skel" style="width:40%;height:24px"></div></div>
         <div class="kpi"><div class="skel" style="width:60%;margin-bottom:8px"></div><div class="skel" style="width:40%;height:24px"></div></div>
       </div>
-      <!-- dept filter -->
       <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
-        <button class="btn active" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
+        <button class="btn pri" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
         <button class="btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span style="width:8px;height:8px;border-radius:50%;background:#378ADD;display:inline-block"></span>Assembly</button>
         <button class="btn" id="df-Grinding" onclick="setDeptFilter('Grinding',this)"><span style="width:8px;height:8px;border-radius:50%;background:#639922;display:inline-block"></span>Grinding</button>
-        <button class="btn" id="df-Frist grinding" onclick="setDeptFilter('Frist grinding',this)"><span style="width:8px;height:8px;border-radius:50%;background:#EF9F27;display:inline-block"></span>Frist grinding</button>
+        <button class="btn" id="df-FG" onclick="setDeptFilter('Frist grinding',this)"><span style="width:8px;height:8px;border-radius:50%;background:#EF9F27;display:inline-block"></span>Frist grinding</button>
       </div>
       <div class="cr">
         <div class="card"><div class="ctitle"><i class="ti ti-chart-donut" style="font-size:14px;color:var(--text2)"></i>สถานะงาน</div><div class="legrow" id="a-legS"></div><div style="position:relative;height:160px"><canvas id="a-cS" role="img" aria-label="สถานะ"></canvas></div></div>
@@ -357,25 +366,36 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
       </div>
       <div class="card" style="margin-bottom:0;border-radius:var(--r) var(--r) 0 0;border-bottom:none"><div class="ctitle" style="margin-bottom:0"><i class="ti ti-clock" style="font-size:14px;color:var(--text2)"></i>งานล่าสุด</div></div>
       <div class="tw" style="border-radius:0 0 var(--r) var(--r)">
-        <table><thead><tr><th style="width:75px">รหัส</th><th style="width:90px">แผนก</th><th style="width:120px">สถานที่</th><th style="width:110px">ประเภท</th><th style="width:100px">สถานะ</th><th style="width:100px">ผู้แจ้ง</th><th>วันที่</th></tr></thead><tbody id="a-recBody"></tbody></table>
+        <table><thead><tr><th style="width:75px">รหัส</th><th style="width:100px">แผนก</th><th style="width:100px">ผู้แจ้ง</th><th style="width:120px">สถานที่</th><th style="width:100px">ประเภท</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th>วันที่</th></tr></thead><tbody id="a-recBody"></tbody></table>
       </div>
     </div>
 
-    <!-- LIST -->
+    <!-- LIST — เรียงตามผู้แจ้ง -->
     <div id="atab-list" class="tab">
       <div class="fbar">
-        <div class="srch"><i class="ti ti-search"></i><input type="text" placeholder="ค้นหา..." id="a-fsearch" oninput="aRenderList()" style="width:160px"></div>
+        <div class="srch"><i class="ti ti-search"></i><input type="text" placeholder="ค้นหาผู้แจ้ง / สถานที่..." id="a-fsearch" oninput="aRenderList()" style="width:180px"></div>
         <select id="a-fdept" onchange="aRenderList()" style="width:auto"><option value="">ทุกแผนก</option><option>Assembly</option><option>Grinding</option><option>Frist grinding</option></select>
         <select id="a-fst" onchange="aRenderList()" style="width:auto"><option value="">สถานะทั้งหมด</option><option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option></select>
         <div class="mla">
           <button class="btn xl" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
           <button class="btn pf" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
-          <button class="btn pri" onclick="aGoTab('add',document.querySelectorAll('#page-admin .nb')[3])"><i class="ti ti-plus"></i>เพิ่ม</button>
         </div>
       </div>
       <div class="tw">
         <table>
-          <thead><tr><th style="width:72px">รหัส</th><th style="width:85px">แผนก</th><th style="width:110px">สถานที่</th><th style="width:100px">ประเภท</th><th style="width:130px">รายละเอียด</th><th style="width:95px">สถานะ</th><th style="width:90px">ผู้แจ้ง</th><th style="width:90px">ช่าง</th><th style="width:80px">วันที่</th><th style="width:60px">จัดการ</th></tr></thead>
+          <thead><tr>
+            <th style="width:72px">รหัส</th>
+            <th style="width:105px">ผู้แจ้ง</th>
+            <th style="width:100px">แผนก</th>
+            <th style="width:120px">สถานที่</th>
+            <th style="width:100px">ประเภท</th>
+            <th style="width:130px">รายละเอียด</th>
+            <th style="width:95px">สถานะ</th>
+            <th style="width:90px">ช่าง</th>
+            <th style="width:82px">วันที่แจ้ง</th>
+            <th style="width:82px">วันที่เสร็จ</th>
+            <th style="width:55px">จัดการ</th>
+          </tr></thead>
           <tbody id="a-listBody"></tbody>
         </table>
       </div>
@@ -384,24 +404,21 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
     <!-- URGENT -->
     <div id="atab-urgent" class="tab"><div id="a-urgentContent"></div></div>
 
-    <!-- ADD/EDIT -->
-    <div id="atab-add" class="tab">
+    <!-- ADD NEW -->
+    <div id="atab-addnew" class="tab">
       <div class="fcard">
-        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text2)"></i><span class="fhtitle" id="a-formTitle">เพิ่มงานซ่อมใหม่</span></div>
+        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text2)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
         <div class="fbody">
           <div class="fgg">
             <div class="fg"><label>แผนก *</label><select id="a-fl-dept"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>Frist grinding</option><option>อื่น ๆ</option></select></div>
             <div class="fg"><label>ผู้แจ้ง</label><input id="a-fl-reporter" placeholder="ชื่อผู้แจ้ง"></div>
-            <div class="fg"><label>สถานที่ / จุดที่เสีย *</label><input id="a-fl" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
+            <div class="fg"><label>สถานที่ *</label><input id="a-fl" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
             <div class="fg"><label>ประเภทงาน *</label><select id="a-ft"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select></div>
             <div class="fg full"><label>รายละเอียด *</label><textarea id="a-fd" placeholder="อธิบายอาการเสีย สาเหตุ งานที่ทำ..."></textarea></div>
             <div class="fg"><label>สถานะ</label><select id="a-fst2"><option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option></select></div>
-            <div class="fg"><label>ความสำคัญ</label><select id="a-fpr2"><option>ปานกลาง</option><option>สูง</option><option>ต่ำ</option></select></div>
             <div class="fg"><label>ช่างผู้รับผิดชอบ</label><input id="a-ftech" placeholder="ชื่อช่าง / ทีม"></div>
-            <div class="fg"><label>ค่าใช้จ่าย (บาท)</label><input type="number" id="a-fcost" placeholder="0" min="0"></div>
             <div class="fg"><label>วันที่แจ้งซ่อม</label><input type="date" id="a-fdate"></div>
             <div class="fg"><label>วันที่เสร็จ</label><input type="date" id="a-fdone"></div>
-            <div class="fg"><label>หมายเหตุ</label><input id="a-fnote" placeholder="หมายเหตุเพิ่มเติม"></div>
           </div>
         </div>
         <div class="fftr">
@@ -419,118 +436,180 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbzRDKgSM5m06iFAVSlISsyYJTqNniuW8iqzULElsQw0JkqrMPLnkF5vHcs2Yd5FWh4NVg/exec';
 const ADMIN_PW = 'admin1234';
+const RESET_HOURS = 24;
+const STORE_KEY = 'elec_local_v2';
+const RESET_KEY = 'elec_reset_v2';
 
-let jobs = [], editId = null, cS = null, cD = null;
-let currentDept = '', currentUser = '', deptFilter = '';
-let pendingDept = '';
+let allJobs = [], localJobs = [];
+let currentDept = '', deptFilter = '';
+let editingJob = null;
+let cS = null, cD = null, countdownTimer = null;
 
-function genId(){return 'E'+String(Date.now()).slice(-5);}
-function toast(msg,dur){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur||2400);}
-function bdg(s){const m={รอดำเนินการ:'bw',กำลังดำเนินการ:'bd',เสร็จสิ้น:'bk',เร่งด่วน:'bu'};return `<span class="badge ${m[s]||'bw'}">${s}</span>`;}
-function deptColor(d){return d==='Assembly'?'#378ADD':d==='Grinding'?'#639922':d==='Frist grinding'?'#EF9F27':'#888';}
-function deptBadge(d){const cls=d==='Assembly'?'dept-Assembly-badge':d==='Grinding'?'dept-Grinding-badge':d==='Frist grinding'?'dept-Frist grinding-badge':'';return `<span class="badge ${cls}" style="${cls?'':'background:var(--bg2);color:var(--text2)'}">${d||'—'}</span>`;}
+// ---- LOCAL STORAGE + RESET ----
+function getResetTime(){ const t=localStorage.getItem(RESET_KEY); return t?parseInt(t):null; }
+function setResetTime(){ const t=Date.now()+RESET_HOURS*3600000; localStorage.setItem(RESET_KEY,t); return t; }
+function checkAndReset(){
+  const rt=getResetTime();
+  if(!rt){ setResetTime(); return false; }
+  if(Date.now()>rt){
+    localStorage.removeItem(STORE_KEY); setResetTime(); localJobs=[];
+    toast('รีเซ็ตรายการแจ้งซ่อมอัตโนมัติแล้ว (24 ชม.)'); return true;
+  }
+  return false;
+}
+function loadLocal(){ checkAndReset(); try{ localJobs=JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ localJobs=[]; } }
+function saveLocal(){ localStorage.setItem(STORE_KEY,JSON.stringify(localJobs)); }
 
-// ---- API ----
-function callAPI(payload){
-  return new Promise((resolve,reject)=>{
-    const cbName='cb'+Date.now()+Math.random().toString(36).slice(2);
-    const script=document.createElement('script');
-    const url=API+'?callback='+cbName+'&data='+encodeURIComponent(JSON.stringify(payload));
-    window[cbName]=function(res){delete window[cbName];document.body.removeChild(script);resolve(res);};
-    script.onerror=function(){delete window[cbName];try{document.body.removeChild(script);}catch(e){}reject(new Error('failed'));};
-    script.src=url;document.body.appendChild(script);
-    setTimeout(()=>{if(window[cbName]){delete window[cbName];try{document.body.removeChild(script);}catch(e){}reject(new Error('timeout'));}},15000);
+function startCountdown(){
+  if(countdownTimer) clearInterval(countdownTimer);
+  function tick(){
+    const rt=getResetTime(); if(!rt) return;
+    const diff=rt-Date.now();
+    if(diff<=0){ checkAndReset(); uRenderTrack(); updateHomeDots(); return; }
+    const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), s=Math.floor((diff%60000)/1000);
+    const str=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    const uel=document.getElementById('u-countdown'), hel=document.getElementById('home-cdown');
+    if(uel) uel.textContent=str;
+    if(hel) hel.textContent=str;
+  }
+  tick(); countdownTimer=setInterval(tick,1000);
+}
+
+function updateHomeDots(){
+  loadLocal();
+  const bar=document.getElementById('home-countdown-bar');
+  bar.classList.toggle('show', localJobs.length>0);
+  [['Assembly','dot-Assembly'],['Grinding','dot-Grinding'],['Frist grinding','dot-FG']].forEach(([dept,dotId])=>{
+    const el=document.getElementById(dotId);
+    if(!el) return;
+    const count=localJobs.filter(j=>j.dept===dept&&j.status!=='เสร็จสิ้น').length;
+    if(count>0){ el.textContent=count; el.style.display='flex'; } else { el.style.display='none'; }
   });
 }
 
+// ---- API ----
+function callAPI(payload){
+  return new Promise((res,rej)=>{
+    const cb='cb'+Date.now()+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');
+    window[cb]=r=>{delete window[cb];try{document.body.removeChild(s);}catch(e){}res(r);};
+    s.onerror=()=>{delete window[cb];try{document.body.removeChild(s);}catch(e){}rej(new Error('fail'));};
+    s.src=API+'?callback='+cb+'&data='+encodeURIComponent(JSON.stringify(payload));
+    document.body.appendChild(s);
+    setTimeout(()=>{if(window[cb]){delete window[cb];try{document.body.removeChild(s);}catch(e){}rej(new Error('timeout'));}},15000);
+  });
+}
+
+// ---- UTILS ----
+function genId(){ return 'E'+String(Date.now()).slice(-5); }
+function toast(msg,dur){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),dur||2400); }
+function bdg(s){ const m={รอดำเนินการ:'bw',กำลังดำเนินการ:'bd',เสร็จสิ้น:'bk',เร่งด่วน:'bu'}; return `<span class="badge ${m[s]||'bw'}">${s}</span>`; }
+function deptBadge(d){ const c=d==='Assembly'?'dept-Assembly-badge':d==='Grinding'?'dept-Grinding-badge':d==='Frist grinding'?'dept-FG-badge':''; return `<span class="badge ${c}" style="${c?'':'background:var(--bg2);color:var(--text2)'}">${d||'—'}</span>`; }
+function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
 // ---- HOME ----
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function goHome(){showPage('page-home');}
+function goHome(){ updateHomeDots(); showPage('page-home'); }
 
 function enterUser(dept){
-  pendingDept=dept;
-  document.getElementById('user-modal-title').innerHTML=`<i class="ti ti-user"></i>เข้าใช้งาน — ${dept}`;
-  document.getElementById('user-name-input').value='';
-  document.getElementById('user-err').classList.remove('show');
-  document.getElementById('user-modal').classList.add('show');
-  setTimeout(()=>document.getElementById('user-name-input').focus(),100);
-}
-function closeUserModal(){document.getElementById('user-modal').classList.remove('show');}
-function confirmUser(){
-  const name=document.getElementById('user-name-input').value.trim();
-  if(!name){document.getElementById('user-err').classList.add('show');return;}
-  closeUserModal();
-  currentDept=pendingDept;currentUser=name;
-  document.getElementById('u-reporter').value=name;
-  document.getElementById('u-dept').value=pendingDept;
+  currentDept=dept; loadLocal();
+  document.getElementById('u-dept-display').value=dept;
+  document.getElementById('u-form-dept').textContent=dept;
+  document.getElementById('user-dept-sub').textContent='แผนก '+dept;
+  document.getElementById('user-dept-badge').textContent=dept;
+  const bc=dept==='Assembly'?'dept-Assembly-badge':dept==='Grinding'?'dept-Grinding-badge':'dept-FG-badge';
+  document.getElementById('user-dept-badge').className='dept-badge '+bc;
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('user-dept-sub').textContent=`ยินดีต้อนรับ ${name}`;
-  document.getElementById('user-dept-badge').textContent=pendingDept;
-  document.getElementById('user-dept-badge').className=`dept-badge dept-${pendingDept}-badge`;
-  showPage('page-user');
-  uLoadJobs();
+  document.getElementById('u-reporter').value='';
+  showPage('page-user'); startCountdown(); uRenderTrack();
 }
 
-function showAdminLogin(){
-  document.getElementById('admin-pw').value='';
-  document.getElementById('login-err').classList.remove('show');
-  document.getElementById('admin-modal').classList.add('show');
-  setTimeout(()=>document.getElementById('admin-pw').focus(),100);
-}
-function closeAdminModal(){document.getElementById('admin-modal').classList.remove('show');}
+// ---- ADMIN LOGIN ----
+function showAdminLogin(){ document.getElementById('admin-pw').value=''; document.getElementById('login-err').classList.remove('show'); document.getElementById('admin-modal').classList.add('show'); setTimeout(()=>document.getElementById('admin-pw').focus(),100); }
+function closeAdminModal(){ document.getElementById('admin-modal').classList.remove('show'); }
 function doLogin(){
-  const pw=document.getElementById('admin-pw').value;
-  if(pw===ADMIN_PW){
+  if(document.getElementById('admin-pw').value===ADMIN_PW){
     closeAdminModal();
     document.getElementById('a-hdate').textContent=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
     document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
-    showPage('page-admin');
-    aLoad();
-  } else {
-    document.getElementById('login-err').classList.add('show');
-    document.getElementById('admin-pw').value='';
-    document.getElementById('admin-pw').focus();
-  }
+    showPage('page-admin'); aLoad();
+  } else { document.getElementById('login-err').classList.add('show'); document.getElementById('admin-pw').value=''; document.getElementById('admin-pw').focus(); }
 }
-function adminLogout(){showPage('page-home');}
+function adminLogout(){ goHome(); }
 
-// ---- USER FUNCTIONS ----
+// ---- EDIT MODAL ----
+function openEditModal(id){
+  editingJob = allJobs.find(j=>j.id===id);
+  if(!editingJob) return;
+  document.getElementById('edit-info').innerHTML=`
+    <strong>${editingJob.location}</strong> — ${editingJob.type}<br>
+    <span>ผู้แจ้ง: ${editingJob.reporter||'—'} &nbsp;|&nbsp; แผนก: ${editingJob.dept||'—'}</span><br>
+    <span>รายละเอียด: ${editingJob.detail}</span>`;
+  document.getElementById('e-tech').value=editingJob.tech||'';
+  document.getElementById('e-status').value=editingJob.status||'รอดำเนินการ';
+  document.getElementById('e-donedate').value=editingJob.doneDate||'';
+  document.getElementById('e-sving').style.display='none';
+  document.getElementById('e-save-btn').disabled=false;
+  document.getElementById('edit-modal').classList.add('show');
+}
+function closeEditModal(){ document.getElementById('edit-modal').classList.remove('show'); editingJob=null; }
+
+async function saveEdit(){
+  if(!editingJob) return;
+  editingJob.tech=document.getElementById('e-tech').value.trim();
+  editingJob.status=document.getElementById('e-status').value;
+  editingJob.doneDate=document.getElementById('e-donedate').value;
+  document.getElementById('e-sving').style.display='flex';
+  document.getElementById('e-save-btn').disabled=true;
+  setSS('a-sdot','a-stxt','syncing');
+  try{
+    await callAPI({...editingJob,action:'update'});
+    // sync to local jobs too so user sees updated status
+    const li=localJobs.findIndex(j=>j.id===editingJob.id);
+    if(li!==-1){ localJobs[li].status=editingJob.status; localJobs[li].tech=editingJob.tech; localJobs[li].doneDate=editingJob.doneDate; saveLocal(); }
+    const ai=allJobs.findIndex(j=>j.id===editingJob.id);
+    if(ai!==-1) allJobs[ai]={...editingJob};
+    setSS('a-sdot','a-stxt','ok');
+    closeEditModal();
+    aCheckAlerts(); aRenderList(); aRenderDash();
+    updateHomeDots();
+    toast(editingJob.status==='เสร็จสิ้น'?'✓ อัปเดตเสร็จสิ้นแล้ว':'อัปเดตสำเร็จ');
+  }catch(e){
+    setSS('a-sdot','a-stxt','error');
+    toast('บันทึกไม่สำเร็จ กรุณาลองใหม่');
+  }
+  document.getElementById('e-sving').style.display='none';
+  document.getElementById('e-save-btn').disabled=false;
+}
+
+// ---- USER ----
 function uGoTab(id,btn){
   document.querySelectorAll('#page-user .tab').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('#page-user .nb').forEach(e=>e.classList.remove('active'));
-  document.getElementById('utab-'+id).classList.add('active');btn.classList.add('active');
-  if(id==='track')uRenderTrack();
+  document.getElementById('utab-'+id).classList.add('active'); btn.classList.add('active');
+  if(id==='track') uRenderTrack();
 }
 
 async function uSubmit(){
+  const reporter=document.getElementById('u-reporter').value.trim();
   const loc=document.getElementById('u-location').value.trim();
   const typ=document.getElementById('u-type').value;
   const det=document.getElementById('u-detail').value.trim();
-  if(!loc||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+  if(!reporter||!loc||!typ||!det){ toast('⚠ กรุณากรอกข้อมูลที่จำเป็น'); return; }
   const isUrgent=document.getElementById('u-urgent').checked;
-  const j={
-    id:genId(),location:loc,type:typ,detail:det,
-    status:isUrgent?'เร่งด่วน':'รอดำเนินการ',
-    priority:isUrgent?'สูง':'ปานกลาง',
-    tech:'',cost:0,
-    date:document.getElementById('u-date').value,
-    doneDate:'',note:'',
-    created:Date.now(),
-    reporter:currentUser,
-    dept:currentDept,
-    action:'add'
-  };
+  const j={id:genId(),dept:currentDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:document.getElementById('u-date').value,doneDate:'',note:'',created:Date.now(),action:'add'};
   document.getElementById('u-btn-save').disabled=true;
   document.getElementById('u-sving').classList.add('show');
   document.getElementById('u-sdot').className='sdot syncing';
   document.getElementById('u-stxt').textContent='กำลังส่ง...';
   try{
     await callAPI(j);
-    jobs.unshift(j);
+    const lj={...j}; delete lj.action;
+    localJobs.unshift(lj); saveLocal();
     uClearForm();
     document.getElementById('u-sdot').className='sdot';
     document.getElementById('u-stxt').textContent='ส่งแล้ว';
     toast(isUrgent?'🚨 แจ้งเร่งด่วนสำเร็จ!':'ส่งแจ้งซ่อมสำเร็จ');
+    uRenderTrack(); updateHomeDots();
   }catch(e){
     document.getElementById('u-sdot').className='sdot error';
     document.getElementById('u-stxt').textContent='ส่งไม่สำเร็จ';
@@ -555,67 +634,63 @@ async function uLoadJobs(){
   try{
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
-      jobs=data.filter(r=>r.dept===currentDept).map(r=>({
-        id:r.id||'',location:r.location||'',type:r.type||'',detail:r.detail||'',
-        status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',
-        tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',
-        doneDate:r.doneDate||'',note:r.note||'',created:r.created||Date.now(),
-        reporter:r.reporter||'',dept:r.dept||''
-      }));
+      const apiMine=data.filter(r=>r.dept===currentDept);
+      // update local status from API
+      localJobs=localJobs.map(lj=>{
+        const found=apiMine.find(aj=>aj.id===lj.id);
+        return found?{...lj,status:found.status,tech:found.tech||lj.tech,doneDate:found.doneDate||lj.doneDate}:lj;
+      });
+      apiMine.forEach(aj=>{ if(!localJobs.find(lj=>lj.id===aj.id)) localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',created:parseInt(aj.created)||0}); });
+      saveLocal();
       document.getElementById('u-sdot').className='sdot';
       document.getElementById('u-stxt').textContent='อัปเดตแล้ว';
-      uRenderTrack();
+      uRenderTrack(); updateHomeDots();
     }
   }catch(e){
     document.getElementById('u-sdot').className='sdot error';
-    document.getElementById('u-stxt').textContent='โหลดไม่สำเร็จ';
-    document.getElementById('u-track-content').innerHTML=`<div class="empty"><i class="ti ti-wifi-off"></i>ไม่สามารถโหลดข้อมูลได้</div>`;
+    document.getElementById('u-stxt').textContent='ใช้ข้อมูล local';
+    uRenderTrack();
   }
 }
 
 function uRenderTrack(){
   const fs=document.getElementById('u-filter-status').value;
-  const fil=jobs.filter(j=>!fs||j.status===fs);
+  const mine=localJobs.filter(j=>j.dept===currentDept&&(!fs||j.status===fs));
   const c=document.getElementById('u-track-content');
-  if(!fil.length){c.innerHTML=`<div class="empty"><i class="ti ti-clipboard-x"></i>ไม่พบรายการแจ้งซ่อมของแผนก ${currentDept}</div>`;return;}
-  c.innerHTML=`<div class="status-grid">${fil.map(j=>`
+  if(!mine.length){ c.innerHTML=`<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>`; return; }
+  c.innerHTML=`<div class="status-grid">${mine.map(j=>`
     <div class="status-card ${j.status==='เร่งด่วน'?'urgent-card':j.status==='เสร็จสิ้น'?'done-card':''}">
-      <div class="sc-top">
-        <span class="sc-id">${j.id}</span>
-        ${bdg(j.status)}
-      </div>
-      <div class="sc-loc"><i class="ti ti-map-pin" style="font-size:13px;margin-right:4px"></i>${j.location}</div>
+      <div class="sc-top"><span class="sc-id">${j.id}</span>${bdg(j.status)}</div>
+      <div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>${j.location}</div>
       <div class="sc-type">${j.type}</div>
       <div class="sc-detail">${j.detail}</div>
       <div class="sc-footer">
-        <span><i class="ti ti-user" style="font-size:12px;margin-right:3px"></i>${j.reporter||'—'}</span>
+        <span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>${j.reporter||'—'}</span>
         <span>${j.date||'—'}</span>
       </div>
-      ${j.tech?`<div style="font-size:11px;color:var(--text2);margin-top:6px;padding-top:6px;border-top:0.5px solid var(--border)"><i class="ti ti-tool" style="font-size:12px;margin-right:3px"></i>ช่าง: ${j.tech}</div>`:''}
-      ${j.doneDate?`<div style="font-size:11px;color:#3B6D11;margin-top:4px"><i class="ti ti-check" style="font-size:12px;margin-right:3px"></i>เสร็จวันที่: ${j.doneDate}</div>`:''}
+      ${j.tech?`<div style="font-size:11px;color:${j.status==='เสร็จสิ้น'?'#3B6D11':'var(--text2)'};margin-top:6px;padding-top:6px;border-top:0.5px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: ${j.tech}</div>`:''}
+      ${j.doneDate?`<div style="font-size:11px;color:#3B6D11;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: ${j.doneDate}</div>`:''}
     </div>`).join('')}</div>`;
 }
 
-// ---- ADMIN FUNCTIONS ----
+// ---- ADMIN ----
 function setSS(dot,txt,state){
   document.getElementById(dot).className='sdot'+(state==='syncing'?' syncing':state==='error'?' error':'');
   document.getElementById(txt).textContent=state==='syncing'?'กำลัง Sync...':state==='error'?'เชื่อมต่อไม่ได้':'ซิงค์แล้ว';
 }
-
 function setDeptFilter(dept,btn){
   deptFilter=dept;
   document.querySelectorAll('[id^="df-"]').forEach(b=>b.classList.remove('pri'));
   btn.classList.add('pri');
-  aRenderDash();aRenderList();
+  aRenderDash(); aRenderList();
 }
-
 function aGoTab(id,btn){
   document.querySelectorAll('#page-admin .tab').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('#page-admin .nb').forEach(e=>e.classList.remove('active'));
-  document.getElementById('atab-'+id).classList.add('active');btn.classList.add('active');
-  if(id==='dash')aRenderDash();
-  if(id==='list')aRenderList();
-  if(id==='urgent')aRenderUrgent();
+  document.getElementById('atab-'+id).classList.add('active'); btn.classList.add('active');
+  if(id==='dash') aRenderDash();
+  if(id==='list') aRenderList();
+  if(id==='urgent') aRenderUrgent();
 }
 
 async function aLoad(){
@@ -624,84 +699,89 @@ async function aLoad(){
   try{
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
-      jobs=data.map(r=>({id:r.id||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',created:r.created||Date.now(),reporter:r.reporter||'',dept:r.dept||''}));
+      allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',created:parseInt(r.created)||0}));
       setSS('a-sdot','a-stxt','ok');
-      toast('โหลดข้อมูลสำเร็จ ('+jobs.length+' รายการ)');
-      aCheckAlerts();aRenderDash();aRenderList();
-    }else throw new Error();
-  }catch(e){setSS('a-sdot','a-stxt','error');toast('เชื่อมต่อไม่ได้');}
+      toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
+      aCheckAlerts(); aRenderDash(); aRenderList();
+    } else throw new Error();
+  }catch(e){ setSS('a-sdot','a-stxt','error'); toast('เชื่อมต่อไม่ได้'); }
   document.getElementById('a-btnR').disabled=false;
 }
 
 function aCheckAlerts(){
-  const urg=jobs.filter(j=>j.status==='เร่งด่วน');
+  const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
   document.getElementById('a-ndot').style.display=urg.length?'block':'none';
   const bar=document.getElementById('a-abar');
-  if(urg.length){document.getElementById('a-alist').innerHTML=urg.slice(0,4).map(j=>`• [${j.dept||'?'}] ${j.id} — ${j.location} (${j.type})${j.reporter?' โดย '+j.reporter:''}`).join('<br>');bar.classList.add('show');}
+  if(urg.length){ document.getElementById('a-alist').innerHTML=urg.slice(0,5).map(j=>`• [${j.dept||'?'}] ${j.id} — ${j.location}${j.reporter?' โดย '+j.reporter:''}`).join('<br>'); bar.classList.add('show'); }
   else bar.classList.remove('show');
 }
 
-function getFilteredJobs(){return deptFilter?jobs.filter(j=>j.dept===deptFilter):jobs;}
+function getFiltered(){ return deptFilter?allJobs.filter(j=>j.dept===deptFilter):allJobs; }
 
 function aRenderDash(){
-  const fj=getFilteredJobs();
+  const fj=getFiltered();
   const total=fj.length,done=fj.filter(j=>j.status==='เสร็จสิ้น').length,urgent=fj.filter(j=>j.status==='เร่งด่วน').length,inprog=fj.filter(j=>j.status==='กำลังดำเนินการ').length,cost=fj.reduce((s,j)=>s+(j.cost||0),0);
   document.getElementById('a-kpis').innerHTML=`
-    <div class="kpi"><div class="ktop"><span class="klabel">${deptFilter||'ทุกแผนก'} — งานทั้งหมด</span><span class="kico" style="background:#F1EFE8;color:#444441"><i class="ti ti-clipboard-list"></i></span></div><div class="kval">${total}</div><div class="kfoot">รายการ</div></div>
+    <div class="kpi"><div class="ktop"><span class="klabel">${deptFilter||'ทุกแผนก'}</span><span class="kico" style="background:#F1EFE8;color:#444441"><i class="ti ti-clipboard-list"></i></span></div><div class="kval">${total}</div><div class="kfoot">รายการ</div></div>
     <div class="kpi"><div class="ktop"><span class="klabel">กำลังดำเนินการ</span><span class="kico" style="background:#E6F1FB;color:#185FA5"><i class="ti ti-progress"></i></span></div><div class="kval" style="color:#185FA5">${inprog}</div><div class="kfoot">${total?Math.round(inprog/total*100):0}%</div></div>
     <div class="kpi"><div class="ktop"><span class="klabel">เสร็จสิ้น</span><span class="kico" style="background:#EAF3DE;color:#3B6D11"><i class="ti ti-circle-check"></i></span></div><div class="kval" style="color:#3B6D11">${done}</div><div class="kfoot">${total?Math.round(done/total*100):0}%</div></div>
     <div class="kpi"><div class="ktop"><span class="klabel">เร่งด่วน</span><span class="kico" style="background:#FCEBEB;color:#A32D2D"><i class="ti ti-alert-triangle"></i></span></div><div class="kval" style="color:#A32D2D">${urgent}</div><div class="kfoot">ค่าใช้จ่าย ${cost.toLocaleString()} บ.</div></div>`;
-
   const sts=['รอดำเนินการ','กำลังดำเนินการ','เสร็จสิ้น','เร่งด่วน'],sC=['#EF9F27','#378ADD','#639922','#E24B4A'],sD=sts.map(s=>fj.filter(j=>j.status===s).length);
   document.getElementById('a-legS').innerHTML=sts.map((s,i)=>`<span class="leg"><span class="legdot" style="background:${sC[i]}"></span>${s} ${sD[i]}</span>`).join('');
-  if(cS)cS.destroy();
+  if(cS) cS.destroy();
   cS=new Chart(document.getElementById('a-cS'),{type:'doughnut',data:{labels:sts,datasets:[{data:sD,backgroundColor:sC,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
-
-  const depts=['Assembly','Grinding','Frist grinding'],dC=['#378ADD','#639922','#EF9F27'],dD=depts.map(d=>jobs.filter(j=>j.dept===d).length);
+  const depts=['Assembly','Grinding','Frist grinding'],dC=['#378ADD','#639922','#EF9F27'],dD=depts.map(d=>allJobs.filter(j=>j.dept===d).length);
   document.getElementById('a-legD').innerHTML=depts.map((d,i)=>`<span class="leg"><span class="legdot" style="background:${dC[i]}"></span>${d} ${dD[i]}</span>`).join('');
-  if(cD)cD.destroy();
+  if(cD) cD.destroy();
   cD=new Chart(document.getElementById('a-cD'),{type:'bar',data:{labels:depts,datasets:[{data:dD,backgroundColor:dC,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}}}}});
-
   const rb=document.getElementById('a-recBody');
-  rb.innerHTML=fj.slice(0,6).map(j=>`<tr class="${j.status==='เร่งด่วน'?'urg':''}"><td style="font-family:monospace;font-size:11px;color:var(--text2)">${j.id}</td><td>${deptBadge(j.dept)}</td><td>${j.location}</td><td>${j.type}</td><td>${bdg(j.status)}</td><td>${j.reporter||'—'}</td><td style="font-size:11px;color:var(--text2)">${j.date||'—'}</td></tr>`).join('')||`<tr><td colspan="7"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>`;
+  rb.innerHTML=fj.slice(0,6).map(j=>`<tr class="${j.status==='เร่งด่วน'?'urg':''}"><td style="font-family:monospace;font-size:11px;color:var(--text2)">${j.id}</td><td>${deptBadge(j.dept)}</td><td style="font-weight:500">${j.reporter||'—'}</td><td>${j.location}</td><td>${j.type}</td><td>${bdg(j.status)}</td><td>${j.tech||'—'}</td><td style="font-size:11px;color:var(--text2)">${j.date||'—'}</td></tr>`).join('')||`<tr><td colspan="8"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>`;
 }
 
+// เรียงตามผู้แจ้ง
 function aRenderList(){
   const fd=document.getElementById('a-fdept').value,fs=document.getElementById('a-fst').value,fq=document.getElementById('a-fsearch').value.toLowerCase();
-  const fil=jobs.filter(j=>{if(fd&&j.dept!==fd)return false;if(fs&&j.status!==fs)return false;if(fq&&![j.location,j.detail,j.type,j.tech,j.reporter,j.dept].join(' ').toLowerCase().includes(fq))return false;return true;});
+  let fil=allJobs.filter(j=>{
+    if(fd&&j.dept!==fd)return false;
+    if(fs&&j.status!==fs)return false;
+    if(fq&&![j.reporter,j.location,j.detail,j.type,j.tech,j.dept].join(' ').toLowerCase().includes(fq))return false;
+    return true;
+  });
+  // เรียงตามผู้แจ้ง ก->ฮ
+  fil.sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
   const b=document.getElementById('a-listBody');
-  if(!fil.length){b.innerHTML=`<tr><td colspan="10"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>`;return;}
+  if(!fil.length){ b.innerHTML=`<tr><td colspan="11"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>`; return; }
   b.innerHTML=fil.map(j=>`<tr class="${j.status==='เร่งด่วน'?'urg':''}">
     <td style="font-family:monospace;font-size:11px;color:var(--text2)">${j.id}</td>
+    <td style="font-weight:500">${j.reporter||'—'}</td>
     <td>${deptBadge(j.dept)}</td>
-    <td>${j.location}</td><td>${j.type}</td>
+    <td>${j.location}</td>
+    <td>${j.type}</td>
     <td style="color:var(--text2)">${j.detail}</td>
     <td>${bdg(j.status)}</td>
-    <td style="font-size:12px">${j.reporter||'—'}</td>
     <td>${j.tech||'—'}</td>
     <td style="font-size:11px;color:var(--text2)">${j.date||'—'}</td>
-    <td style="white-space:nowrap">
-      <button class="btn ic" onclick="aEditJob('${j.id}')" title="แก้ไข"><i class="ti ti-edit"></i></button>
-      <button class="btn ic del" onclick="aDelJob('${j.id}')" title="ลบ" style="margin-left:3px"><i class="ti ti-trash"></i></button>
+    <td style="font-size:11px;color:${j.doneDate?'#3B6D11':'var(--text2)'}">${j.doneDate||'—'}</td>
+    <td>
+      <button class="btn ic" onclick="openEditModal('${j.id}')" title="อัปเดตการซ่อม" style="color:#185FA5;border-color:#B5D4F4;background:#E6F1FB">
+        <i class="ti ti-edit"></i>
+      </button>
     </td>
   </tr>`).join('');
 }
 
 function aRenderUrgent(){
-  const urg=jobs.filter(j=>j.status==='เร่งด่วน');
+  const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
   let html='';
   if(urg.length){
     html+=`<p style="font-size:13px;font-weight:600;color:#791F1F;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle"></i>งานเร่งด่วน (${urg.length})</p>`;
     html+=`<div class="status-grid">${urg.map(j=>`<div class="status-card urgent-card">
       <div class="sc-top"><span class="sc-id">${j.id}</span>${deptBadge(j.dept)}</div>
-      <div class="sc-loc"><i class="ti ti-map-pin" style="font-size:13px;margin-right:4px"></i>${j.location}</div>
+      <div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>${j.location}</div>
       <div class="sc-type">${j.type}</div>
       <div class="sc-detail">${j.detail}</div>
-      ${j.reporter?`<div style="font-size:11px;color:#A32D2D;margin-bottom:4px"><i class="ti ti-user" style="font-size:12px"></i> ${j.reporter}</div>`:''}
-      <div style="margin-top:8px;display:flex;gap:6px">
-        <button class="btn" style="font-size:11px;padding:4px 10px" onclick="aEditJob('${j.id}')"><i class="ti ti-edit"></i>แก้ไข</button>
-        <button class="btn" style="font-size:11px;padding:4px 10px;border-color:#3B6D11;color:#3B6D11;background:#EAF3DE" onclick="aMarkDone('${j.id}')"><i class="ti ti-check"></i>เสร็จสิ้น</button>
-      </div>
+      ${j.reporter?`<div style="font-size:11px;color:#A32D2D;margin-bottom:4px"><i class="ti ti-user" style="font-size:11px"></i> ผู้แจ้ง: ${j.reporter}</div>`:''}
+      <button class="btn success" style="width:100%;justify-content:center;margin-top:8px" onclick="openEditModal('${j.id}')"><i class="ti ti-edit"></i>อัปเดตการซ่อม</button>
     </div>`).join('')}</div>`;
   } else {
     html=`<div class="empty" style="padding:3rem"><i class="ti ti-circle-check" style="color:#639922;font-size:36px"></i><div style="margin-top:8px">ไม่มีงานเร่งด่วน</div></div>`;
@@ -711,64 +791,44 @@ function aRenderUrgent(){
 
 async function aSaveJob(){
   const dept=document.getElementById('a-fl-dept').value,loc=document.getElementById('a-fl').value.trim(),typ=document.getElementById('a-ft').value,det=document.getElementById('a-fd').value.trim();
-  if(!dept||!loc||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
-  const j={id:editId||genId(),dept,reporter:document.getElementById('a-fl-reporter').value.trim(),location:loc,type:typ,detail:det,status:document.getElementById('a-fst2').value,priority:document.getElementById('a-fpr2').value,tech:document.getElementById('a-ftech').value.trim(),cost:parseFloat(document.getElementById('a-fcost').value)||0,date:document.getElementById('a-fdate').value,doneDate:document.getElementById('a-fdone').value,note:document.getElementById('a-fnote').value.trim(),created:editId?(jobs.find(x=>x.id===editId)||{}).created||Date.now():Date.now()};
+  if(!dept||!loc||!typ||!det){ toast('⚠ กรุณากรอกข้อมูลที่จำเป็น'); return; }
+  const j={id:genId(),dept,reporter:document.getElementById('a-fl-reporter').value.trim(),location:loc,type:typ,detail:det,status:document.getElementById('a-fst2').value,priority:'ปานกลาง',tech:document.getElementById('a-ftech').value.trim(),cost:0,date:document.getElementById('a-fdate').value,doneDate:document.getElementById('a-fdone').value,note:'',created:Date.now()};
   document.getElementById('a-btnSave').disabled=true;document.getElementById('a-sving').classList.add('show');setSS('a-sdot','a-stxt','syncing');
   try{
-    await callAPI({...j,action:editId?'update':'add'});
-    if(editId){const i=jobs.findIndex(x=>x.id===editId);if(i!==-1)jobs[i]=j;editId=null;}else jobs.unshift(j);
-    setSS('a-sdot','a-stxt','ok');aClearForm();aCheckAlerts();toast('บันทึกสำเร็จ');aRenderDash();aRenderList();
-  }catch(e){setSS('a-sdot','a-stxt','error');toast('บันทึกไม่สำเร็จ');}
+    await callAPI({...j,action:'add'});
+    allJobs.unshift(j); setSS('a-sdot','a-stxt','ok'); aClearForm(); aCheckAlerts(); toast('เพิ่มงานสำเร็จ'); aRenderDash(); aRenderList();
+  }catch(e){ setSS('a-sdot','a-stxt','error'); toast('บันทึกไม่สำเร็จ'); }
   document.getElementById('a-btnSave').disabled=false;document.getElementById('a-sving').classList.remove('show');
 }
 
 function aClearForm(){
-  ['a-fl-dept','a-ft','a-fst2','a-fpr2'].forEach(id=>document.getElementById(id).selectedIndex=0);
-  ['a-fl-reporter','a-fl','a-fd','a-ftech','a-fcost','a-fdate','a-fdone','a-fnote'].forEach(id=>document.getElementById(id).value='');
-  editId=null;document.getElementById('a-formTitle').textContent='เพิ่มงานซ่อมใหม่';
+  ['a-fl-dept','a-ft','a-fst2'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['a-fl-reporter','a-fl','a-fd','a-ftech','a-fdate','a-fdone'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
 }
 
-async function aDelJob(id){
-  if(!confirm('ยืนยันลบงานนี้?'))return;setSS('a-sdot','a-stxt','syncing');
-  try{await callAPI({action:'delete',id});jobs=jobs.filter(j=>j.id!==id);setSS('a-sdot','a-stxt','ok');aRenderList();aCheckAlerts();toast('ลบสำเร็จ');}
-  catch(e){setSS('a-sdot','a-stxt','error');toast('ลบไม่สำเร็จ');}
-}
-
-function aEditJob(id){
-  const j=jobs.find(x=>x.id===id);if(!j)return;editId=id;
-  document.getElementById('a-fl-dept').value=j.dept||'';
-  document.getElementById('a-fl-reporter').value=j.reporter||'';
-  document.getElementById('a-fl').value=j.location;document.getElementById('a-ft').value=j.type;document.getElementById('a-fd').value=j.detail;
-  document.getElementById('a-fst2').value=j.status;document.getElementById('a-fpr2').value=j.priority;document.getElementById('a-ftech').value=j.tech||'';
-  document.getElementById('a-fcost').value=j.cost||'';document.getElementById('a-fdate').value=j.date||'';document.getElementById('a-fdone').value=j.doneDate||'';document.getElementById('a-fnote').value=j.note||'';
-  document.getElementById('a-formTitle').textContent='แก้ไขงาน: '+j.id;
-  aGoTab('add',document.querySelectorAll('#page-admin .nb')[3]);
-}
-
-async function aMarkDone(id){
-  const j=jobs.find(x=>x.id===id);if(!j)return;j.status='เสร็จสิ้น';j.doneDate=new Date().toISOString().split('T')[0];setSS('a-sdot','a-stxt','syncing');
-  try{await callAPI({...j,action:'update'});setSS('a-sdot','a-stxt','ok');aRenderUrgent();aCheckAlerts();toast('เปลี่ยนสถานะเป็นเสร็จสิ้น');}
-  catch(e){setSS('a-sdot','a-stxt','error');j.status='เร่งด่วน';toast('อัปเดตไม่สำเร็จ');}
-}
-
 function exportExcel(){
-  if(!jobs.length){toast('ไม่มีข้อมูล');return;}
-  const ws=XLSX.utils.aoa_to_sheet([['รหัสงาน','แผนก','ผู้แจ้ง','สถานที่','ประเภทงาน','รายละเอียด','สถานะ','ความสำคัญ','ช่าง','ค่าใช้จ่าย','วันที่แจ้ง','วันที่เสร็จ','หมายเหตุ'],...jobs.map(j=>[j.id,j.dept||'',j.reporter||'',j.location,j.type,j.detail,j.status,j.priority,j.tech||'',j.cost||0,j.date||'',j.doneDate||'',j.note||''])]);
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'งานซ่อมไฟฟ้า',ws);
-  XLSX.writeFile(wb,'งานซ่อมไฟฟ้า_'+new Date().toISOString().slice(0,10)+'.xlsx');toast('ดาวน์โหลด Excel สำเร็จ');
+  const src=allJobs.length?allJobs:localJobs;
+  if(!src.length){ toast('ไม่มีข้อมูล'); return; }
+  const ws=XLSX.utils.aoa_to_sheet([['รหัสงาน','ผู้แจ้ง','แผนก','สถานที่','ประเภทงาน','รายละเอียด','สถานะ','ช่าง','วันที่แจ้ง','วันที่เสร็จ'],...src.map(j=>[j.id,j.reporter||'',j.dept||'',j.location,j.type,j.detail,j.status,j.tech||'',j.date||'',j.doneDate||''])]);
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,'งานซ่อมไฟฟ้า',ws);
+  XLSX.writeFile(wb,'งานซ่อมไฟฟ้า_'+new Date().toISOString().slice(0,10)+'.xlsx'); toast('ดาวน์โหลด Excel สำเร็จ');
 }
 
 function exportPDF(){
-  if(!jobs.length){toast('ไม่มีข้อมูล');return;}
-  const total=jobs.length,done=jobs.filter(j=>j.status==='เสร็จสิ้น').length,urgent=jobs.filter(j=>j.status==='เร่งด่วน').length,cost=jobs.reduce((s,j)=>s+(j.cost||0),0);
+  const src=allJobs.length?allJobs:localJobs;
+  if(!src.length){ toast('ไม่มีข้อมูล'); return; }
+  const total=src.length,done=src.filter(j=>j.status==='เสร็จสิ้น').length,urgent=src.filter(j=>j.status==='เร่งด่วน').length;
   const date=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
-  const rows=jobs.map(j=>`<tr style="border-bottom:1px solid #eee"><td style="padding:5px 7px;font-size:10px;color:#666;font-family:monospace">${j.id}</td><td style="padding:5px 7px;font-size:11px">${j.dept||'—'}</td><td style="padding:5px 7px;font-size:11px">${j.reporter||'—'}</td><td style="padding:5px 7px;font-size:11px">${j.location}</td><td style="padding:5px 7px;font-size:11px">${j.type}</td><td style="padding:5px 7px;font-size:10px;color:#555">${j.detail.slice(0,50)}${j.detail.length>50?'...':''}</td><td style="padding:5px 7px"><span style="background:${j.status==='เสร็จสิ้น'?'#EAF3DE':j.status==='เร่งด่วน'?'#FCEBEB':j.status==='กำลังดำเนินการ'?'#E6F1FB':'#FAEEDA'};color:${j.status==='เสร็จสิ้น'?'#27500A':j.status==='เร่งด่วน'?'#791F1F':j.status==='กำลังดำเนินการ'?'#0C447C':'#633806'};padding:1px 6px;border-radius:99px;font-size:10px">${j.status}</span></td><td style="padding:5px 7px;font-size:11px">${j.date||'—'}</td></tr>`).join('');
+  const sorted=[...src].sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
+  const rows=sorted.map(j=>`<tr style="border-bottom:1px solid #eee"><td style="padding:5px 7px;font-size:10px;color:#666;font-family:monospace">${j.id}</td><td style="padding:5px 7px;font-size:11px;font-weight:600">${j.reporter||'—'}</td><td style="padding:5px 7px;font-size:11px">${j.dept||'—'}</td><td style="padding:5px 7px;font-size:11px">${j.location}</td><td style="padding:5px 7px;font-size:11px">${j.type}</td><td style="padding:5px 7px"><span style="background:${j.status==='เสร็จสิ้น'?'#EAF3DE':j.status==='เร่งด่วน'?'#FCEBEB':j.status==='กำลังดำเนินการ'?'#E6F1FB':'#FAEEDA'};color:${j.status==='เสร็จสิ้น'?'#27500A':j.status==='เร่งด่วน'?'#791F1F':j.status==='กำลังดำเนินการ'?'#0C447C':'#633806'};padding:1px 6px;border-radius:99px;font-size:10px">${j.status}</span></td><td style="padding:5px 7px;font-size:11px">${j.tech||'—'}</td><td style="padding:5px 7px;font-size:11px">${j.doneDate||'—'}</td></tr>`).join('');
   const w=window.open('','_blank');
-  if(w){w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>รายงานงานซ่อมไฟฟ้า</title><style>body{font-family:sans-serif;padding:24px;color:#1a1a1a}h1{font-size:18px;font-weight:700;margin-bottom:4px}.sub{color:#666;font-size:12px;margin-bottom:20px}.kr{display:flex;gap:12px;margin-bottom:20px}.kk{background:#f8f8f8;border-radius:8px;padding:10px 14px;flex:1;text-align:center}.kv{font-size:20px;font-weight:700;margin-bottom:2px}.kl{font-size:10px;color:#888}table{width:100%;border-collapse:collapse}th{background:#f4f4f4;padding:6px 7px;font-size:10px;text-align:left;border-bottom:2px solid #e0e0e0;text-transform:uppercase}</style></head><body><h1>รายงานงานซ่อมไฟฟ้า</h1><p class="sub">สร้างเมื่อ ${date} · ${total} รายการ</p><div class="kr"><div class="kk"><div class="kv">${total}</div><div class="kl">งานทั้งหมด</div></div><div class="kk"><div class="kv" style="color:#27500A">${done}</div><div class="kl">เสร็จสิ้น</div></div><div class="kk"><div class="kv" style="color:#791F1F">${urgent}</div><div class="kl">เร่งด่วน</div></div><div class="kk"><div class="kv">${cost.toLocaleString()}</div><div class="kl">ค่าใช้จ่าย (บ.)</div></div></div><table><thead><tr><th>รหัส</th><th>แผนก</th><th>ผู้แจ้ง</th><th>สถานที่</th><th>ประเภท</th><th>รายละเอียด</th><th>สถานะ</th><th>วันที่</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();toast('เปิดหน้า PDF แล้ว');}
+  if(w){w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>รายงาน</title><style>body{font-family:sans-serif;padding:24px;color:#1a1a1a}h1{font-size:18px;font-weight:700;margin-bottom:4px}.sub{color:#666;font-size:12px;margin-bottom:20px}.kr{display:flex;gap:12px;margin-bottom:20px}.kk{background:#f8f8f8;border-radius:8px;padding:10px 14px;flex:1;text-align:center}.kv{font-size:20px;font-weight:700;margin-bottom:2px}.kl{font-size:10px;color:#888}table{width:100%;border-collapse:collapse}th{background:#f4f4f4;padding:6px 7px;font-size:10px;text-align:left;border-bottom:2px solid #e0e0e0;text-transform:uppercase}</style></head><body><h1>รายงานงานซ่อมไฟฟ้า</h1><p class="sub">สร้างเมื่อ ${date} · ${total} รายการ (เรียงตามผู้แจ้ง)</p><div class="kr"><div class="kk"><div class="kv">${total}</div><div class="kl">ทั้งหมด</div></div><div class="kk"><div class="kv" style="color:#27500A">${done}</div><div class="kl">เสร็จสิ้น</div></div><div class="kk"><div class="kv" style="color:#791F1F">${urgent}</div><div class="kl">เร่งด่วน</div></div></div><table><thead><tr><th>รหัส</th><th>ผู้แจ้ง</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>สถานะ</th><th>ช่าง</th><th>วันที่เสร็จ</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();toast('เปิดหน้า PDF แล้ว');}
   else toast('กรุณาอนุญาต popup');
 }
 
+// INIT
+loadLocal(); updateHomeDots(); startCountdown();
 document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
 </script>
 </body>
