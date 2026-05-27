@@ -331,6 +331,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
         <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i>Sync</button>
         <button class="btn xl" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
         <button class="btn pf" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
+        <button class="btn danger-btn" onclick="confirmClearAll()" title="ลบข้อมูลทดสอบทั้งหมด"><i class="ti ti-trash"></i>ล้างข้อมูลทั้งหมด</button>
         <button class="btn danger-btn" onclick="adminLogout()"><i class="ti ti-logout"></i>ออกจากระบบ</button>
       </div>
     </div>
@@ -535,6 +536,35 @@ function doLogin(){
   } else { document.getElementById('login-err').classList.add('show'); document.getElementById('admin-pw').value=''; document.getElementById('admin-pw').focus(); }
 }
 function adminLogout(){ goHome(); }
+
+function confirmClearAll(){
+  const cnt=allJobs.length;
+  if(cnt===0){ toast('ไม่มีข้อมูลในระบบ'); return; }
+  if(!confirm('⚠ ยืนยันลบข้อมูลทั้งหมด '+cnt+' รายการ?\n\nข้อมูลใน Google Sheets และ local จะถูกลบทั้งหมด\nไม่สามารถย้อนกลับได้')) return;
+  clearAllJobs();
+}
+
+async function clearAllJobs(){
+  setSS('a-sdot','a-stxt','syncing');
+  document.getElementById('a-btnR').disabled=true;
+  const ids=allJobs.map(j=>j.id);
+  let ok=0,fail=0;
+  toast('กำลังลบข้อมูล...',8000);
+  for(const id of ids){
+    try{ await callAPI({action:'delete',id}); ok++; }
+    catch(e){ fail++; }
+  }
+  allJobs=[];
+  localStorage.removeItem(STORE_KEY);
+  localStorage.removeItem(RESET_KEY);
+  localJobs=[];
+  setResetTime();
+  updateHomeDots();
+  setSS('a-sdot','a-stxt','ok');
+  document.getElementById('a-btnR').disabled=false;
+  aCheckAlerts(); aRenderDash(); aRenderList();
+  toast('ลบสำเร็จ '+ok+' รายการ'+(fail>0?' (ล้มเหลว '+fail+')':''),3000);
+}
 
 // ---- EDIT MODAL ----
 function openEditModal(id){
