@@ -530,7 +530,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
                 <span style="font-size:13px;font-weight:500;color:var(--red-dark)"><i class="ti ti-alert-triangle"></i> แจ้งเร่งด่วน — ส่งผลต่อการผลิต</span>
               </div>
             </div>
-            <div class="fg"><label>วันที่แจ้ง</label><input type="date" id="u-date"></div>
+            <div class="fg"><label>วันที่แจ้ง <span style="font-size:10px;color:var(--text3);font-weight:400">(บันทึกอัตโนมัติ)</span></label><input type="date" id="u-date" readonly style="background:var(--surface2);cursor:default"></div>
           </div>
         </div>
         <div class="fftr">
@@ -616,7 +616,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
       </div>
       <div class="tw">
         <table><thead><tr>
-          <th style="width:72px">รหัส</th><th style="width:110px">ผู้แจ้ง</th><th style="width:100px">แผนก</th><th style="width:120px">สถานที่</th><th style="width:100px">ประเภท</th><th style="width:130px">รายละเอียด</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th style="width:80px">วันที่แจ้ง</th><th style="width:80px">วันที่เสร็จ</th><th style="width:130px">วิธีซ่อม</th><th style="width:50px">แก้ไข</th>
+          <th style="width:72px">รหัส</th><th style="width:110px">ผู้แจ้ง</th><th style="width:100px">แผนก</th><th style="width:120px">สถานที่</th><th style="width:100px">ประเภท</th><th style="width:130px">รายละเอียด</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th style="width:100px">วันที่/เวลาแจ้ง</th><th style="width:100px">วันที่/เวลาเสร็จ</th><th style="width:130px">วิธีซ่อม</th><th style="width:50px">แก้ไข</th>
         </tr></thead><tbody id="a-listBody"></tbody></table>
       </div>
     </div>
@@ -716,6 +716,24 @@ function callAPI(payload){
 }
 
 // ---- UTILS ----
+
+function getNowDatetime() {
+  var now = new Date();
+  var date = now.toLocaleDateString('th-TH', {year:'numeric',month:'2-digit',day:'2-digit'});
+  var time = now.toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit',hour12:false});
+  return date + ' ' + time;
+}
+function getNowDate() {
+  return new Date().toISOString().split('T')[0];
+}
+function formatDatetime(isoStr) {
+  if (!isoStr) return '—';
+  try {
+    var d = new Date(isoStr);
+    if (isNaN(d)) return isoStr;
+    return d.toLocaleDateString('th-TH',{year:'numeric',month:'2-digit',day:'2-digit'}) + ' ' + d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false});
+  } catch(e) { return isoStr; }
+}
 function genId(){return 'E'+String(Date.now()).slice(-5);}
 function toast(msg,dur){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur||2400);}
 function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent'};return '<span class="badge '+( m[s]||'b-wait')+'">'+s+'</span>';}
@@ -783,7 +801,16 @@ async function saveEdit(){
   if(!editingJob)return;
   editingJob.tech=document.getElementById('e-tech').value.trim();
   editingJob.status=document.getElementById('e-status').value;
-  editingJob.doneDate=document.getElementById('e-donedate').value;
+  var doneDateVal = document.getElementById('e-donedate').value;
+  // ถ้าสถานะเสร็จสิ้นและไม่ได้เลือกวันที่ ให้ใช้เวลาปัจจุบัน
+  if(editingJob.status === 'เสร็จสิ้น' && !doneDateVal) {
+    editingJob.doneDate = new Date().toISOString();
+  } else if(doneDateVal) {
+    // ถ้าเลือกวันที่แบบ date-only ให้เพิ่มเวลาปัจจุบัน
+    editingJob.doneDate = doneDateVal + 'T' + new Date().toTimeString().slice(0,5) + ':00.000Z';
+  } else {
+    editingJob.doneDate = '';
+  }
   editingJob.repairDetail=document.getElementById('e-repair-detail').value.trim();
   const rows=document.querySelectorAll('.equip-row');
   const equips=[];let totalCost=0;
@@ -825,7 +852,7 @@ async function uSubmit(){
   const det=document.getElementById('u-detail').value.trim();
   if(!reporter||!loc||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
   const isUrgent=document.getElementById('u-urgent').checked;
-  const j={id:genId(),dept:currentDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:document.getElementById('u-date').value,doneDate:'',note:'',created:Date.now(),action:'add'};
+  const j={id:genId(),dept:currentDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:new Date().toISOString(),doneDate:'',note:'',created:Date.now(),action:'add'};
   document.getElementById('u-btn-save').disabled=true;
   document.getElementById('u-sving').classList.add('show');
   document.getElementById('u-sdot').className='sdot syncing';
@@ -864,7 +891,7 @@ function uRenderTrack(){
   const mine=localJobs.filter(j=>j.dept===currentDept&&(!fs||j.status===fs));
   const c=document.getElementById('u-track-content');
   if(!mine.length){c.innerHTML='<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>';return;}
-  c.innerHTML='<div class="status-grid">'+mine.map(j=>'<div class="sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default')+'"><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div><div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+(j.date||'—')+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+j.doneDate+'</div>':'')+'</div>').join('')+'</div>';
+  c.innerHTML='<div class="status-grid">'+mine.map(j=>'<div class="sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default')+'"><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div><div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+'</div>').join('')+'</div>';
 }
 
 // ---- ADMIN ----
@@ -935,7 +962,7 @@ function aRenderDash(){
     cD=new Chart(document.getElementById('a-cD')||canvas,{type:'bar',data:{labels:depts,datasets:[{data:dD,backgroundColor:dC,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{grid:{display:false}},y:{ticks:{stepSize:1,precision:0},grid:{color:'rgba(0,0,0,.04)'},min:0}}}});
   }
   const rb=document.getElementById('a-recBody');
-  rb.innerHTML=fj.slice(0,6).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+( j.date||'—')+'</td></tr>').join('')||'<tr><td colspan="8"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
+  rb.innerHTML=fj.slice(0,6).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>').join('')||'<tr><td colspan="8"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
 }
 function aRenderList(){
   const fd=document.getElementById('a-fdept').value,fs=document.getElementById('a-fst').value,fq=document.getElementById('a-fsearch').value.toLowerCase();
@@ -943,7 +970,7 @@ function aRenderList(){
   fil.sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
   const b=document.getElementById('a-listBody');
   if(!fil.length){b.innerHTML='<tr><td colspan="11"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>';return;}
-  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+( j.date||'—')+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+( j.doneDate||'—')+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td></tr>').join('');
+  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td></tr>').join('');
 }
 function aRenderUrgent(){
   const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
@@ -957,7 +984,7 @@ function aRenderUrgent(){
 async function aSaveJob(){
   const dept=document.getElementById('a-fl-dept').value,loc=document.getElementById('a-fl').value.trim(),typ=document.getElementById('a-ft').value,det=document.getElementById('a-fd').value.trim();
   if(!dept||!loc||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
-  const j={id:genId(),dept,reporter:document.getElementById('a-fl-reporter').value.trim(),location:loc,type:typ,detail:det,status:document.getElementById('a-fst2').value,priority:'ปานกลาง',tech:document.getElementById('a-ftech').value.trim(),cost:0,date:document.getElementById('a-fdate').value,doneDate:document.getElementById('a-fdone').value,note:'',created:Date.now()};
+  const j={id:genId(),dept,reporter:document.getElementById('a-fl-reporter').value.trim(),location:loc,type:typ,detail:det,status:document.getElementById('a-fst2').value,priority:'ปานกลาง',tech:document.getElementById('a-ftech').value.trim(),cost:0,date:new Date().toISOString(),doneDate:document.getElementById('a-fdone').value||'',note:'',created:Date.now()};
   document.getElementById('a-btnSave').disabled=true;document.getElementById('a-sving').classList.add('show');setSS('a-sdot','a-stxt','syncing');
   try{await callAPI({...j,action:'add'});allJobs.unshift(j);setSS('a-sdot','a-stxt','ok');aClearForm();aCheckAlerts();toast('เพิ่มงานสำเร็จ');aRenderDash();aRenderList();}
   catch(e){setSS('a-sdot','a-stxt','error');toast('บันทึกไม่สำเร็จ');}
@@ -1049,7 +1076,7 @@ function printDash(){
       '<td>'+j.type+'</td>'+
       '<td><span style="background:none;color:'+stColor+';font-weight:600;font-size:11px">'+j.status+'</span></td>'+
       '<td>'+( j.tech||'—')+'</td>'+
-      '<td style="font-size:10px;color:#888">'+( j.date||'—')+'</td></tr>';
+      '<td style="font-size:10px;color:#888">'+formatDatetime(j.date)+'</td></tr>';
   }).join('');
 
   var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>รายงานภาพรวม</title>'+style+'</head><body>'+
@@ -1082,7 +1109,7 @@ function exportCurrentPDF(){
     const total=src.length,done=src.filter(j=>j.status==='เสร็จสิ้น').length,urgent=src.filter(j=>j.status==='เร่งด่วน').length,cost=src.reduce((s,j)=>s+(j.cost||0),0);
     const kpiHtml='<div class="kr"><div class="kk"><div class="kv">'+total+'</div><div class="kl">ทั้งหมด</div></div><div class="kk"><div class="kv" style="color:#16A34A">'+done+'</div><div class="kl">เสร็จสิ้น</div></div><div class="kk"><div class="kv" style="color:#E8192C">'+urgent+'</div><div class="kl">เร่งด่วน</div></div><div class="kk"><div class="kv">'+cost.toLocaleString()+'</div><div class="kl">ค่าอุปกรณ์ (บ.)</div></div></div>';
     headers='<th>รหัส</th><th>ผู้แจ้ง</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>สถานะ</th><th>ช่าง</th><th>วันที่</th>';
-    rows=src.map(j=>'<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td><td style="font-weight:600">'+( j.reporter||'—')+'</td><td>'+( j.dept||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td><span style="background:'+( j.status==='เสร็จสิ้น'?'#F0FDF4':j.status==='เร่งด่วน'?'#FEF2F2':'#EFF6FF')+';color:'+( j.status==='เสร็จสิ้น'?'#166534':j.status==='เร่งด่วน'?'#991B1B':'#1E40AF')+';padding:2px 8px;border-radius:99px;font-size:10px">'+j.status+'</span></td><td>'+( j.tech||'—')+'</td><td style="font-size:10px;color:#888">'+( j.date||'—')+'</td></tr>').join('');
+    rows=src.map(j=>'<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td><td style="font-weight:600">'+( j.reporter||'—')+'</td><td>'+( j.dept||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td><span style="background:'+( j.status==='เสร็จสิ้น'?'#F0FDF4':j.status==='เร่งด่วน'?'#FEF2F2':'#EFF6FF')+';color:'+( j.status==='เสร็จสิ้น'?'#166534':j.status==='เร่งด่วน'?'#991B1B':'#1E40AF')+';padding:2px 8px;border-radius:99px;font-size:10px">'+j.status+'</span></td><td>'+( j.tech||'—')+'</td><td style="font-size:10px;color:#888">'+formatDatetime(j.date)+'</td></tr>').join('');
     openPDF(title,date,kpiHtml,headers,rows);
   } else if(tab==='list'){
     src=[...allJobs].sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
@@ -1095,7 +1122,7 @@ function exportCurrentPDF(){
     if(!src.length){toast('ไม่มีงานเร่งด่วน');return;}
     title='รายงานงานเร่งด่วน';
     headers='<th>รหัส</th><th>ผู้แจ้ง</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>รายละเอียด</th><th>วันที่แจ้ง</th>';
-    rows=src.map(j=>'<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td><td style="font-weight:600">'+( j.reporter||'—')+'</td><td>'+( j.dept||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td style="color:#555">'+j.detail.slice(0,50)+(j.detail.length>50?'...':'')+'</td><td style="font-size:10px;color:#888">'+( j.date||'—')+'</td></tr>').join('');
+    rows=src.map(j=>'<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td><td style="font-weight:600">'+( j.reporter||'—')+'</td><td>'+( j.dept||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td style="color:#555">'+j.detail.slice(0,50)+(j.detail.length>50?'...':'')+'</td><td style="font-size:10px;color:#888">'+formatDatetime(j.date)+'</td></tr>').join('');
     openPDF(title,date,'',headers,rows);
   }
 }
