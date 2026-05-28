@@ -1,0 +1,39 @@
+{
+  "name": "NACHI Factory 4 - Electrical Repair",
+  "short_name": "NACHI Repair",
+  "description": "ระบบงานซ่อมไฟฟ้า NACHI Factory 4 Engineering",
+  "start_url": "/electrical-repair/",
+  "scope": "/electrical-repair/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F3F0",
+  "theme_color": "#E8192C",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "แจ้งซ่อม Assembly",
+      "url": "/electrical-repair/?dept=Assembly",
+      "description": "แจ้งซ่อมแผนก Assembly"
+    },
+    {
+      "name": "แจ้งซ่อม Grinding",
+      "url": "/electrical-repair/?dept=Grinding",
+      "description": "แจ้งซ่อมแผนก Grinding"
+    }
+  ]
+}
