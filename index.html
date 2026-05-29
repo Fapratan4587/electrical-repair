@@ -45,8 +45,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .home-icon{width:64px;height:64px;background:var(--red);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;margin:0 auto 1.25rem;box-shadow:0 8px 24px rgba(232,25,44,0.3)}
 .home-hero h1{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
 .home-hero p{font-size:14px;color:var(--text2)}
-.home-countdown{font-size:12px;color:var(--text3);display:none;align-items:center;justify-content:center;gap:6px;margin-bottom:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:6px 14px;max-width:100%;margin-left:auto;margin-right:auto}
-.home-countdown.show{display:flex}
 .home-cd-time{font-family:var(--mono);font-weight:500;color:var(--text);font-size:12px}
 
 .dept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;width:100%}
@@ -366,12 +364,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
           <h1>ระบบงานซ่อมไฟฟ้า</h1>
           <p>Electrical Maintenance Management System</p>
         </div>
-        <div class="home-countdown" id="home-countdown-bar">
-          <i class="ti ti-clock" style="font-size:13px"></i>
-          รีเซ็ตอัตโนมัติใน
-          <span class="home-cd-time" id="home-cdown"></span>
-        </div>
-        <div class="dept-grid">
+<div class="dept-grid">
           <div class="dept-card dept-Assembly" onclick="enterUser('Assembly')">
             <span class="dept-badge-count" id="dot-Assembly"></span>
             <div class="dept-icon">
@@ -685,13 +678,9 @@ function startCountdown(){
   function tick(){
     const rt=getRT();if(!rt)return;
     const diff=rt-Date.now();
-    if(diff<=0){checkReset();uRenderTrack();updateHomeDots();return;}
-    const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
-    const str=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    const uel=document.getElementById('u-countdown'),hel=document.getElementById('home-cdown');
-    if(uel)uel.textContent=str;if(hel)hel.textContent=str;
+    if(diff<=0){checkReset();uRenderTrack();updateHomeDots();}
   }
-  tick();countdownTimer=setInterval(tick,1000);
+  tick();countdownTimer=setInterval(tick,60000);
 }
 
 function updateHomeDots(){
@@ -1146,6 +1135,18 @@ function openPDF(title,date,kpiHtml,headers,rows){
 document.getElementById('home-date').textContent=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
 document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
 loadLocal();updateHomeDots();startCountdown();
+
+// Live clock on home page
+function updateHomeClock(){
+  var now = new Date();
+  var h = String(now.getHours()).padStart(2,'0');
+  var m = String(now.getMinutes()).padStart(2,'0');
+  var s = String(now.getSeconds()).padStart(2,'0');
+  var el = document.getElementById('home-clock');
+  if(el) el.textContent = h + ':' + m + ':' + s;
+}
+updateHomeClock();
+setInterval(updateHomeClock, 1000);
 </script>
 <script>
 if('serviceWorker' in navigator){
