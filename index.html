@@ -106,7 +106,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* ======= COMMON ======= */
 .wrap{max-width:1140px;margin:0 auto;padding:1.5rem 1.25rem}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
 .topbar-l{display:flex;align-items:center;gap:12px}
 .topbar-logo{height:20px;width:auto}
 .topbar-divider{width:1px;height:18px;background:var(--border2)}
@@ -499,7 +499,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
     <div class="topbar-r">
       <span id="user-dept-badge" class="badge"></span>
       <div class="sync-pill"><span class="sdot" id="u-sdot"></span><span id="u-stxt">พร้อมใช้งาน</span></div>
-      <button class="btn" onclick="goHome()" style="flex-shrink:0"><i class="ti ti-home"></i><span class="btn-text">หน้าหลัก</span></button>
+      <button class="btn" onclick="event.preventDefault();goHome();" style="flex-shrink:0;min-width:44px;min-height:44px;cursor:pointer"><i class="ti ti-home"></i><span class="btn-text">หน้าหลัก</span></button>
     </div>
   </div>
   <div class="wrap">
@@ -734,7 +734,12 @@ function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.
 function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{return JSON.parse(note.replace('[EQUIP]',''));}catch(e){return[];}}
 
 // ---- HOME ----
-function goHome(){updateHomeDots();showPage('page-home');window.scrollTo({top:0,behavior:'smooth'});}
+function goHome(){
+  updateHomeDots();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
+  window.scrollTo(0,0);
+}
 function enterUser(dept){
   currentDept=dept;loadLocal();
   document.getElementById('u-dept-display').value=dept;
