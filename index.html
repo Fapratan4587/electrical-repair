@@ -686,7 +686,7 @@ function startCountdown(){
 function updateHomeDots(){
   loadLocal();
   const bar=document.getElementById('home-countdown-bar');
-  bar.classList.toggle('show',localJobs.length>0);
+  if(bar) bar.classList.toggle('show',localJobs.length>0);
   [['Assembly','dot-Assembly'],['Grinding','dot-Grinding'],['First grinding','dot-FG']].forEach(([dept,dotId])=>{
     const el=document.getElementById(dotId);if(!el)return;
     const c=localJobs.filter(j=>j.dept===dept&&j.status!=='เสร็จสิ้น').length;
