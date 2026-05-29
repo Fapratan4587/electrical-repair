@@ -499,7 +499,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
     <div class="topbar-r">
       <span id="user-dept-badge" class="badge"></span>
       <div class="sync-pill"><span class="sdot" id="u-sdot"></span><span id="u-stxt">พร้อมใช้งาน</span></div>
-      <button class="btn" onclick="goHome()"><i class="ti ti-home"></i><span class="btn-text">หน้าหลัก</span></button>
+      <button class="btn" onclick="goHome()" style="flex-shrink:0"><i class="ti ti-home"></i><span class="btn-text">หน้าหลัก</span></button>
     </div>
   </div>
   <div class="wrap">
@@ -734,7 +734,7 @@ function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.
 function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{return JSON.parse(note.replace('[EQUIP]',''));}catch(e){return[];}}
 
 // ---- HOME ----
-function goHome(){updateHomeDots();showPage('page-home');}
+function goHome(){updateHomeDots();showPage('page-home');window.scrollTo({top:0,behavior:'smooth'});}
 function enterUser(dept){
   currentDept=dept;loadLocal();
   document.getElementById('u-dept-display').value=dept;
