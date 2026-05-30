@@ -697,7 +697,16 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
 <div id="toast"></div>
 
 <script>
-const API='https://script.google.com/macros/s/AKfycbytyJ2zinRq9FQiyBp-BsW5_JAoSmf7qmy39PZJmbxZ2g0DdQkEaLXNB4HZAMYCITdYAQ/exec';
+const SUPABASE_URL='https://juyyhsanyqflhzclqcgh.supabase.co/rest/v1';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1eXloc2FueXFmbGh6Y2xxY2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDYyNTAsImV4cCI6MjA5NTcyMjI1MH0.MG7DvlmMDhjPfI_sh_MkMrahBp3RsglpUcu4qxyRBCE';
+// Apps Script ใช้สำหรับส่ง LINE เท่านั้น
+const LINE_API='https://script.google.com/macros/s/AKfycbytyJ2zinRq9FQiyBp-BsW5_JAoSmf7qmy39PZJmbxZ2g0DdQkEaLXNB4HZAMYCITdYAQ/exec';
+
+const SB_HEADERS={
+  'apikey':SUPABASE_KEY,
+  'Authorization':'Bearer '+SUPABASE_KEY,
+  'Content-Type':'application/json'
+};
 const ADMIN_PW='admin1234';
 const STORE_KEY='elec_local_v3';
 const RESET_KEY='elec_reset_v3';
@@ -742,16 +751,83 @@ function updateHomeDots(){
 }
 
 // ---- API ----
-function callAPI(payload){
-  return new Promise((res,rej)=>{
-    const cb='cb'+Date.now()+Math.random().toString(36).slice(2);
+async function callAPI(payload){
+  const action=payload.action||'get';
+
+  if(action==='get'){
+    const r=await fetch(SUPABASE_URL+'/repairs?select=*&order=created.desc',{headers:SB_HEADERS});
+    if(!r.ok) throw new Error('get failed');
+    const rows=await r.json();
+    return rows.map(fromRow);
+  }
+
+  if(action==='add'){
+    const row=toRow(payload);
+    const r=await fetch(SUPABASE_URL+'/repairs',{
+      method:'POST',
+      headers:{...SB_HEADERS,'Prefer':'return=minimal'},
+      body:JSON.stringify(row)
+    });
+    if(!r.ok){const t=await r.text();throw new Error('add failed: '+t);}
+    sendLineNotify(payload); // ส่ง LINE ผ่าน Apps Script
+    return {success:true};
+  }
+
+  if(action==='update'){
+    const row=toRow(payload);
+    const r=await fetch(SUPABASE_URL+'/repairs?id=eq.'+encodeURIComponent(payload.id),{
+      method:'PATCH',
+      headers:{...SB_HEADERS,'Prefer':'return=minimal'},
+      body:JSON.stringify(row)
+    });
+    if(!r.ok){const t=await r.text();throw new Error('update failed: '+t);}
+    sendLineNotify(payload,true); // ส่ง LINE update
+    return {success:true};
+  }
+
+  if(action==='delete'){
+    const r=await fetch(SUPABASE_URL+'/repairs?id=eq.'+encodeURIComponent(payload.id),{
+      method:'DELETE',
+      headers:{...SB_HEADERS,'Prefer':'return=minimal'}
+    });
+    if(!r.ok) throw new Error('delete failed');
+    return {success:true};
+  }
+}
+
+// แปลง object เป็น row สำหรับ Supabase (lowercase column names)
+function toRow(p){
+  return {
+    id:p.id, dept:p.dept||'', reporter:p.reporter||'',
+    location:p.location||'', type:p.type||'', detail:p.detail||'',
+    status:p.status||'', priority:p.priority||'', tech:p.tech||'',
+    cost:p.cost||0, date:p.date||'', donedate:p.doneDate||'',
+    note:p.note||'', repairdetail:p.repairDetail||'', created:p.created||Date.now()
+  };
+}
+
+// ส่ง LINE ผ่าน Apps Script (JSONP) — ไม่รอผลลัพธ์
+function sendLineNotify(payload,isUpdate){
+  try{
+    const cb='lcb'+Date.now()+Math.random().toString(36).slice(2);
     const s=document.createElement('script');
-    window[cb]=r=>{delete window[cb];try{document.body.removeChild(s);}catch(e){}res(r);};
-    s.onerror=()=>{delete window[cb];try{document.body.removeChild(s);}catch(e){}rej(new Error('fail'));};
-    s.src=API+'?callback='+cb+'&data='+encodeURIComponent(JSON.stringify(payload));
+    window[cb]=()=>{delete window[cb];try{document.body.removeChild(s);}catch(e){}};
+    s.onerror=()=>{delete window[cb];try{document.body.removeChild(s);}catch(e){}};
+    const data={...payload,action:isUpdate?'lineUpdate':'lineNew'};
+    s.src=LINE_API+'?callback='+cb+'&data='+encodeURIComponent(JSON.stringify(data));
     document.body.appendChild(s);
-    setTimeout(()=>{if(window[cb]){delete window[cb];try{document.body.removeChild(s);}catch(e){}rej(new Error('timeout'));}},15000);
-  });
+    setTimeout(()=>{if(window[cb]){delete window[cb];try{document.body.removeChild(s);}catch(e){}}},10000);
+  }catch(e){}
+}
+
+// แปลง row จาก Supabase กลับเป็น object (donedate → doneDate, repairdetail → repairDetail)
+function fromRow(r){
+  return {
+    id:r.id, dept:r.dept, reporter:r.reporter, location:r.location,
+    type:r.type, detail:r.detail, status:r.status, priority:r.priority,
+    tech:r.tech, cost:r.cost, date:r.date, doneDate:r.donedate,
+    note:r.note, repairDetail:r.repairdetail, created:r.created
+  };
 }
 
 // ---- UTILS ----
