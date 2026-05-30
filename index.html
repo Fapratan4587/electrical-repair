@@ -575,6 +575,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
       <button class="tnb active" onclick="aGoTab('dash',this)"><i class="ti ti-layout-dashboard"></i>ภาพรวม</button>
       <button class="tnb" onclick="aGoTab('list',this)"><i class="ti ti-list-details"></i>รายการงาน</button>
       <button class="tnb" onclick="aGoTab('urgent',this)"><i class="ti ti-alert-triangle"></i>เร่งด่วน<span class="ndot" id="a-ndot" style="display:none"></span></button>
+      <button class="tnb" onclick="aGoTab('analytics',this)"><i class="ti ti-chart-line"></i>Analytics</button>
       <button class="tnb" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
     </div>
 
@@ -621,6 +622,52 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
     <div id="atab-urgent" class="tab"><div id="a-urgentContent"></div></div>
 
     <!-- ADD TAB -->
+    <!-- ANALYTICS TAB -->
+    <div id="atab-analytics" class="tab">
+      <!-- Period filter -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">ช่วงเวลา:</span>
+        <button class="df-btn active" id="ap-7" onclick="setAnalyticsPeriod(7,this)">7 วัน</button>
+        <button class="df-btn" id="ap-30" onclick="setAnalyticsPeriod(30,this)">30 วัน</button>
+        <button class="df-btn" id="ap-90" onclick="setAnalyticsPeriod(90,this)">90 วัน</button>
+        <button class="df-btn" id="ap-0" onclick="setAnalyticsPeriod(0,this)">ทั้งหมด</button>
+      </div>
+
+      <!-- KPI row -->
+      <div class="kpi-grid" id="an-kpis" style="grid-template-columns:repeat(3,1fr)"></div>
+
+      <!-- MTTR + Top 5 row -->
+      <div class="chart-row" style="margin-bottom:1.25rem">
+        <!-- MTTR by dept -->
+        <div class="card">
+          <div class="card-title"><i class="ti ti-clock-bolt" style="font-size:14px;color:var(--text3)"></i>MTTR แยกตามแผนก
+            <span style="font-size:10px;font-weight:400;color:var(--text3);margin-left:4px">(ชั่วโมง/งาน)</span>
+          </div>
+          <div id="an-mttr-content"></div>
+        </div>
+        <!-- Top 5 worst machines -->
+        <div class="card">
+          <div class="card-title"><i class="ti ti-alert-circle" style="font-size:14px;color:var(--red)"></i>Top 5 เครื่องเสียบ่อย</div>
+          <div id="an-top5-content"></div>
+        </div>
+      </div>
+
+      <!-- MTBF table -->
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="card-title">
+          <i class="ti ti-repeat" style="font-size:14px;color:#1877F2"></i>MTBF — ระยะเวลาเฉลี่ยก่อนเสียซ้ำ
+          <span style="font-size:10px;font-weight:400;color:var(--text3);margin-left:4px">(เฉพาะเครื่องที่เสียมากกว่า 1 ครั้ง)</span>
+        </div>
+        <div id="an-mtbf-content"></div>
+      </div>
+
+      <!-- Repair trend chart -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-bar" style="font-size:14px;color:var(--text3)"></i>แนวโน้มการแจ้งซ่อมรายวัน</div>
+        <div style="position:relative;height:180px"><canvas id="an-trend-chart" role="img" aria-label="trend"></canvas></div>
+      </div>
+    </div>
+
     <div id="atab-addnew" class="tab">
       <div class="fcard">
         <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
@@ -901,12 +948,189 @@ function setDeptFilter(dept,btn){
   document.querySelectorAll('[id^="df-"]').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');aRenderDash();aRenderList();
 }
+
+// ---- ANALYTICS ----
+let analyticsDays = 7;
+let trendChart = null;
+
+function setAnalyticsPeriod(days, btn) {
+  analyticsDays = days;
+  document.querySelectorAll('[id^="ap-"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAnalytics();
+}
+
+function getAnalyticsJobs() {
+  if (analyticsDays === 0) return allJobs;
+  const cutoff = Date.now() - analyticsDays * 86400000;
+  return allJobs.filter(j => {
+    const d = j.date ? new Date(j.date).getTime() : (j.created || 0);
+    return d >= cutoff;
+  });
+}
+
+function calcMTTR(jobs) {
+  const done = jobs.filter(j => j.status === 'เสร็จสิ้น' && j.date && j.doneDate);
+  if (!done.length) return null;
+  const total = done.reduce((s, j) => {
+    const start = new Date(j.date).getTime();
+    const end   = new Date(j.doneDate).getTime();
+    return s + Math.max(0, end - start);
+  }, 0);
+  return (total / done.length / 3600000);
+}
+
+function calcMTBF(jobs) {
+  const byLoc = {};
+  jobs.filter(j => j.date).forEach(j => {
+    const key = (j.location || '').trim();
+    if (!key) return;
+    if (!byLoc[key]) byLoc[key] = [];
+    byLoc[key].push(new Date(j.date).getTime());
+  });
+  const results = [];
+  Object.entries(byLoc).forEach(([loc, times]) => {
+    if (times.length < 2) return;
+    times.sort((a, b) => a - b);
+    let gaps = 0;
+    for (let i = 1; i < times.length; i++) gaps += times[i] - times[i-1];
+    const avgHrs = gaps / (times.length - 1) / 3600000;
+    results.push({ loc, count: times.length, avgHrs });
+  });
+  results.sort((a, b) => a.avgHrs - b.avgHrs);
+  return results;
+}
+
+function formatHours(h) {
+  if (h === null || isNaN(h)) return '—';
+  if (h < 1) return Math.round(h * 60) + ' นาที';
+  if (h < 24) return h.toFixed(1) + ' ชม.';
+  return (h / 24).toFixed(1) + ' วัน';
+}
+
+function renderAnalytics() {
+  const jobs = getAnalyticsJobs();
+  const total = jobs.length;
+  const done  = jobs.filter(j => j.status === 'เสร็จสิ้น').length;
+  const urg   = jobs.filter(j => j.status === 'เร่งด่วน').length;
+  const mttr  = calcMTTR(jobs);
+  const rate  = total ? Math.round(done / total * 100) : 0;
+
+  document.getElementById('an-kpis').innerHTML = `
+    <div class="kpi-card kpi-all">
+      <div class="kpi-top"><span class="kpi-label">งานทั้งหมด</span><span class="kpi-ico" style="background:#F3F4F6"><i class="ti ti-clipboard-list"></i></span></div>
+      <div class="kpi-val">${total}</div>
+      <div class="kpi-foot">Complete rate ${rate}%</div>
+    </div>
+    <div class="kpi-card kpi-done">
+      <div class="kpi-top"><span class="kpi-label">MTTR เฉลี่ย</span><span class="kpi-ico" style="background:#F0FDF4;color:#16A34A"><i class="ti ti-clock-check"></i></span></div>
+      <div class="kpi-val" style="color:#16A34A;font-size:22px">${formatHours(mttr)}</div>
+      <div class="kpi-foot">Mean Time To Repair</div>
+    </div>
+    <div class="kpi-card kpi-urgent">
+      <div class="kpi-top"><span class="kpi-label">งานเร่งด่วน</span><span class="kpi-ico" style="background:var(--red-light);color:var(--red)"><i class="ti ti-alert-triangle"></i></span></div>
+      <div class="kpi-val" style="color:var(--red)">${urg}</div>
+      <div class="kpi-foot">${total ? Math.round(urg/total*100) : 0}% ของทั้งหมด</div>
+    </div>`;
+
+  const depts = ['Assembly', 'Grinding', 'First grinding'];
+  const dColors = ['#1877F2', '#16A34A', '#EA580C'];
+  let mttrHTML = '';
+  depts.forEach((d, i) => {
+    const dJobs = jobs.filter(j => j.dept === d);
+    const m = calcMTTR(dJobs);
+    const pct = m !== null ? Math.min(100, (m / 72) * 100) : 0;
+    mttrHTML += `
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span style="font-weight:500">${d}</span>
+          <span style="color:var(--text2)">${formatHours(m)} <span style="color:var(--text3)">(${dJobs.filter(j=>j.status==='เสร็จสิ้น').length} งาน)</span></span>
+        </div>
+        <div style="background:var(--bg3);border-radius:99px;height:7px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${dColors[i]};border-radius:99px;transition:width .4s"></div>
+        </div>
+      </div>`;
+  });
+  document.getElementById('an-mttr-content').innerHTML = mttrHTML || '<div class="empty" style="padding:1rem">ไม่มีข้อมูล</div>';
+
+  const locCount = {};
+  jobs.forEach(j => {
+    const k = (j.location || '').trim();
+    if (!k) return;
+    locCount[k] = (locCount[k] || 0) + 1;
+  });
+  const top5 = Object.entries(locCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const maxCount = top5.length ? top5[0][1] : 1;
+  let top5HTML = '';
+  top5.forEach(([loc, cnt], i) => {
+    const pct = (cnt / maxCount) * 100;
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    top5HTML += `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+          <span>${medal} <span style="font-weight:500">${loc}</span></span>
+          <span style="color:var(--red);font-weight:600">${cnt} ครั้ง</span>
+        </div>
+        <div style="background:var(--bg3);border-radius:99px;height:6px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:var(--red);border-radius:99px;opacity:${1-i*0.15};transition:width .4s"></div>
+        </div>
+      </div>`;
+  });
+  document.getElementById('an-top5-content').innerHTML = top5HTML || '<div class="empty" style="padding:1rem">ไม่มีข้อมูล</div>';
+
+  const mtbfData = calcMTBF(jobs);
+  if (!mtbfData.length) {
+    document.getElementById('an-mtbf-content').innerHTML = '<div class="empty" style="padding:1rem"><i class="ti ti-circle-check" style="color:#16A34A"></i> ยังไม่มีเครื่องที่เสียซ้ำ</div>';
+  } else {
+    document.getElementById('an-mtbf-content').innerHTML = `
+      <div style="overflow-x:auto">
+        <table style="min-width:400px">
+          <thead><tr>
+            <th>สถานที่/เครื่อง</th>
+            <th style="width:80px;text-align:center">ครั้ง</th>
+            <th>MTBF เฉลี่ย</th>
+            <th>ความเสี่ยง</th>
+          </tr></thead>
+          <tbody>${mtbfData.slice(0,10).map(r => {
+            const risk = r.avgHrs < 24 ? ['🔴 สูงมาก','var(--red)'] :
+                         r.avgHrs < 72 ? ['🟠 สูง','#EA580C'] :
+                         r.avgHrs < 168 ? ['🟡 ปานกลาง','#F59E0B'] :
+                                          ['🟢 ต่ำ','#16A34A'];
+            return '<tr><td style="font-weight:500">'+r.loc+'</td><td style="text-align:center">'+r.count+'</td><td>'+formatHours(r.avgHrs)+'</td><td><span style="color:'+risk[1]+';font-weight:500;font-size:12px">'+risk[0]+'</span></td></tr>';
+          }).join('')}</tbody>
+        </table>
+      </div>`;
+  }
+
+  const tdays = analyticsDays || 30;
+  const tlabels = [], tdata = [];
+  for (let i = Math.min(tdays, 30) - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    tlabels.push(`${d.getDate()}/${d.getMonth()+1}`);
+    const count = jobs.filter(j => {
+      if (!j.date) return false;
+      const jd = new Date(j.date);
+      return jd.getDate()===d.getDate() && jd.getMonth()===d.getMonth() && jd.getFullYear()===d.getFullYear();
+    }).length;
+    tdata.push(count);
+  }
+  if (trendChart) trendChart.destroy();
+  const ctx = document.getElementById('an-trend-chart');
+  if (ctx) {
+    trendChart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: tlabels, datasets: [{ data: tdata, backgroundColor: 'rgba(232,25,44,0.7)', borderColor: '#E8192C', borderWidth: 1, borderRadius: 4, borderSkipped: false }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }, y: { ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(0,0,0,.04)' }, min: 0 } } }
+    });
+  }
+}
+
 function aGoTab(id,btn){
   currentAdminTab=id;
   document.querySelectorAll('#page-admin .tab').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('#page-admin .tnb').forEach(e=>e.classList.remove('active'));
   document.getElementById('atab-'+id).classList.add('active');btn.classList.add('active');
-  if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();
+  if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();if(id==='analytics')renderAnalytics();
 }
 async function aLoad(){
   setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;
