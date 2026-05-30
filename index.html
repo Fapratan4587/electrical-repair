@@ -1020,7 +1020,7 @@ function renderAnalytics() {
     <div class="kpi-card kpi-all">
       <div class="kpi-top"><span class="kpi-label">งานทั้งหมด</span><span class="kpi-ico" style="background:#F3F4F6"><i class="ti ti-clipboard-list"></i></span></div>
       <div class="kpi-val">${total}</div>
-      <div class="kpi-foot">Complete rate ${rate}%</div>
+      <div class="kpi-foot">Complete rate <strong style="color:${rate>=70?'#16A34A':rate>=40?'#F59E0B':'#E8192C'};font-size:13px">${rate}%</strong></div>
     </div>
     <div class="kpi-card kpi-done">
       <div class="kpi-top"><span class="kpi-label">MTTR เฉลี่ย</span><span class="kpi-ico" style="background:#F0FDF4;color:#16A34A"><i class="ti ti-clock-check"></i></span></div>
@@ -1030,7 +1030,7 @@ function renderAnalytics() {
     <div class="kpi-card kpi-urgent">
       <div class="kpi-top"><span class="kpi-label">งานเร่งด่วน</span><span class="kpi-ico" style="background:var(--red-light);color:var(--red)"><i class="ti ti-alert-triangle"></i></span></div>
       <div class="kpi-val" style="color:var(--red)">${urg}</div>
-      <div class="kpi-foot">${total ? Math.round(urg/total*100) : 0}% ของทั้งหมด</div>
+      <div class="kpi-foot"><strong style="color:${total&&urg/total>=0.3?'#E8192C':total&&urg/total>=0.15?'#F59E0B':'#16A34A'};font-size:13px">${total ? Math.round(urg/total*100) : 0}%</strong> ของทั้งหมด</div>
     </div>`;
 
   const depts = ['Assembly', 'Grinding', 'First grinding'];
@@ -1080,7 +1080,8 @@ function renderAnalytics() {
 
   const mtbfData = calcMTBF(jobs);
   if (!mtbfData.length) {
-    document.getElementById('an-mtbf-content').innerHTML = '<div class="empty" style="padding:1rem"><i class="ti ti-circle-check" style="color:#16A34A"></i> ยังไม่มีเครื่องที่เสียซ้ำ</div>';
+    const repeatable = Object.keys((function(){var b={};jobs.filter(j=>j.location).forEach(j=>{var k=j.location.trim();b[k]=(b[k]||0)+1;});return b;})()).length;
+    document.getElementById('an-mtbf-content').innerHTML = '<div class="empty" style="padding:1.5rem;font-size:13px"><i class="ti ti-circle-check" style="color:#16A34A;font-size:22px;display:block;margin-bottom:8px"></i><strong style="color:var(--text2)">ยังไม่มีเครื่องที่เสียซ้ำในช่วงเวลานี้</strong><div style="font-size:11px;color:var(--text3);margin-top:6px">MTBF จะคำนวณเมื่อเครื่องจักรเดิม (สถานที่เดียวกัน) แจ้งซ่อมตั้งแต่ 2 ครั้งขึ้นไป<br>ระบบจะวัดระยะเวลาเฉลี่ยระหว่างการเสียแต่ละครั้ง</div></div>';
   } else {
     document.getElementById('an-mtbf-content').innerHTML = `
       <div style="overflow-x:auto">
@@ -1117,10 +1118,45 @@ function renderAnalytics() {
   if (trendChart) trendChart.destroy();
   const ctx = document.getElementById('an-trend-chart');
   if (ctx) {
+    const c2d = ctx.getContext('2d');
+    const grad = c2d.createLinearGradient(0, 0, 0, 180);
+    grad.addColorStop(0, 'rgba(232,25,44,0.25)');
+    grad.addColorStop(1, 'rgba(232,25,44,0.01)');
+    // Find peak day for annotation
+    const peakVal = Math.max(...tdata);
+    const peakIdx = tdata.indexOf(peakVal);
     trendChart = new Chart(ctx, {
-      type: 'bar',
-      data: { labels: tlabels, datasets: [{ data: tdata, backgroundColor: 'rgba(232,25,44,0.7)', borderColor: '#E8192C', borderWidth: 1, borderRadius: 4, borderSkipped: false }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }, y: { ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(0,0,0,.04)' }, min: 0 } } }
+      type: 'line',
+      data: { labels: tlabels, datasets: [{
+        data: tdata,
+        borderColor: '#E8192C',
+        backgroundColor: grad,
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.35,
+        pointRadius: tdata.map((v,i)=> i===peakIdx && v>0 ? 5 : (v>0?3:0)),
+        pointBackgroundColor: tdata.map((v,i)=> i===peakIdx && v>0 ? '#E8192C' : '#fff'),
+        pointBorderColor: '#E8192C',
+        pointBorderWidth: 2,
+        pointHoverRadius: 6
+      }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: function(items){ return 'วันที่ ' + items[0].label; },
+              label: function(item){ return 'แจ้งซ่อม ' + item.parsed.y + ' งาน'; }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+          y: { ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(0,0,0,.04)' }, min: 0, beginAtZero: true }
+        }
+      }
     });
   }
 }
