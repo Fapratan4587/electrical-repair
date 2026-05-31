@@ -926,8 +926,11 @@ async function saveEdit(){
   if(editingJob.status === 'เสร็จสิ้น' && !doneDateVal) {
     editingJob.doneDate = new Date().toISOString();
   } else if(doneDateVal) {
-    // ถ้าเลือกวันที่แบบ date-only ให้เพิ่มเวลาปัจจุบัน
-    editingJob.doneDate = doneDateVal + 'T' + new Date().toTimeString().slice(0,5) + ':00.000Z';
+    // เลือกวันที่ + ใช้เวลาปัจจุบัน (สร้างเป็น local time แล้วแปลงเป็น ISO ที่ถูกต้อง)
+    var now = new Date();
+    var parts = doneDateVal.split('-');
+    var dt = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]), now.getHours(), now.getMinutes(), 0);
+    editingJob.doneDate = dt.toISOString();
   } else {
     editingJob.doneDate = '';
   }
