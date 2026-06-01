@@ -515,7 +515,10 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
           <div class="fgg">
             <div class="fg"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" placeholder="ชื่อ-นามสกุล"></div>
             <div class="fg"><label>แผนก</label><input id="u-dept-display" readonly style="background:var(--surface2);cursor:default"></div>
-            <div class="fg"><label>สถานที่ / จุดที่เสีย *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
+            <div class="fg"><label>เครื่องจักร *</label>
+              <select id="u-machine"><option value="">-- เลือกเครื่องจักร --</option></select>
+            </div>
+            <div class="fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
             <div class="fg"><label>ประเภทงาน *</label>
               <select id="u-type"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select>
             </div>
@@ -673,9 +676,10 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
         <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
         <div class="fbody">
           <div class="fgg">
-            <div class="fg"><label>แผนก *</label><select id="a-fl-dept"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>อื่น ๆ</option></select></div>
+            <div class="fg"><label>แผนก *</label><select id="a-fl-dept" onchange="populateMachines(this.value,'a-fl-machine')"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>อื่น ๆ</option></select></div>
             <div class="fg"><label>ผู้แจ้ง</label><input id="a-fl-reporter" placeholder="ชื่อผู้แจ้ง"></div>
-            <div class="fg"><label>สถานที่ *</label><input id="a-fl" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
+            <div class="fg"><label>เครื่องจักร *</label><select id="a-fl-machine"><option value="">-- เลือกเครื่องจักร --</option></select></div>
+            <div class="fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="a-fl" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
             <div class="fg"><label>ประเภทงาน *</label><select id="a-ft"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select></div>
             <div class="fg full"><label>รายละเอียด *</label><textarea id="a-fd" placeholder="อธิบายอาการเสีย สาเหตุ งานที่ทำ..."></textarea></div>
             <div class="fg"><label>สถานะ</label><select id="a-fst2"><option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option></select></div>
@@ -717,6 +721,7 @@ let allJobs=[],localJobs=[];
 let currentDept='',deptFilter='';
 let editingJob=null,cS=null,cD=null,countdownTimer=null;
 let currentAdminTab='dash';
+let autoRefreshTimer=null;
 
 // ---- LOCAL / RESET ----
 function getRT(){const t=localStorage.getItem(RESET_KEY);return t?parseInt(t):null;}
@@ -858,34 +863,65 @@ function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{ret
 
 // ---- HOME ----
 function goHome(){
+  stopAutoRefresh();
   updateHomeDots();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
   window.scrollTo(0,0);
 }
+var MACHINES = {
+  'Grinding': ['Lift','Raceway','Bore','Auto check','Honing'],
+  'Assembly': ['Lift','Part feeder','Matching','Caulking','Laser mark','Washing','Anderon','GSP','Visual inspection'],
+  'First grinding': []
+};
+function populateMachines(dept, selectId){
+  var sel=document.getElementById(selectId);
+  if(!sel)return;
+  var list=MACHINES[dept]||[];
+  sel.innerHTML='<option value="">-- เลือกเครื่องจักร --</option>'+
+    list.map(function(m){return '<option>'+m+'</option>';}).join('')+
+    '<option>อื่น ๆ</option>';
+}
 function enterUser(dept){
   currentDept=dept;loadLocal();
   document.getElementById('u-dept-display').value=dept;
   document.getElementById('u-form-dept').textContent=dept;
+  populateMachines(dept,'u-machine');
   const badge=document.getElementById('user-dept-badge');
   badge.textContent=dept;
   badge.className='badge '+(dept==='Assembly'?'b-doing':dept==='Grinding'?'b-done':'b-wait');
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('u-reporter').value='';
-  showPage('page-user');startCountdown();uRenderTrack();
+  showPage('page-user');startCountdown();uRenderTrack();uLoadJobs(true);startAutoRefresh('user');
 }
 
 // ---- ADMIN LOGIN ----
 function showAdminLogin(){document.getElementById('admin-pw').value='';document.getElementById('login-err').classList.remove('show');document.getElementById('admin-modal').classList.add('show');setTimeout(()=>document.getElementById('admin-pw').focus(),100);}
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('show');}
+function startAutoRefresh(mode){
+  stopAutoRefresh();
+  autoRefreshTimer=setInterval(function(){
+    // ไม่รีเฟรชถ้ากำลังแก้ไขงานอยู่ (modal เปิด)
+    if(document.getElementById('edit-modal').classList.contains('show'))return;
+    if(mode==='admin'){
+      aLoad(true);
+    }else if(mode==='user'){
+      uLoadJobs(true);
+    }
+  },30000); // ทุก 30 วินาที
+}
+function stopAutoRefresh(){
+  if(autoRefreshTimer){clearInterval(autoRefreshTimer);autoRefreshTimer=null;}
+}
+
 function doLogin(){
   if(document.getElementById('admin-pw').value===ADMIN_PW){
     closeAdminModal();
     document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
-    showPage('page-admin');aLoad();
+    showPage('page-admin');aLoad();startAutoRefresh('admin');
   }else{document.getElementById('login-err').classList.add('show');document.getElementById('admin-pw').value='';document.getElementById('admin-pw').focus();}
 }
-function adminLogout(){goHome();}
+function adminLogout(){stopAutoRefresh();goHome();}
 
 // ---- EDIT MODAL ----
 function openEditModal(id){
@@ -970,10 +1006,13 @@ function uGoTab(id,btn){
 }
 async function uSubmit(){
   const reporter=document.getElementById('u-reporter').value.trim();
-  const loc=document.getElementById('u-location').value.trim();
+  const machine=document.getElementById('u-machine').value;
+  const locInput=document.getElementById('u-location').value.trim();
   const typ=document.getElementById('u-type').value;
   const det=document.getElementById('u-detail').value.trim();
-  if(!reporter||!loc||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+  if(!reporter||!machine||!locInput||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+  // รวมเครื่องจักร + จุดที่เสีย
+  const loc = machine + ' — ' + locInput;
   const isUrgent=document.getElementById('u-urgent').checked;
   const j={id:genId(),dept:currentDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:new Date().toISOString(),doneDate:'',note:'',created:Date.now(),action:'add'};
   document.getElementById('u-btn-save').disabled=true;
@@ -991,12 +1030,13 @@ async function uSubmit(){
   document.getElementById('u-btn-save').disabled=false;document.getElementById('u-sving').classList.remove('show');
 }
 function uClearForm(){
+  document.getElementById('u-machine').selectedIndex=0;
   document.getElementById('u-location').value='';document.getElementById('u-type').selectedIndex=0;
   document.getElementById('u-detail').value='';document.getElementById('u-urgent').checked=false;
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
 }
-async function uLoadJobs(){
-  document.getElementById('u-track-content').innerHTML='<div class="empty"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>กำลังโหลด...</div>';
+async function uLoadJobs(silent){
+  if(!silent)document.getElementById('u-track-content').innerHTML='<div class="empty"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>กำลังโหลด...</div>';
   document.getElementById('u-sdot').className='sdot syncing';document.getElementById('u-stxt').textContent='กำลังโหลด...';
   try{
     const data=await callAPI({action:'get'});
@@ -1247,16 +1287,20 @@ function aGoTab(id,btn){
   document.getElementById('atab-'+id).classList.add('active');btn.classList.add('active');
   if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();if(id==='analytics')renderAnalytics();
 }
-async function aLoad(){
-  setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;
+async function aLoad(silent){
+  if(!silent){setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;}
+  else{setSS('a-sdot','a-stxt','syncing');}
   try{
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
       allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',repairDetail:r.repairDetail||'',created:parseInt(r.created)||0}));
-      setSS('a-sdot','a-stxt','ok');toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
+      setSS('a-sdot','a-stxt','ok');
+      if(!silent)toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
       aCheckAlerts();aRenderDash();aRenderList();
+      if(currentAdminTab==='analytics')renderAnalytics();
+      if(currentAdminTab==='urgent')aRenderUrgent();
     }else throw new Error();
-  }catch(e){setSS('a-sdot','a-stxt','error');toast('เชื่อมต่อไม่ได้');}
+  }catch(e){setSS('a-sdot','a-stxt','error');if(!silent)toast('เชื่อมต่อไม่ได้');}
   document.getElementById('a-btnR').disabled=false;
 }
 function aCheckAlerts(){
@@ -1318,16 +1362,19 @@ function aRenderUrgent(){
   document.getElementById('a-urgentContent').innerHTML=html;
 }
 async function aSaveJob(){
-  const dept=document.getElementById('a-fl-dept').value,loc=document.getElementById('a-fl').value.trim(),typ=document.getElementById('a-ft').value,det=document.getElementById('a-fd').value.trim();
-  if(!dept||!loc||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
-  const j={id:genId(),dept,reporter:document.getElementById('a-fl-reporter').value.trim(),location:loc,type:typ,detail:det,status:document.getElementById('a-fst2').value,priority:'ปานกลาง',tech:document.getElementById('a-ftech').value.trim(),cost:0,date:new Date().toISOString(),doneDate:document.getElementById('a-fdone').value||'',note:'',created:Date.now()};
+  const dept=document.getElementById('a-fl-dept').value,machine=document.getElementById('a-fl-machine').value,locInput=document.getElementById('a-fl').value.trim(),typ=document.getElementById('a-ft').value,det=document.getElementById('a-fd').value.trim();
+  if(!dept||!machine||!locInput||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+  const loc=machine+' — '+locInput;
+  var doneVal=document.getElementById('a-fdone').value, doneISO='';
+  if(doneVal){var p=doneVal.split('-');var dt=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]),new Date().getHours(),new Date().getMinutes(),0);doneISO=dt.toISOString();}
+  const j={id:genId(),dept,reporter:document.getElementById('a-fl-reporter').value.trim(),location:loc,type:typ,detail:det,status:document.getElementById('a-fst2').value,priority:'ปานกลาง',tech:document.getElementById('a-ftech').value.trim(),cost:0,date:new Date().toISOString(),doneDate:doneISO,note:'',created:Date.now()};
   document.getElementById('a-btnSave').disabled=true;document.getElementById('a-sving').classList.add('show');setSS('a-sdot','a-stxt','syncing');
   try{await callAPI({...j,action:'add'});allJobs.unshift(j);setSS('a-sdot','a-stxt','ok');aClearForm();aCheckAlerts();toast('เพิ่มงานสำเร็จ');aRenderDash();aRenderList();}
   catch(e){setSS('a-sdot','a-stxt','error');toast('บันทึกไม่สำเร็จ');}
   document.getElementById('a-btnSave').disabled=false;document.getElementById('a-sving').classList.remove('show');
 }
 function aClearForm(){
-  ['a-fl-dept','a-ft','a-fst2'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['a-fl-dept','a-fl-machine','a-ft','a-fst2'].forEach(id=>document.getElementById(id).selectedIndex=0);
   ['a-fl-reporter','a-fl','a-fd','a-ftech','a-fdate','a-fdone'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
 }
