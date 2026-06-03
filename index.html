@@ -531,14 +531,18 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
         <div class="fbody">
           <div class="fgg">
             <div class="fg"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" placeholder="ชื่อ-นามสกุล"></div>
-            <div class="fg"><label>แผนก</label><input id="u-dept-display" readonly style="background:var(--surface2);cursor:default"></div>
+            <div class="fg" id="u-deptdisplay-fg"><label>แผนก</label><input id="u-dept-display" readonly style="background:var(--surface2);cursor:default"></div>
             <div class="fg" id="u-machine-fg"><label>เครื่องจักร *</label>
               <select id="u-machine"><option value="">-- เลือกเครื่องจักร --</option></select>
             </div>
             <div class="fg" id="u-location-fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
             <div class="fg" id="u-system-fg" style="display:none"><label>ประเภทระบบ *</label>
-              <select id="u-system"><option value="">-- เลือกประเภทระบบ --</option><option>ระบบ Coolant Tank</option><option>ระบบ RO</option><option>Air Compressure</option><option>Fan Coil Unit</option><option>ระบบ AGV &amp; AGF</option><option>ระบบรางในไลน์ผลิต</option><option>เติมน้ำมัน SF33</option><option>เติมน้ำมัน AW10</option><option>เติมน้ำมัน AW46</option><option>อื่น ๆ</option></select>
+              <select id="u-system"><option value="">-- เลือกประเภทระบบ --</option><option>ระบบ Coolant Tank</option><option>ระบบ RO</option><option>Air Compressure</option><option>Fan Coil Unit</option><option>ระบบ AGV &amp; AGF</option><option>ระบบรางในไลน์ผลิต</option><option>เติมน้ำมัน SF33</option><option>เติมน้ำมัน AW10</option><option>เติมน้ำมัน AW46</option><option>ระบบแสงสว่าง</option><option>ห้องน้ำ</option><option>ระบบ Fire Alarm (แจ้งเหตุเพลิงไหม้)</option><option>อื่น ๆ</option></select>
             </div>
+            <div class="fg" id="u-eng-dept-fg" style="display:none"><label>แผนกที่แจ้ง *</label>
+              <select id="u-eng-dept"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Warehouse</option></select>
+            </div>
+            <div class="fg" id="u-eng-loc-fg" style="display:none"><label>สถานที่ <span style="font-size:10px;color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label><input id="u-eng-loc" placeholder="เช่น Line 3, ห้องเครื่อง, โซน A"></div>
             <div class="fg" id="u-type-fg"><label>ประเภทงาน *</label>
               <select id="u-type"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select>
             </div>
@@ -894,7 +898,7 @@ var MACHINES = {
   'Grinding': ['Lift','Raceway','Bore','Auto check','Honing'],
   'Assembly': ['Lift','Part feeder','Matching','Caulking','Laser mark','Washing','Anderon','GSP','Visual inspection'],
   'First grinding': ['SF','OD'],
-  'Engineering': ['ระบบ Coolant Tank','ระบบ RO','Air Compressure','Fan Coil Unit','ระบบ AGV & AGF','ระบบรางในไลน์ผลิต','เติมน้ำมัน SF33','เติมน้ำมัน AW10','เติมน้ำมัน AW46']
+  'Engineering': ['ระบบ Coolant Tank','ระบบ RO','Air Compressure','Fan Coil Unit','ระบบ AGV & AGF','ระบบรางในไลน์ผลิต','เติมน้ำมัน SF33','เติมน้ำมัน AW10','เติมน้ำมัน AW46','ระบบแสงสว่าง','ห้องน้ำ','ระบบ Fire Alarm (แจ้งเหตุเพลิงไหม้)']
 };
 function populateMachines(dept, selectId){
   var sel=document.getElementById(selectId);
@@ -909,10 +913,13 @@ function enterUser(dept){
   document.getElementById('u-dept-display').value=dept;
   document.getElementById('u-form-dept').textContent=dept;
   var isEng = (dept==='Engineering');
-  // Engineering ใช้ช่อง "ประเภทระบบ" แทนเครื่องจักร/จุดที่เสีย และไม่มีประเภทงาน
+  // Engineering: ใช้ประเภทระบบ + แผนกที่เกี่ยวข้อง + สถานที่ (ไม่มีเครื่องจักร/จุดที่เสีย/ประเภทงาน)
   document.getElementById('u-machine-fg').style.display = isEng ? 'none' : '';
   document.getElementById('u-location-fg').style.display = isEng ? 'none' : '';
   document.getElementById('u-system-fg').style.display = isEng ? '' : 'none';
+  document.getElementById('u-eng-dept-fg').style.display = isEng ? '' : 'none';
+  document.getElementById('u-eng-loc-fg').style.display = isEng ? '' : 'none';
+  document.getElementById('u-deptdisplay-fg').style.display = isEng ? 'none' : '';
   document.getElementById('u-type-fg').style.display = isEng ? 'none' : '';
   if(!isEng) populateMachines(dept,'u-machine');
   const badge=document.getElementById('user-dept-badge');
@@ -1060,20 +1067,23 @@ function uGoTab(id,btn){
 async function uSubmit(){
   const reporter=document.getElementById('u-reporter').value.trim();
   const det=document.getElementById('u-detail').value.trim();
-  var loc, typ;
+  var loc, typ, jobDept;
   if(currentDept==='Engineering'){
     const sys=document.getElementById('u-system').value;
-    if(!reporter||!sys||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
-    loc=sys; typ=sys;
+    const engDept=document.getElementById('u-eng-dept').value;
+    const engLoc=document.getElementById('u-eng-loc').value.trim();
+    if(!reporter||!sys||!engDept||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+    loc = engLoc ? (sys+' — '+engLoc) : sys; typ=sys; jobDept='Engineering';
   }else{
     const machine=document.getElementById('u-machine').value;
     const locInput=document.getElementById('u-location').value.trim();
     typ=document.getElementById('u-type').value;
     if(!reporter||!machine||!locInput||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
-    loc=machine+' — '+locInput;
+    loc=machine+' — '+locInput; jobDept=currentDept;
   }
   const isUrgent=document.getElementById('u-urgent').checked;
-  const j={id:genId(),dept:currentDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:new Date().toISOString(),doneDate:'',note:'',created:Date.now(),action:'add'};
+  const engRef = currentDept==='Engineering' ? document.getElementById('u-eng-dept').value : '';
+  const j={id:genId(),dept:jobDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:new Date().toISOString(),doneDate:'',note:engRef?'[REFDEPT]'+engRef:'',created:Date.now(),action:'add'};
   document.getElementById('u-btn-save').disabled=true;
   document.getElementById('u-sving').classList.add('show');
   document.getElementById('u-sdot').className='sdot syncing';
@@ -1091,6 +1101,8 @@ async function uSubmit(){
 function uClearForm(){
   document.getElementById('u-machine').selectedIndex=0;
   var sysEl=document.getElementById('u-system');if(sysEl)sysEl.selectedIndex=0;
+  var edEl=document.getElementById('u-eng-dept');if(edEl)edEl.selectedIndex=0;
+  var elEl=document.getElementById('u-eng-loc');if(elEl)elEl.value='';
   document.getElementById('u-location').value='';document.getElementById('u-type').selectedIndex=0;
   document.getElementById('u-detail').value='';document.getElementById('u-urgent').checked=false;
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
