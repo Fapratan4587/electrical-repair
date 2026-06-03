@@ -537,9 +537,9 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
             </div>
             <div class="fg" id="u-location-fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
             <div class="fg" id="u-system-fg" style="display:none"><label>ประเภทระบบ *</label>
-              <select id="u-system"><option value="">-- เลือกประเภทระบบ --</option><option>ระบบ Coolant Tank</option><option>ระบบ RO</option><option>Air Compressure</option><option>Fan Coil Unit</option><option>ระบบ AGV &amp; AGF</option><option>ระบบรางในไลน์ผลิต</option><option>อื่น ๆ</option></select>
+              <select id="u-system"><option value="">-- เลือกประเภทระบบ --</option><option>ระบบ Coolant Tank</option><option>ระบบ RO</option><option>Air Compressure</option><option>Fan Coil Unit</option><option>ระบบ AGV &amp; AGF</option><option>ระบบรางในไลน์ผลิต</option><option>เติมน้ำมัน SF33</option><option>เติมน้ำมัน AW10</option><option>เติมน้ำมัน AW46</option><option>อื่น ๆ</option></select>
             </div>
-            <div class="fg"><label>ประเภทงาน *</label>
+            <div class="fg" id="u-type-fg"><label>ประเภทงาน *</label>
               <select id="u-type"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select>
             </div>
             <div class="fg full"><label>รายละเอียดอาการเสีย *</label><textarea id="u-detail" placeholder="อธิบายอาการ เช่น ไฟดับทั้งไลน์ เครื่องไม่ทำงาน..."></textarea></div>
@@ -894,7 +894,7 @@ var MACHINES = {
   'Grinding': ['Lift','Raceway','Bore','Auto check','Honing'],
   'Assembly': ['Lift','Part feeder','Matching','Caulking','Laser mark','Washing','Anderon','GSP','Visual inspection'],
   'First grinding': ['SF','OD'],
-  'Engineering': ['ระบบ Coolant Tank','ระบบ RO','Air Compressure','Fan Coil Unit','ระบบ AGV & AGF','ระบบรางในไลน์ผลิต']
+  'Engineering': ['ระบบ Coolant Tank','ระบบ RO','Air Compressure','Fan Coil Unit','ระบบ AGV & AGF','ระบบรางในไลน์ผลิต','เติมน้ำมัน SF33','เติมน้ำมัน AW10','เติมน้ำมัน AW46']
 };
 function populateMachines(dept, selectId){
   var sel=document.getElementById(selectId);
@@ -909,10 +909,11 @@ function enterUser(dept){
   document.getElementById('u-dept-display').value=dept;
   document.getElementById('u-form-dept').textContent=dept;
   var isEng = (dept==='Engineering');
-  // Engineering ใช้ช่อง "ประเภทระบบ" แทนเครื่องจักร/จุดที่เสีย
+  // Engineering ใช้ช่อง "ประเภทระบบ" แทนเครื่องจักร/จุดที่เสีย และไม่มีประเภทงาน
   document.getElementById('u-machine-fg').style.display = isEng ? 'none' : '';
   document.getElementById('u-location-fg').style.display = isEng ? 'none' : '';
   document.getElementById('u-system-fg').style.display = isEng ? '' : 'none';
+  document.getElementById('u-type-fg').style.display = isEng ? 'none' : '';
   if(!isEng) populateMachines(dept,'u-machine');
   const badge=document.getElementById('user-dept-badge');
   badge.textContent=dept;
@@ -1058,16 +1059,16 @@ function uGoTab(id,btn){
 }
 async function uSubmit(){
   const reporter=document.getElementById('u-reporter').value.trim();
-  const typ=document.getElementById('u-type').value;
   const det=document.getElementById('u-detail').value.trim();
-  var loc;
+  var loc, typ;
   if(currentDept==='Engineering'){
     const sys=document.getElementById('u-system').value;
-    if(!reporter||!sys||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
-    loc=sys;
+    if(!reporter||!sys||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+    loc=sys; typ=sys;
   }else{
     const machine=document.getElementById('u-machine').value;
     const locInput=document.getElementById('u-location').value.trim();
+    typ=document.getElementById('u-type').value;
     if(!reporter||!machine||!locInput||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
     loc=machine+' — '+locInput;
   }
