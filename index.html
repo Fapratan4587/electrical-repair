@@ -603,6 +603,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
       <button class="tnb" onclick="aGoTab('list',this)"><i class="ti ti-list-details"></i>รายการงาน</button>
       <button class="tnb" onclick="aGoTab('urgent',this)"><i class="ti ti-alert-triangle"></i>เร่งด่วน<span class="ndot" id="a-ndot" style="display:none"></span></button>
       <button class="tnb" onclick="aGoTab('analytics',this)"><i class="ti ti-chart-line"></i>Analytics</button>
+      <button class="tnb" onclick="aGoTab('target',this)"><i class="ti ti-target"></i>Target/แผนงาน</button>
       <button class="tnb" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
     </div>
 
@@ -696,6 +697,38 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
       </div>
     </div>
 
+    <!-- TARGET TAB -->
+    <div id="atab-target" class="tab">
+      <div class="fcard" style="margin-bottom:1.25rem">
+        <div class="fhdr"><i class="ti ti-upload" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">อัปโหลด Target / แผนงาน</span></div>
+        <div class="fbody">
+          <div class="fgg">
+            <div class="fg"><label>ชื่อแผน *</label><input id="t-title" placeholder="เช่น Target ผลิต Week 23, แผน PM เดือน มิ.ย."></div>
+            <div class="fg"><label>ช่วงเวลา *</label>
+              <select id="t-period"><option value="">-- เลือกช่วงเวลา --</option><option>รายสัปดาห์</option><option>รายเดือน</option><option>รายไตรมาส</option><option>อื่น ๆ</option></select>
+            </div>
+            <div class="fg"><label>แผนก</label>
+              <select id="t-dept"><option value="ALL">ทุกแผนก</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option></select>
+            </div>
+            <div class="fg"><label>หมายเหตุ</label><input id="t-note" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></div>
+          </div>
+          <div class="fg full" style="margin-top:8px">
+            <label>ไฟล์รูป / PDF *</label>
+            <input type="file" id="t-file" accept="image/*,.pdf" onchange="previewTargetFile(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer">
+            <div id="t-file-preview" style="margin-top:8px"></div>
+          </div>
+        </div>
+        <div class="fftr">
+          <button class="btn green" onclick="uploadTarget()" id="t-upload-btn"><i class="ti ti-cloud-upload"></i>อัปโหลด</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-files" style="font-size:14px;color:var(--text3)"></i>รายการ Target / แผนงานทั้งหมด</div>
+        <div id="t-list-content"><div class="empty" style="padding:1.5rem">กำลังโหลด...</div></div>
+      </div>
+    </div>
+
     <div id="atab-addnew" class="tab">
       <div class="fcard">
         <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
@@ -727,6 +760,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
 
 <script>
 const SUPABASE_URL='https://juyyhsanyqflhzclqcgh.supabase.co/rest/v1';
+const SUPABASE_STORAGE='https://juyyhsanyqflhzclqcgh.supabase.co/storage/v1';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1eXloc2FueXFmbGh6Y2xxY2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDYyNTAsImV4cCI6MjA5NTcyMjI1MH0.MG7DvlmMDhjPfI_sh_MkMrahBp3RsglpUcu4qxyRBCE';
 // Apps Script ใช้สำหรับส่ง LINE เท่านั้น
 const LINE_API='https://script.google.com/macros/s/AKfycbytyJ2zinRq9FQiyBp-BsW5_JAoSmf7qmy39PZJmbxZ2g0DdQkEaLXNB4HZAMYCITdYAQ/exec';
@@ -1358,12 +1392,94 @@ function renderAnalytics() {
   }
 }
 
+// ---- TARGET / แผนงาน ----
+function previewTargetFile(input){
+  var prev=document.getElementById('t-file-preview');
+  var f=input.files[0];
+  if(!f){prev.innerHTML='';return;}
+  if(f.type.indexOf('image')>=0){
+    var url=URL.createObjectURL(f);
+    prev.innerHTML='<img src="'+url+'" style="max-width:200px;max-height:150px;border-radius:8px;border:1px solid var(--border)">';
+  }else{
+    prev.innerHTML='<div style="font-size:12px;color:var(--text2)"><i class="ti ti-file-type-pdf" style="color:#DC2626"></i> '+f.name+'</div>';
+  }
+}
+
+async function uploadTarget(){
+  var title=document.getElementById('t-title').value.trim();
+  var period=document.getElementById('t-period').value;
+  var dept=document.getElementById('t-dept').value;
+  var note=document.getElementById('t-note').value.trim();
+  var fileInput=document.getElementById('t-file');
+  var file=fileInput.files[0];
+  if(!title||!period||!file){toast('⚠ กรุณากรอกชื่อแผน เลือกช่วงเวลา และไฟล์');return;}
+  if(file.size>10*1024*1024){toast('⚠ ไฟล์ใหญ่เกิน 10MB');return;}
+
+  var btn=document.getElementById('t-upload-btn');
+  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>กำลังอัปโหลด...';
+  try{
+    var ext=file.name.split('.').pop();
+    var fname='target_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
+    // อัปโหลดไฟล์เข้า Storage
+    var up=await fetch(SUPABASE_STORAGE+'/object/targets/'+fname,{
+      method:'POST',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':file.type},
+      body:file
+    });
+    if(!up.ok){var t=await up.text();throw new Error('upload: '+t);}
+    var fileurl=SUPABASE_STORAGE+'/object/public/targets/'+fname;
+    // บันทึก metadata ลงตาราง
+    var row={id:'T'+Date.now(),title:title,period:period,dept:dept,fileurl:fileurl,filename:file.name,filetype:file.type.indexOf('pdf')>=0?'pdf':'image',note:note,created:Date.now()};
+    var ins=await fetch(SUPABASE_URL+'/targets',{
+      method:'POST',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)
+    });
+    if(!ins.ok){var t2=await ins.text();throw new Error('insert: '+t2);}
+    toast('อัปโหลดสำเร็จ');
+    document.getElementById('t-title').value='';document.getElementById('t-period').selectedIndex=0;
+    document.getElementById('t-note').value='';fileInput.value='';document.getElementById('t-file-preview').innerHTML='';
+    loadTargets();
+  }catch(e){toast('อัปโหลดไม่สำเร็จ');console.log(e);}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-cloud-upload"></i>อัปโหลด';
+}
+
+async function loadTargets(){
+  try{
+    var r=await fetch(SUPABASE_URL+'/targets?select=*&order=created.desc',{headers:SB_HEADERS});
+    var data=await r.json();
+    if(!Array.isArray(data)||!data.length){
+      document.getElementById('t-list-content').innerHTML='<div class="empty" style="padding:1.5rem">ยังไม่มี Target / แผนงาน</div>';return;
+    }
+    document.getElementById('t-list-content').innerHTML=data.map(function(t){
+      var thumb=t.filetype==='pdf'
+        ?'<div style="width:48px;height:48px;border-radius:8px;background:#FEE2E2;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-type-pdf" style="font-size:22px;color:#DC2626"></i></div>'
+        :'<img src="'+t.fileurl+'" style="width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;cursor:pointer" onclick="window.open(\''+t.fileurl+'\',\'_blank\')">';
+      return '<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border)">'+
+        thumb+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-weight:600;font-size:13px">'+t.title+'</div>'+
+          '<div style="font-size:11px;color:var(--text3);margin-top:2px">'+t.period+' · '+(t.dept==='ALL'?'ทุกแผนก':t.dept)+(t.note?' · '+t.note:'')+'</div>'+
+        '</div>'+
+        '<a href="'+t.fileurl+'" target="_blank" class="btn" style="font-size:11px;padding:5px 10px;text-decoration:none"><i class="ti ti-eye"></i>ดู</a>'+
+        '<button class="btn outline-red" onclick="deleteTarget(\''+t.id+'\')" style="font-size:11px;padding:5px 10px"><i class="ti ti-trash"></i></button>'+
+      '</div>';
+    }).join('');
+  }catch(e){document.getElementById('t-list-content').innerHTML='<div class="empty" style="padding:1.5rem">โหลดไม่สำเร็จ</div>';}
+}
+
+async function deleteTarget(id){
+  if(!confirm('ยืนยันลบ Target นี้?'))return;
+  try{
+    await fetch(SUPABASE_URL+'/targets?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:{...SB_HEADERS,'Prefer':'return=minimal'}});
+    toast('ลบสำเร็จ');loadTargets();
+  }catch(e){toast('ลบไม่สำเร็จ');}
+}
+
 function aGoTab(id,btn){
   currentAdminTab=id;
   document.querySelectorAll('#page-admin .tab').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('#page-admin .tnb').forEach(e=>e.classList.remove('active'));
   document.getElementById('atab-'+id).classList.add('active');btn.classList.add('active');
-  if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();if(id==='analytics')renderAnalytics();
+  if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();if(id==='analytics')renderAnalytics();if(id==='target')loadTargets();
 }
 async function aLoad(silent){
   if(!silent){setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;}
