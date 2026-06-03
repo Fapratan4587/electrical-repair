@@ -58,6 +58,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .dept-Assembly::before{background:linear-gradient(90deg,#1877F2,#42A1F8)}
 .dept-Grinding::before{background:linear-gradient(90deg,#16A34A,#4ADE80)}
 .dept-FG::before{background:linear-gradient(90deg,#EA580C,#FB923C)}
+.dept-ENG::before{background:linear-gradient(90deg,#7C3AED,#A78BFA)}
 .dept-admin-card{grid-column:1/-1;background:linear-gradient(135deg,#1a1a1a 0%,#2d1a1a 100%);border-color:#333}
 .dept-admin-card:hover{border-color:#555}
 .dept-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;position:relative;overflow:hidden}
@@ -65,6 +66,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .dept-Assembly .dept-icon{background:linear-gradient(135deg,#1877F2,#60A5FA)}
 .dept-Grinding .dept-icon{background:linear-gradient(135deg,#16A34A,#4ADE80)}
 .dept-FG .dept-icon{background:linear-gradient(135deg,#EA580C,#FB923C)}
+.dept-ENG .dept-icon{background:linear-gradient(135deg,#7C3AED,#A78BFA)}
 .dept-admin-card .dept-icon{background:linear-gradient(135deg,#E8192C,#FF6B81)}
 .dept-name{font-size:15px;font-weight:700;margin-bottom:4px;letter-spacing:-.2px}
 .dept-desc{font-size:12px;color:var(--text3)}
@@ -423,6 +425,18 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
             <div class="dept-desc">แจ้งซ่อม & ติดตามสถานะ</div>
             <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#EA580C;margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าใช้งาน <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
           </div>
+          <div class="dept-card dept-ENG" onclick="enterUser('Engineering')">
+            <span class="dept-badge-count" id="dot-ENG"></span>
+            <div class="dept-icon">
+              <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M14 9a5 5 0 100 10 5 5 0 000-10zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" fill="white" opacity="0.9"/>
+                <path d="M14 2v3M14 23v3M2 14h3M23 14h3M5.5 5.5l2 2M20.5 5.5l-2 2M5.5 22.5l2-2M20.5 22.5l-2-2" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
+              </svg>
+            </div>
+            <div class="dept-name">Engineering</div>
+            <div class="dept-desc">งานซ่อมระบบส่วนกลาง</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#7C3AED;margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าใช้งาน <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
+          </div>
           <div class="dept-card dept-admin-card" onclick="showAdminLogin()">
             <div class="dept-icon">
               <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -518,10 +532,13 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
           <div class="fgg">
             <div class="fg"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" placeholder="ชื่อ-นามสกุล"></div>
             <div class="fg"><label>แผนก</label><input id="u-dept-display" readonly style="background:var(--surface2);cursor:default"></div>
-            <div class="fg"><label>เครื่องจักร *</label>
+            <div class="fg" id="u-machine-fg"><label>เครื่องจักร *</label>
               <select id="u-machine"><option value="">-- เลือกเครื่องจักร --</option></select>
             </div>
-            <div class="fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
+            <div class="fg" id="u-location-fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
+            <div class="fg" id="u-system-fg" style="display:none"><label>ประเภทระบบ *</label>
+              <select id="u-system"><option value="">-- เลือกประเภทระบบ --</option><option>ระบบ Coolant Tank</option><option>ระบบ RO</option><option>Air Compressure</option><option>Fan Coil Unit</option><option>ระบบ AGV &amp; AGF</option><option>ระบบรางในไลน์ผลิต</option><option>อื่น ๆ</option></select>
+            </div>
             <div class="fg"><label>ประเภทงาน *</label>
               <select id="u-type"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select>
             </div>
@@ -598,6 +615,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
         <button class="df-btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span class="df-dot" style="background:#1877F2"></span>Assembly</button>
         <button class="df-btn" id="df-Grinding" onclick="setDeptFilter('Grinding',this)"><span class="df-dot" style="background:#16A34A"></span>Grinding</button>
         <button class="df-btn" id="df-FG" onclick="setDeptFilter('First grinding',this)"><span class="df-dot" style="background:#EA580C"></span>First grinding</button>
+        <button class="df-btn" id="df-ENG" onclick="setDeptFilter('Engineering',this)"><span class="df-dot" style="background:#7C3AED"></span>Engineering</button>
       </div><button class="btn outline-blue" onclick="printDash()" style="height:fit-content"><i class="ti ti-printer"></i>พิมพ์ภาพรวม</button></div>
       </div>
       <div class="chart-row">
@@ -614,7 +632,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
     <div id="atab-list" class="tab">
       <div class="fbar">
         <div class="srch"><i class="ti ti-search"></i><input type="text" placeholder="ค้นหาผู้แจ้ง / สถานที่..." id="a-fsearch" oninput="aRenderList()" style="width:190px"></div>
-        <select id="a-fdept" onchange="aRenderList()" style="width:auto"><option value="">ทุกแผนก</option><option>Assembly</option><option>Grinding</option><option>First grinding</option></select>
+        <select id="a-fdept" onchange="aRenderList()" style="width:auto"><option value="">ทุกแผนก</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option></select>
         <select id="a-fst" onchange="aRenderList()" style="width:auto"><option value="">สถานะทั้งหมด</option><option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option></select>
       </div>
       <div class="tw">
@@ -679,7 +697,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
         <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
         <div class="fbody">
           <div class="fgg">
-            <div class="fg"><label>แผนก *</label><select id="a-fl-dept" onchange="populateMachines(this.value,'a-fl-machine')"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>อื่น ๆ</option></select></div>
+            <div class="fg"><label>แผนก *</label><select id="a-fl-dept" onchange="populateMachines(this.value,'a-fl-machine')"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option><option>อื่น ๆ</option></select></div>
             <div class="fg"><label>ผู้แจ้ง</label><input id="a-fl-reporter" placeholder="ชื่อผู้แจ้ง"></div>
             <div class="fg"><label>เครื่องจักร *</label><select id="a-fl-machine"><option value="">-- เลือกเครื่องจักร --</option></select></div>
             <div class="fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="a-fl" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
@@ -751,7 +769,7 @@ function updateHomeDots(){
   loadLocal();
   const bar=document.getElementById('home-countdown-bar');
   if(bar) bar.classList.toggle('show',localJobs.length>0);
-  [['Assembly','dot-Assembly'],['Grinding','dot-Grinding'],['First grinding','dot-FG']].forEach(([dept,dotId])=>{
+  [['Assembly','dot-Assembly'],['Grinding','dot-Grinding'],['First grinding','dot-FG'],['Engineering','dot-ENG']].forEach(([dept,dotId])=>{
     const el=document.getElementById(dotId);if(!el)return;
     const c=localJobs.filter(j=>j.dept===dept&&j.status!=='เสร็จสิ้น').length;
     if(c>0){el.textContent=c;el.style.display='flex';}else el.style.display='none';
@@ -860,7 +878,7 @@ function formatDatetime(isoStr) {
 function genId(){return 'E'+String(Date.now()).slice(-5);}
 function toast(msg,dur){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur||2400);}
 function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent'};return '<span class="badge '+( m[s]||'b-wait')+'">'+s+'</span>';}
-function deptBadge(d){const c=d==='Assembly'?'b-doing':d==='Grinding'?'b-done':d==='First grinding'?'b-wait':'';return '<span class="badge '+c+'" style="'+(c?'':'background:#F3F4F6;color:#6B7280')+'">'+(d||'—')+'</span>';}
+function deptBadge(d){const c=d==='Assembly'?'b-doing':d==='Grinding'?'b-done':d==='First grinding'?'b-wait':'';var custom=d==='Engineering'?'background:#F3E8FF;color:#7C3AED':(c?'':'background:#F3F4F6;color:#6B7280');return '<span class="badge '+c+'" style="'+custom+'">'+(d||'—')+'</span>';}
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{return JSON.parse(note.replace('[EQUIP]',''));}catch(e){return[];}}
 
@@ -875,7 +893,8 @@ function goHome(){
 var MACHINES = {
   'Grinding': ['Lift','Raceway','Bore','Auto check','Honing'],
   'Assembly': ['Lift','Part feeder','Matching','Caulking','Laser mark','Washing','Anderon','GSP','Visual inspection'],
-  'First grinding': ['SF','OD']
+  'First grinding': ['SF','OD'],
+  'Engineering': ['ระบบ Coolant Tank','ระบบ RO','Air Compressure','Fan Coil Unit','ระบบ AGV & AGF','ระบบรางในไลน์ผลิต']
 };
 function populateMachines(dept, selectId){
   var sel=document.getElementById(selectId);
@@ -889,10 +908,16 @@ function enterUser(dept){
   currentDept=dept;loadLocal();
   document.getElementById('u-dept-display').value=dept;
   document.getElementById('u-form-dept').textContent=dept;
-  populateMachines(dept,'u-machine');
+  var isEng = (dept==='Engineering');
+  // Engineering ใช้ช่อง "ประเภทระบบ" แทนเครื่องจักร/จุดที่เสีย
+  document.getElementById('u-machine-fg').style.display = isEng ? 'none' : '';
+  document.getElementById('u-location-fg').style.display = isEng ? 'none' : '';
+  document.getElementById('u-system-fg').style.display = isEng ? '' : 'none';
+  if(!isEng) populateMachines(dept,'u-machine');
   const badge=document.getElementById('user-dept-badge');
   badge.textContent=dept;
-  badge.className='badge '+(dept==='Assembly'?'b-doing':dept==='Grinding'?'b-done':'b-wait');
+  badge.className='badge '+(dept==='Assembly'?'b-doing':dept==='Grinding'?'b-done':dept==='Engineering'?'':'b-wait');
+  if(dept==='Engineering'){badge.style.cssText='background:#F3E8FF;color:#7C3AED';}else{badge.style.cssText='';}
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('u-reporter').value='';
   showPage('page-user');startCountdown();uRenderTrack();uLoadJobs(true);startAutoRefresh('user');
@@ -1033,13 +1058,19 @@ function uGoTab(id,btn){
 }
 async function uSubmit(){
   const reporter=document.getElementById('u-reporter').value.trim();
-  const machine=document.getElementById('u-machine').value;
-  const locInput=document.getElementById('u-location').value.trim();
   const typ=document.getElementById('u-type').value;
   const det=document.getElementById('u-detail').value.trim();
-  if(!reporter||!machine||!locInput||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
-  // รวมเครื่องจักร + จุดที่เสีย
-  const loc = machine + ' — ' + locInput;
+  var loc;
+  if(currentDept==='Engineering'){
+    const sys=document.getElementById('u-system').value;
+    if(!reporter||!sys||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+    loc=sys;
+  }else{
+    const machine=document.getElementById('u-machine').value;
+    const locInput=document.getElementById('u-location').value.trim();
+    if(!reporter||!machine||!locInput||!typ||!det){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+    loc=machine+' — '+locInput;
+  }
   const isUrgent=document.getElementById('u-urgent').checked;
   const j={id:genId(),dept:currentDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:new Date().toISOString(),doneDate:'',note:'',created:Date.now(),action:'add'};
   document.getElementById('u-btn-save').disabled=true;
@@ -1058,6 +1089,7 @@ async function uSubmit(){
 }
 function uClearForm(){
   document.getElementById('u-machine').selectedIndex=0;
+  var sysEl=document.getElementById('u-system');if(sysEl)sysEl.selectedIndex=0;
   document.getElementById('u-location').value='';document.getElementById('u-type').selectedIndex=0;
   document.getElementById('u-detail').value='';document.getElementById('u-urgent').checked=false;
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
@@ -1179,8 +1211,8 @@ function renderAnalytics() {
       <div class="kpi-foot"><strong style="color:${total&&urg/total>=0.3?'#E8192C':total&&urg/total>=0.15?'#F59E0B':'#16A34A'};font-size:13px">${total ? Math.round(urg/total*100) : 0}%</strong> ของทั้งหมด</div>
     </div>`;
 
-  const depts = ['Assembly', 'Grinding', 'First grinding'];
-  const dColors = ['#1877F2', '#16A34A', '#EA580C'];
+  const depts = ['Assembly', 'Grinding', 'First grinding', 'Engineering'];
+  const dColors = ['#1877F2', '#16A34A', '#EA580C', '#7C3AED'];
   let mttrHTML = '';
   depts.forEach((d, i) => {
     const dJobs = jobs.filter(j => j.dept === d);
@@ -1357,7 +1389,7 @@ function aRenderDash(){
     document.getElementById('a-cS') ? document.getElementById('a-cS').parentElement.replaceChild(cv,document.getElementById('a-cS')) : null;
     cS=new Chart(document.getElementById('a-cS')||cv,{type:'doughnut',data:{labels:sts,datasets:[{data:sD,backgroundColor:sC,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
   }
-  const depts=['Assembly','Grinding','First grinding'],dC=['#1877F2','#16A34A','#EA580C'],dD=depts.map(d=>allJobs.filter(j=>j.dept===d).length);
+  const depts=['Assembly','Grinding','First grinding','Engineering'],dC=['#1877F2','#16A34A','#EA580C','#7C3AED'],dD=depts.map(d=>allJobs.filter(j=>j.dept===d).length);
   document.getElementById('a-legD').innerHTML=depts.map((d,i)=>'<span class="leg"><span class="legdot" style="background:'+dC[i]+'"></span>'+d+' '+dD[i]+'</span>').join('');
   if(cD)cD.destroy();
   var hasData=dD.some(function(v){return v>0;});
@@ -1473,7 +1505,7 @@ function printDash(){
   var legS=sts.map(function(s,i){return '<span><span class="leg-dot" style="background:'+sC[i]+'"></span>'+s+' '+fj.filter(function(j){return j.status===s;}).length+'</span>';}).join(' ');
 
   // Dept legend
-  var depts=['Assembly','Grinding','First grinding'],dC=['#1877F2','#16A34A','#EA580C'];
+  var depts=['Assembly','Grinding','First grinding','Engineering'],dC=['#1877F2','#16A34A','#EA580C','#7C3AED'];
   var legD=depts.map(function(d,i){return '<span><span class="leg-dot" style="background:'+dC[i]+'"></span>'+d+' '+allJobs.filter(function(j){return j.dept===d;}).length+'</span>';}).join(' ');
 
   // Recent table rows
