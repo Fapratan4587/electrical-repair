@@ -481,9 +481,12 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
       <div class="equip-total" style="margin-top:8px"><span style="color:var(--text2);font-size:12px">ค่าอุปกรณ์รวม</span><strong id="equip-total">0 บาท</strong></div>
     </div>
     <div class="sving" id="e-sving" style="margin:10px 0 0"><i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:13px"></i>กำลังบันทึก...</div>
-    <div class="modal-btns" style="margin-top:14px">
-      <button class="btn" onclick="closeEditModal()">ยกเลิก</button>
-      <button class="btn green" onclick="saveEdit()" id="e-save-btn"><i class="ti ti-check"></i>บันทึกการซ่อม</button>
+    <div class="modal-btns" style="margin-top:14px;justify-content:space-between">
+      <button class="btn outline-red" onclick="deleteJob()" id="e-delete-btn"><i class="ti ti-trash"></i>ลบรายการ</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeEditModal()">ยกเลิก</button>
+        <button class="btn green" onclick="saveEdit()" id="e-save-btn"><i class="ti ti-check"></i>บันทึกการซ่อม</button>
+      </div>
     </div>
   </div>
 </div>
@@ -940,6 +943,30 @@ function openEditModal(id){
   document.getElementById('edit-modal').classList.add('show');
 }
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');editingJob=null;}
+
+async function deleteJob(){
+  if(!editingJob)return;
+  if(!confirm('⚠️ ยืนยันลบรายการนี้?\n\nรหัส: '+editingJob.id+'\nสถานที่: '+editingJob.location+'\nผู้แจ้ง: '+(editingJob.reporter||'—')+'\n\nไม่สามารถย้อนกลับได้')) return;
+  var delId=editingJob.id;
+  document.getElementById('e-delete-btn').disabled=true;
+  setSS('a-sdot','a-stxt','syncing');
+  try{
+    await callAPI({action:'delete',id:delId});
+    allJobs=allJobs.filter(j=>j.id!==delId);
+    // ลบออกจาก local ของ user ด้วย
+    localJobs=localJobs.filter(j=>j.id!==delId);saveLocal();
+    setSS('a-sdot','a-stxt','ok');
+    closeEditModal();
+    aCheckAlerts();aRenderList();aRenderDash();updateHomeDots();
+    if(currentAdminTab==='analytics')renderAnalytics();
+    if(currentAdminTab==='urgent')aRenderUrgent();
+    toast('ลบรายการสำเร็จ');
+  }catch(e){
+    setSS('a-sdot','a-stxt','error');
+    toast('ลบไม่สำเร็จ กรุณาลองใหม่');
+  }
+  document.getElementById('e-delete-btn').disabled=false;
+}
 
 function addEquipRow(name='',model='',price=''){
   const div=document.createElement('div');
