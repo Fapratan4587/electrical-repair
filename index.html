@@ -425,7 +425,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
             <div class="dept-desc">แจ้งซ่อม & ติดตามสถานะ</div>
             <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#EA580C;margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าใช้งาน <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
           </div>
-          <div class="dept-card dept-ENG" onclick="enterUser('Engineering')">
+          <div class="dept-card dept-ENG" onclick="enterUser('Engineering')" style="background:linear-gradient(135deg,#FAF7FF 0%,#F3EDFF 100%);border-color:#E0D4FB">
             <span class="dept-badge-count" id="dot-ENG"></span>
             <div class="dept-icon">
               <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -433,8 +433,8 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
                 <path d="M14 2v3M14 23v3M2 14h3M23 14h3M5.5 5.5l2 2M20.5 5.5l-2 2M5.5 22.5l2-2M20.5 22.5l-2-2" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
               </svg>
             </div>
-            <div class="dept-name">Engineering</div>
-            <div class="dept-desc">งานซ่อมระบบส่วนกลาง</div>
+            <div class="dept-name">Engineering <span style="display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#7C3AED;padding:2px 7px;border-radius:99px;vertical-align:middle;margin-left:4px;letter-spacing:.03em">ปัญหาอื่นๆ</span></div>
+            <div class="dept-desc" style="color:#7C3AED;font-weight:500">เติมน้ำมัน · ไฟ · แอร์ · รถ · อื่นๆ</div>
             <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#7C3AED;margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าใช้งาน <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
           </div>
           <div class="dept-card dept-admin-card" onclick="showAdminLogin()">
@@ -527,7 +527,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
     </div>
     <div id="utab-report" class="tab active">
       <div class="fcard">
-        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">แจ้งซ่อมไฟฟ้า — <span id="u-form-dept" style="color:var(--red)"></span></span></div>
+        <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle" id="u-form-title"><span id="u-form-prefix">แจ้งซ่อมไฟฟ้า — </span><span id="u-form-dept" style="color:var(--red)"></span></span></div>
         <div class="fbody">
           <div class="fgg">
             <div class="fg"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" placeholder="ชื่อ-นามสกุล"></div>
@@ -537,7 +537,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
             </div>
             <div class="fg" id="u-location-fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
             <div class="fg" id="u-system-fg" style="display:none"><label>ประเภทระบบ *</label>
-              <select id="u-system"><option value="">-- เลือกประเภทระบบ --</option><option>ระบบ Coolant Tank</option><option>ระบบ RO</option><option>Air Compressure</option><option>Fan Coil Unit</option><option>ระบบ AGV &amp; AGF</option><option>ระบบรางในไลน์ผลิต</option><option>เติมน้ำมัน SF33</option><option>เติมน้ำมัน AW10</option><option>เติมน้ำมัน AW46</option><option>ระบบแสงสว่าง</option><option>ห้องน้ำ</option><option>ระบบ Fire Alarm (แจ้งเหตุเพลิงไหม้)</option><option>อื่น ๆ</option></select>
+              <select id="u-system"><option value="">-- เลือกประเภทระบบ --</option><option>ระบบ Coolant Tank</option><option>ระบบ RO</option><option>Air Compressure</option><option>Fan Coil Unit</option><option>ระบบ AGV &amp; AGF</option><option>ระบบรางในไลน์ผลิต</option><option>เติมน้ำมัน SF33</option><option>เติมน้ำมัน AW10</option><option>เติมน้ำมัน AW46</option><option>ระบบแสงสว่าง</option><option>ห้องน้ำ</option><option>ระบบ Fire Alarm (แจ้งเหตุเพลิงไหม้)</option><option>รถ Stacker ไฟฟ้า</option><option>รถถูพื้น</option><option>รถ Hand lift</option><option>อื่น ๆ</option></select>
             </div>
             <div class="fg" id="u-eng-dept-fg" style="display:none"><label>แผนกที่แจ้ง *</label>
               <select id="u-eng-dept"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Warehouse</option></select>
@@ -898,7 +898,7 @@ var MACHINES = {
   'Grinding': ['Lift','Raceway','Bore','Auto check','Honing'],
   'Assembly': ['Lift','Part feeder','Matching','Caulking','Laser mark','Washing','Anderon','GSP','Visual inspection'],
   'First grinding': ['SF','OD'],
-  'Engineering': ['ระบบ Coolant Tank','ระบบ RO','Air Compressure','Fan Coil Unit','ระบบ AGV & AGF','ระบบรางในไลน์ผลิต','เติมน้ำมัน SF33','เติมน้ำมัน AW10','เติมน้ำมัน AW46','ระบบแสงสว่าง','ห้องน้ำ','ระบบ Fire Alarm (แจ้งเหตุเพลิงไหม้)']
+  'Engineering': ['ระบบ Coolant Tank','ระบบ RO','Air Compressure','Fan Coil Unit','ระบบ AGV & AGF','ระบบรางในไลน์ผลิต','เติมน้ำมัน SF33','เติมน้ำมัน AW10','เติมน้ำมัน AW46','ระบบแสงสว่าง','ห้องน้ำ','ระบบ Fire Alarm (แจ้งเหตุเพลิงไหม้)','รถ Stacker ไฟฟ้า','รถถูพื้น','รถ Hand lift']
 };
 function populateMachines(dept, selectId){
   var sel=document.getElementById(selectId);
@@ -912,6 +912,12 @@ function enterUser(dept){
   currentDept=dept;loadLocal();
   document.getElementById('u-dept-display').value=dept;
   document.getElementById('u-form-dept').textContent=dept;
+  // Engineering ใช้ชื่อฟอร์มแบบพิเศษ
+  if(dept==='Engineering'){
+    document.getElementById('u-form-prefix').textContent='แจ้งปัญหาอื่นๆ แผนก ';
+  }else{
+    document.getElementById('u-form-prefix').textContent='แจ้งซ่อมไฟฟ้า — ';
+  }
   var isEng = (dept==='Engineering');
   // Engineering: ใช้ประเภทระบบ + แผนกที่เกี่ยวข้อง + สถานที่ (ไม่มีเครื่องจักร/จุดที่เสีย/ประเภทงาน)
   document.getElementById('u-machine-fg').style.display = isEng ? 'none' : '';
