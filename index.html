@@ -713,6 +713,10 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
             <div class="fg"><label>หมายเหตุ</label><input id="t-note" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></div>
           </div>
           <div class="fg full" style="margin-top:8px">
+            <label>ไลน์/เครื่องที่อยู่ในแผน <span style="font-size:10px;color:var(--text3);font-weight:400">(คั่นด้วยจุลภาค — ระบบจะเตือนเมื่อมีการแจ้งซ่อมไลน์เหล่านี้)</span></label>
+            <input id="t-planlines" placeholder="เช่น A402, A418, A419, Line 434, IG409">
+          </div>
+          <div class="fg full" style="margin-top:8px">
             <label>ไฟล์รูป / PDF *</label>
             <input type="file" id="t-file" accept="image/*,.pdf" onchange="previewTargetFile(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer">
             <div id="t-file-preview" style="margin-top:8px"></div>
@@ -968,7 +972,7 @@ function enterUser(dept){
   if(dept==='Engineering'){badge.style.cssText='background:#F3E8FF;color:#7C3AED';}else{badge.style.cssText='';}
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('u-reporter').value='';
-  showPage('page-user');startCountdown();uRenderTrack();uLoadJobs(true);startAutoRefresh('user');
+  showPage('page-user');startCountdown();uRenderTrack();uLoadJobs(true);loadPlanLines();startAutoRefresh('user');
 }
 
 // ---- ADMIN LOGIN ----
@@ -1123,7 +1127,14 @@ async function uSubmit(){
   }
   const isUrgent=document.getElementById('u-urgent').checked;
   const engRef = currentDept==='Engineering' ? document.getElementById('u-eng-dept').value : '';
-  const j={id:genId(),dept:jobDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:new Date().toISOString(),doneDate:'',note:engRef?'[REFDEPT]'+engRef:'',created:Date.now(),action:'add'};
+  // เช็คผลกระทบต่อแผนผลิต
+  const impact = checkPlanImpact(loc);
+  if(impact){
+    if(!confirm('🔴 แจ้งเตือน: ไลน์ "'+impact.raw+'" อยู่ในแผนผลิต "'+impact.title+'"\n\nการซ่อมอาจกระทบต่อ Target การผลิต\n\nต้องการแจ้งซ่อมต่อหรือไม่?')) return;
+  }
+  const planNote = impact ? '[PLAN]'+impact.title+'|' : '';
+  const baseNote = engRef ? '[REFDEPT]'+engRef : '';
+  const j={id:genId(),dept:jobDept,reporter,location:loc,type:typ,detail:det,status:isUrgent?'เร่งด่วน':'รอดำเนินการ',priority:isUrgent?'สูง':'ปานกลาง',tech:'',cost:0,date:new Date().toISOString(),doneDate:'',note:planNote+baseNote,planimpact:impact?impact.title:'',created:Date.now(),action:'add'};
   document.getElementById('u-btn-save').disabled=true;
   document.getElementById('u-sving').classList.add('show');
   document.getElementById('u-sdot').className='sdot syncing';
@@ -1393,6 +1404,37 @@ function renderAnalytics() {
 }
 
 // ---- TARGET / แผนงาน ----
+var activePlanLines=[]; // [{line:'A402', title:'Week 23', dept:'Assembly'}]
+
+async function loadPlanLines(){
+  try{
+    var r=await fetch(SUPABASE_URL+'/targets?select=title,dept,planlines,active&order=created.desc',{headers:SB_HEADERS});
+    var data=await r.json();
+    activePlanLines=[];
+    if(Array.isArray(data)){
+      data.forEach(function(t){
+        if(t.active===false||!t.planlines)return;
+        t.planlines.split(',').forEach(function(ln){
+          var line=ln.trim();
+          if(line)activePlanLines.push({line:line.toLowerCase(),raw:line,title:t.title,dept:t.dept});
+        });
+      });
+    }
+  }catch(e){activePlanLines=[];}
+}
+
+// เช็คว่าสถานที่/ไลน์ที่แจ้งซ่อม ตรงกับแผนที่ active อยู่ไหม
+function checkPlanImpact(location){
+  if(!location||!activePlanLines.length)return null;
+  var loc=location.toLowerCase();
+  for(var i=0;i<activePlanLines.length;i++){
+    if(loc.indexOf(activePlanLines[i].line)>=0){
+      return activePlanLines[i]; // คืนแผนที่กระทบ
+    }
+  }
+  return null;
+}
+
 function previewTargetFile(input){
   var prev=document.getElementById('t-file-preview');
   var f=input.files[0];
@@ -1410,6 +1452,7 @@ async function uploadTarget(){
   var period=document.getElementById('t-period').value;
   var dept=document.getElementById('t-dept').value;
   var note=document.getElementById('t-note').value.trim();
+  var planlines=document.getElementById('t-planlines').value.trim();
   var fileInput=document.getElementById('t-file');
   var file=fileInput.files[0];
   if(!title||!period||!file){toast('⚠ กรุณากรอกชื่อแผน เลือกช่วงเวลา และไฟล์');return;}
@@ -1429,14 +1472,14 @@ async function uploadTarget(){
     if(!up.ok){var t=await up.text();throw new Error('upload: '+t);}
     var fileurl=SUPABASE_STORAGE+'/object/public/targets/'+fname;
     // บันทึก metadata ลงตาราง
-    var row={id:'T'+Date.now(),title:title,period:period,dept:dept,fileurl:fileurl,filename:file.name,filetype:file.type.indexOf('pdf')>=0?'pdf':'image',note:note,created:Date.now()};
+    var row={id:'T'+Date.now(),title:title,period:period,dept:dept,fileurl:fileurl,filename:file.name,filetype:file.type.indexOf('pdf')>=0?'pdf':'image',note:note,planlines:planlines,active:true,created:Date.now()};
     var ins=await fetch(SUPABASE_URL+'/targets',{
       method:'POST',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)
     });
     if(!ins.ok){var t2=await ins.text();throw new Error('insert: '+t2);}
     toast('อัปโหลดสำเร็จ');
     document.getElementById('t-title').value='';document.getElementById('t-period').selectedIndex=0;
-    document.getElementById('t-note').value='';fileInput.value='';document.getElementById('t-file-preview').innerHTML='';
+    document.getElementById('t-note').value='';document.getElementById('t-planlines').value='';fileInput.value='';document.getElementById('t-file-preview').innerHTML='';
     loadTargets();
   }catch(e){toast('อัปโหลดไม่สำเร็จ');console.log(e);}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-cloud-upload"></i>อัปโหลด';
@@ -1458,6 +1501,7 @@ async function loadTargets(){
         '<div style="flex:1;min-width:0">'+
           '<div style="font-weight:600;font-size:13px">'+t.title+'</div>'+
           '<div style="font-size:11px;color:var(--text3);margin-top:2px">'+t.period+' · '+(t.dept==='ALL'?'ทุกแผนก':t.dept)+(t.note?' · '+t.note:'')+'</div>'+
+          (t.planlines?'<div style="font-size:10px;color:#7C3AED;margin-top:3px"><i class="ti ti-alert-triangle" style="font-size:10px"></i> ไลน์ในแผน: '+t.planlines+'</div>':'')+
         '</div>'+
         '<a href="'+t.fileurl+'" target="_blank" class="btn" style="font-size:11px;padding:5px 10px;text-decoration:none"><i class="ti ti-eye"></i>ดู</a>'+
         '<button class="btn outline-red" onclick="deleteTarget(\''+t.id+'\')" style="font-size:11px;padding:5px 10px"><i class="ti ti-trash"></i></button>'+
@@ -1538,13 +1582,21 @@ function aRenderDash(){
   const rb=document.getElementById('a-recBody');
   rb.innerHTML=fj.slice(0,6).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>').join('')||'<tr><td colspan="8"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
 }
+function planFlag(j){
+  var note=j.note||'';
+  if(note.indexOf('[PLAN]')>=0){
+    var plan=note.split('[PLAN]')[1].split('|')[0];
+    return ' <span style="display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#DC2626;padding:1px 6px;border-radius:99px;margin-left:4px" title="กระทบแผนผลิต: '+plan+'">🔴 กระทบแผน</span>';
+  }
+  return '';
+}
 function aRenderList(){
   const fd=document.getElementById('a-fdept').value,fs=document.getElementById('a-fst').value,fq=document.getElementById('a-fsearch').value.toLowerCase();
   let fil=allJobs.filter(j=>{if(fd&&j.dept!==fd)return false;if(fs&&j.status!==fs)return false;if(fq&&![j.reporter,j.location,j.detail,j.type,j.tech,j.dept].join(' ').toLowerCase().includes(fq))return false;return true;});
   fil.sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
   const b=document.getElementById('a-listBody');
   if(!fil.length){b.innerHTML='<tr><td colspan="11"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>';return;}
-  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td></tr>').join('');
+  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+planFlag(j)+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td></tr>').join('');
 }
 function aRenderUrgent(){
   const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
