@@ -630,7 +630,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
       </div>
       <div class="card" style="margin-bottom:0;border-radius:var(--r) var(--r) 0 0;border-bottom:none"><div class="card-title" style="margin-bottom:0;display:flex;align-items:center;justify-content:space-between"><span style="display:flex;align-items:center;gap:6px"><i class="ti ti-clock" style="font-size:14px;color:var(--text3)"></i>งานล่าสุด</span><button class="btn" onclick="aGoTab('list',document.querySelectorAll('#page-admin .tnb')[1])" style="font-size:11px;padding:4px 10px;height:auto"><i class="ti ti-list-details" style="font-size:12px"></i>ดูทั้งหมด</button></div></div>
       <div class="tw" style="border-radius:0 0 var(--r) var(--r)">
-        <table><thead><tr><th style="width:75px">รหัส</th><th style="width:105px">แผนก</th><th style="width:110px">ผู้แจ้ง</th><th style="width:120px">สถานที่</th><th style="width:110px">ประเภท</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th>วันที่</th></tr></thead><tbody id="a-recBody"></tbody></table>
+        <table><thead><tr><th style="width:75px">รหัส</th><th style="width:105px">แผนก</th><th style="width:110px">ผู้แจ้ง</th><th style="width:120px">สถานที่</th><th style="width:110px">ประเภท</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th>วันที่</th><th style="width:50px">แก้ไข</th></tr></thead><tbody id="a-recBody"></tbody></table>
       </div>
     </div>
 
@@ -1639,7 +1639,15 @@ function aRenderDash(){
     cD=new Chart(document.getElementById('a-cD')||canvas,{type:'bar',data:{labels:depts,datasets:[{data:dD,backgroundColor:dC,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{grid:{display:false}},y:{ticks:{stepSize:1,precision:0},grid:{color:'rgba(0,0,0,.04)'},min:0}}}});
   }
   const rb=document.getElementById('a-recBody');
-  rb.innerHTML=fj.slice(0,6).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>').join('')||'<tr><td colspan="8"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
+  // เรียงงานที่ยังไม่เสร็จขึ้นก่อน (เร่งด่วน > รอดำเนินการ > กำลังดำเนินการ > เสร็จสิ้น) แล้วเรียงตามวันที่ล่าสุด
+  var stOrder={'เร่งด่วน':0,'รอดำเนินการ':1,'กำลังดำเนินการ':2,'เสร็จสิ้น':3};
+  var sorted=fj.slice().sort(function(a,b){
+    var oa=stOrder[a.status]!==undefined?stOrder[a.status]:1;
+    var ob=stOrder[b.status]!==undefined?stOrder[b.status]:1;
+    if(oa!==ob)return oa-ob;
+    return (b.created||0)-(a.created||0);
+  });
+  rb.innerHTML=sorted.slice(0,8).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td></tr>').join('')||'<tr><td colspan="9"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
 }
 function planFlag(j){
   var note=j.note||'';
