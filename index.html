@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
 :root{
@@ -715,11 +716,13 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
           <div class="fg full" style="margin-top:8px">
             <label>ไลน์/เครื่องที่อยู่ในแผน <span style="font-size:10px;color:var(--text3);font-weight:400">(คั่นด้วยจุลภาค — ระบบจะเตือนเมื่อมีการแจ้งซ่อมไลน์เหล่านี้)</span></label>
             <input id="t-planlines" placeholder="เช่น A402, A418, A419, Line 434, IG409">
+            <div style="font-size:10px;color:var(--text3);margin-top:4px">💡 หรืออัปโหลดไฟล์ Excel ด้านล่าง แล้วเลือกคอลัมน์ที่มีชื่อไลน์ ระบบจะดึงให้อัตโนมัติ</div>
           </div>
           <div class="fg full" style="margin-top:8px">
-            <label>ไฟล์รูป / PDF *</label>
-            <input type="file" id="t-file" accept="image/*,.pdf" onchange="previewTargetFile(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer">
+            <label>ไฟล์รูป / PDF / Excel *</label>
+            <input type="file" id="t-file" accept="image/*,.pdf,.xlsx,.xls,.csv" onchange="previewTargetFile(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer">
             <div id="t-file-preview" style="margin-top:8px"></div>
+            <div id="t-excel-cols" style="margin-top:10px"></div>
           </div>
         </div>
         <div class="fftr">
@@ -1438,13 +1441,64 @@ function checkPlanImpact(location){
 function previewTargetFile(input){
   var prev=document.getElementById('t-file-preview');
   var f=input.files[0];
-  if(!f){prev.innerHTML='';return;}
+  if(!f){prev.innerHTML='';document.getElementById('t-excel-cols').innerHTML='';return;}
+  document.getElementById('t-excel-cols').innerHTML='';
+  var ext=f.name.split('.').pop().toLowerCase();
   if(f.type.indexOf('image')>=0){
     var url=URL.createObjectURL(f);
     prev.innerHTML='<img src="'+url+'" style="max-width:200px;max-height:150px;border-radius:8px;border:1px solid var(--border)">';
+  }else if(ext==='xlsx'||ext==='xls'||ext==='csv'){
+    prev.innerHTML='<div style="font-size:12px;color:var(--text2)"><i class="ti ti-file-spreadsheet" style="color:#16A34A"></i> '+f.name+'</div>';
+    readExcelColumns(f);
   }else{
     prev.innerHTML='<div style="font-size:12px;color:var(--text2)"><i class="ti ti-file-type-pdf" style="color:#DC2626"></i> '+f.name+'</div>';
   }
+}
+
+// อ่าน Excel แล้วแสดงปุ่มเลือกคอลัมน์ที่มีชื่อไลน์
+var excelRows=null;
+function readExcelColumns(file){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=new Uint8Array(e.target.result);
+      var wb=XLSX.read(data,{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      excelRows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''}); // array of arrays
+      if(!excelRows||excelRows.length<2){document.getElementById('t-excel-cols').innerHTML='<div style="font-size:11px;color:#DC2626">ไม่พบข้อมูลในไฟล์</div>';return;}
+      var headers=excelRows[0];
+      var btns=headers.map(function(h,i){
+        var hn=(h===''||h==null)?('คอลัมน์ '+(i+1)):h;
+        return '<button type="button" class="btn" style="font-size:11px;padding:5px 10px" onclick="pickExcelColumn('+i+',this)">'+hn+'</button>';
+      }).join('');
+      document.getElementById('t-excel-cols').innerHTML=
+        '<div style="background:var(--surface2);border-radius:10px;padding:10px;border:1px solid var(--border)">'+
+        '<div style="font-size:12px;font-weight:600;margin-bottom:6px"><i class="ti ti-columns"></i> เลือกคอลัมน์ที่มีชื่อไลน์/เครื่อง:</div>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:6px">'+btns+'</div>'+
+        '<div id="t-excel-result" style="font-size:11px;color:#16A34A;margin-top:8px"></div>'+
+        '</div>';
+    }catch(err){document.getElementById('t-excel-cols').innerHTML='<div style="font-size:11px;color:#DC2626">อ่านไฟล์ไม่สำเร็จ</div>';console.log(err);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// เมื่อเลือกคอลัมน์ → ดึงค่าทั้งหมดในคอลัมน์นั้นมาใส่ planlines
+function pickExcelColumn(colIndex,btn){
+  if(!excelRows)return;
+  var vals=[];
+  for(var r=1;r<excelRows.length;r++){
+    var v=excelRows[r][colIndex];
+    if(v!==''&&v!=null){
+      v=(''+v).trim();
+      if(v&&vals.indexOf(v)<0)vals.push(v);
+    }
+  }
+  document.getElementById('t-planlines').value=vals.join(', ');
+  document.getElementById('t-excel-result').innerHTML='✓ ดึงได้ '+vals.length+' รายการ → ใส่ในช่อง "ไลน์ที่อยู่ในแผน" แล้ว';
+  // highlight selected button
+  var parent=btn.parentElement;
+  Array.prototype.forEach.call(parent.children,function(b){b.classList.remove('green');});
+  btn.classList.add('green');
 }
 
 async function uploadTarget(){
@@ -1463,23 +1517,26 @@ async function uploadTarget(){
   try{
     var ext=file.name.split('.').pop();
     var fname='target_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
+    var ctype=file.type||'application/octet-stream';
     // อัปโหลดไฟล์เข้า Storage
     var up=await fetch(SUPABASE_STORAGE+'/object/targets/'+fname,{
       method:'POST',
-      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':file.type},
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':ctype},
       body:file
     });
     if(!up.ok){var t=await up.text();throw new Error('upload: '+t);}
     var fileurl=SUPABASE_STORAGE+'/object/public/targets/'+fname;
     // บันทึก metadata ลงตาราง
-    var row={id:'T'+Date.now(),title:title,period:period,dept:dept,fileurl:fileurl,filename:file.name,filetype:file.type.indexOf('pdf')>=0?'pdf':'image',note:note,planlines:planlines,active:true,created:Date.now()};
+    var lext=file.name.split('.').pop().toLowerCase();
+    var ftype = (lext==='xlsx'||lext==='xls'||lext==='csv')?'excel':(file.type.indexOf('pdf')>=0?'pdf':'image');
+    var row={id:'T'+Date.now(),title:title,period:period,dept:dept,fileurl:fileurl,filename:file.name,filetype:ftype,note:note,planlines:planlines,active:true,created:Date.now()};
     var ins=await fetch(SUPABASE_URL+'/targets',{
       method:'POST',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)
     });
     if(!ins.ok){var t2=await ins.text();throw new Error('insert: '+t2);}
     toast('อัปโหลดสำเร็จ');
     document.getElementById('t-title').value='';document.getElementById('t-period').selectedIndex=0;
-    document.getElementById('t-note').value='';document.getElementById('t-planlines').value='';fileInput.value='';document.getElementById('t-file-preview').innerHTML='';
+    document.getElementById('t-note').value='';document.getElementById('t-planlines').value='';fileInput.value='';document.getElementById('t-file-preview').innerHTML='';document.getElementById('t-excel-cols').innerHTML='';excelRows=null;
     loadTargets();
   }catch(e){toast('อัปโหลดไม่สำเร็จ');console.log(e);}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-cloud-upload"></i>อัปโหลด';
@@ -1495,6 +1552,8 @@ async function loadTargets(){
     document.getElementById('t-list-content').innerHTML=data.map(function(t){
       var thumb=t.filetype==='pdf'
         ?'<div style="width:48px;height:48px;border-radius:8px;background:#FEE2E2;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-type-pdf" style="font-size:22px;color:#DC2626"></i></div>'
+        :t.filetype==='excel'
+        ?'<div style="width:48px;height:48px;border-radius:8px;background:#DCFCE7;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-spreadsheet" style="font-size:22px;color:#16A34A"></i></div>'
         :'<img src="'+t.fileurl+'" style="width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;cursor:pointer" onclick="window.open(\''+t.fileurl+'\',\'_blank\')">';
       return '<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border)">'+
         thumb+
