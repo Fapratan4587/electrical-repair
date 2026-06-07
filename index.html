@@ -1659,7 +1659,7 @@ async function aLoad(silent){
   try{
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
-      allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',repairDetail:r.repairDetail||'',created:parseInt(r.created)||0}));
+      allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',repairDetail:r.repairDetail||'',photo:r.photo||'',created:parseInt(r.created)||0}));
       setSS('a-sdot','a-stxt','ok');
       if(!silent)toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
       aCheckAlerts();aRenderDash();aRenderList();
@@ -1716,7 +1716,7 @@ function aRenderDash(){
     if(oa!==ob)return oa-ob;
     return (b.created||0)-(a.created||0);
   });
-  rb.innerHTML=sorted.slice(0,8).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>').join('')||'<tr><td colspan="9"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
+  rb.innerHTML=sorted.slice(0,8).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+(j.photo?'<i class="ti ti-photo" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="color:var(--red);cursor:pointer;margin-right:4px" title="มีรูป — กดดู"></i>':'')+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>').join('')||'<tr><td colspan="9"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
 }
 function planFlag(j){
   var note=j.note||'';
@@ -1732,7 +1732,7 @@ function aRenderList(){
   fil.sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
   const b=document.getElementById('a-listBody');
   if(!fil.length){b.innerHTML='<tr><td colspan="11"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>';return;}
-  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+planFlag(j)+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+(j.photo?'<i class="ti ti-photo" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="color:var(--red);cursor:pointer;margin-right:4px" title="ดูรูปอาการเสีย"></i>':'')+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td></tr>').join('');
+  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+planFlag(j)+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+(j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;vertical-align:middle;margin-right:6px" title="ดูรูปอาการเสีย">':'')+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td></tr>').join('');
 }
 function aRenderUrgent(){
   const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
