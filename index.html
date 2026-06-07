@@ -148,7 +148,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .mla{margin-left:auto;display:flex;gap:6px}
 
 /* KPI */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:1.5rem}
 .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.25rem;box-shadow:var(--sh);position:relative;overflow:hidden}
 .kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .kpi-all::after{background:linear-gradient(90deg,#0D0D0D,#5A5A5A)}
@@ -749,8 +749,8 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
         <div class="fbody">
           <div class="fgg">
             <div class="fg full"><label>ชื่องาน PM *</label><input id="pm-title" placeholder="เช่น ตรวจเช็คมอเตอร์ Spindle, เปลี่ยนฟิลเตอร์ Coolant"></div>
-            <div class="fg"><label>แผนก *</label><select id="pm-dept" onchange="populateMachines(this.value,'pm-machine')"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option><option>อื่น ๆ</option></select></div>
-            <div class="fg"><label>เครื่อง / ระบบ *</label><select id="pm-machine"><option value="">-- เลือกเครื่องจักร --</option></select></div>
+            <div class="fg"><label>แผนก *</label><select id="pm-dept"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option><option>อื่น ๆ</option></select></div>
+            <div class="fg"><label>เครื่อง / ระบบ *</label><select id="pm-machine" onchange="pmGuessDept()"><option value="">-- เลือกเครื่อง / ระบบ --</option></select></div>
             <div class="fg"><label>ตำแหน่ง / จุด <span style="font-size:10px;color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label><input id="pm-loc" placeholder="เช่น Line 3, โซน A"></div>
             <div class="fg"><label>ผู้รับผิดชอบ <span style="font-size:10px;color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label><input id="pm-tech" placeholder="ชื่อช่าง / ทีม"></div>
             <div class="fg full"><label>รายละเอียดงานที่ต้องทำ *</label><textarea id="pm-detail" placeholder="เช่น เช็คความตึงสายพาน, อัดจารบี, วัดค่ากระแสมอเตอร์..."></textarea></div>
@@ -1713,6 +1713,37 @@ function pmToggleCustom(){
   document.getElementById('pm-interval-fg').style.display=(document.getElementById('pm-freq').value==='custom')?'block':'none';
 }
 
+// รวมเครื่อง/ระบบทั้งหมด (รายการมาตรฐานทุกแผนก + ที่เคยพบในข้อมูลแจ้งซ่อมจริง) ให้เลือกได้ทันที
+function populateAllMachines(selectId){
+  var sel=document.getElementById(selectId);if(!sel)return;
+  var cur=sel.value;
+  var seen={};
+  var html='<option value="">-- เลือกเครื่อง / ระบบ --</option>';
+  Object.keys(MACHINES).forEach(function(dept){
+    var list=MACHINES[dept]||[];if(!list.length)return;
+    html+='<optgroup label="'+dept+'">';
+    list.forEach(function(m){ if(!seen[m]){seen[m]=true; html+='<option>'+m+'</option>';} });
+    html+='</optgroup>';
+  });
+  html+='<option>อื่น ๆ</option>';
+  sel.innerHTML=html;
+  if(cur)sel.value=cur;
+}
+
+// เลือกเครื่องแล้วเดาแผนกให้อัตโนมัติ (เฉพาะตอนที่ยังไม่ได้เลือกแผนก)
+function pmGuessDept(){
+  var m=document.getElementById('pm-machine').value;
+  var deptSel=document.getElementById('pm-dept');
+  if(!m||deptSel.value)return;
+  var found='';
+  Object.keys(MACHINES).forEach(function(d){ if((MACHINES[d]||[]).indexOf(m)>=0)found=d; });
+  if(!found){
+    var rec=(allJobs||[]).find(function(j){return j.location&&String(j.location).split(' — ')[0].trim()===m;});
+    if(rec&&rec.dept)found=rec.dept;
+  }
+  if(found)deptSel.value=found;
+}
+
 async function loadPM(silent){
   try{
     var r=await fetch(SUPABASE_URL+'/pm_tasks?select=*&order=next_due.asc',{headers:SB_HEADERS});
@@ -1817,7 +1848,7 @@ function clearPMForm(){
   pmEditingId=null;
   document.getElementById('pm-title').value='';
   document.getElementById('pm-dept').selectedIndex=0;
-  document.getElementById('pm-machine').innerHTML='<option value="">-- เลือกเครื่องจักร --</option>';
+  populateAllMachines('pm-machine');
   document.getElementById('pm-loc').value='';
   document.getElementById('pm-tech').value='';
   document.getElementById('pm-detail').value='';
@@ -1833,7 +1864,7 @@ function editPM(id){
   pmEditingId=id;
   document.getElementById('pm-title').value=t.title||'';
   document.getElementById('pm-dept').value=t.dept||'';
-  populateMachines(t.dept,'pm-machine');
+  populateAllMachines('pm-machine');
   document.getElementById('pm-machine').value=t.machine||'';
   document.getElementById('pm-loc').value=t.loc||'';
   document.getElementById('pm-tech').value=t.tech||'';
@@ -1884,7 +1915,7 @@ function aGoTab(id,btn){
   document.querySelectorAll('#page-admin .tnb').forEach(e=>e.classList.remove('active'));
   document.getElementById('atab-'+id).classList.add('active');btn.classList.add('active');
   if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();if(id==='analytics')renderAnalytics();if(id==='target')loadTargets();
-  if(id==='pm'){if(!document.getElementById('pm-start').value)document.getElementById('pm-start').value=pmFmt(pmToday());loadPM();}
+  if(id==='pm'){if(!document.getElementById('pm-start').value)document.getElementById('pm-start').value=pmFmt(pmToday());populateAllMachines('pm-machine');loadPM();}
 }
 async function aLoad(silent){
   if(!silent){setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;}
@@ -1913,12 +1944,14 @@ function aCheckAlerts(){
 function getFiltered(){return deptFilter?allJobs.filter(j=>j.dept===deptFilter):allJobs;}
 function aRenderDash(){
   const fj=getFiltered();
-  const total=fj.length,done=fj.filter(j=>j.status==='เสร็จสิ้น').length,urgent=fj.filter(j=>j.status==='เร่งด่วน').length,inprog=fj.filter(j=>j.status==='กำลังดำเนินการ').length,cost=fj.reduce((s,j)=>s+(j.cost||0),0);
+  const total=fj.length,done=fj.filter(j=>j.status==='เสร็จสิ้น').length,urgent=fj.filter(j=>j.status==='เร่งด่วน').length,inprog=fj.filter(j=>j.status==='กำลังดำเนินการ').length,wait=fj.filter(j=>j.status==='รอดำเนินการ').length,cost=fj.reduce((s,j)=>s+(j.cost||0),0);
   document.getElementById('a-kpis').innerHTML=
     '<div class="kpi-card kpi-all"><div class="kpi-top"><span class="kpi-label">'+(deptFilter||'ทุกแผนก')+'</span><span class="kpi-ico" style="background:#F3F4F6"><i class="ti ti-clipboard-list"></i></span></div><div class="kpi-val">'+total+'</div><div class="kpi-foot">รายการทั้งหมด</div></div>'+
+    '<div class="kpi-card kpi-wait"><div class="kpi-top"><span class="kpi-label">รอดำเนินการ</span><span class="kpi-ico" style="background:#FEF3C7;color:#F59E0B"><i class="ti ti-clock"></i></span></div><div class="kpi-val" style="color:#F59E0B">'+wait+'</div><div class="kpi-foot">งาน · '+(total?Math.round(wait/total*100):0)+'% ของทั้งหมด</div></div>'+
     '<div class="kpi-card kpi-inprog"><div class="kpi-top"><span class="kpi-label">กำลังดำเนินการ</span><span class="kpi-ico" style="background:#EFF6FF;color:#1877F2"><i class="ti ti-progress"></i></span></div><div class="kpi-val" style="color:#1877F2">'+inprog+'</div><div class="kpi-foot">งาน · '+(total?Math.round(inprog/total*100):0)+'% ของทั้งหมด</div></div>'+
     '<div class="kpi-card kpi-done"><div class="kpi-top"><span class="kpi-label">เสร็จสิ้น</span><span class="kpi-ico" style="background:#F0FDF4;color:#16A34A"><i class="ti ti-circle-check"></i></span></div><div class="kpi-val" style="color:#16A34A">'+done+'</div><div class="kpi-foot">งาน · '+(total?Math.round(done/total*100):0)+'% ของทั้งหมด</div></div>'+
-    '<div class="kpi-card kpi-urgent"><div class="kpi-top"><span class="kpi-label">งานเร่งด่วน</span><span class="kpi-ico" style="background:var(--red-light);color:var(--red)"><i class="ti ti-alert-triangle"></i></span></div><div class="kpi-val" style="color:var(--red)">'+urgent+'</div><div class="kpi-foot">งาน · ค่าอุปกรณ์รวม '+cost.toLocaleString()+' บ.</div></div>';
+    '<div class="kpi-card kpi-urgent"><div class="kpi-top"><span class="kpi-label">งานเร่งด่วน</span><span class="kpi-ico" style="background:var(--red-light);color:var(--red)"><i class="ti ti-alert-triangle"></i></span></div><div class="kpi-val" style="color:var(--red)">'+urgent+'</div><div class="kpi-foot">งาน · '+(total?Math.round(urgent/total*100):0)+'% ของทั้งหมด</div></div>'+
+    '<div class="kpi-card kpi-cost"><div class="kpi-top"><span class="kpi-label">ค่าอุปกรณ์รวม</span><span class="kpi-ico" style="background:#FEF9C3;color:#CA8A04"><i class="ti ti-coin"></i></span></div><div class="kpi-val" style="color:#CA8A04">'+cost.toLocaleString()+'</div><div class="kpi-foot">บาท</div></div>';
   const sts=['รอดำเนินการ','กำลังดำเนินการ','เสร็จสิ้น','เร่งด่วน'],sC=['#F59E0B','#1877F2','#16A34A','#E8192C'],sD=sts.map(s=>fj.filter(j=>j.status===s).length);
   document.getElementById('a-legS').innerHTML=sts.map((s,i)=>'<span class="leg"><span class="legdot" style="background:'+sC[i]+'"></span>'+s+' '+sD[i]+'</span>').join('');
   if(cS)cS.destroy();
