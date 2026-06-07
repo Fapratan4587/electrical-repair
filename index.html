@@ -379,6 +379,18 @@ canvas{max-width:100%}
   .tnb{font-size:11px;padding:7px 10px}
   .dept-name{font-size:12px}
 }
+
+/* แถบหัวบนมือถือ: กันปุ่มล้นจอจนเนื้อหาเลื่อนหลุดขอบ */
+@media(max-width:768px){
+  .topbar-l{min-width:0;gap:8px}
+  .topbar-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topbar-r{gap:3px;flex-shrink:0;flex-wrap:nowrap}
+  .topbar-r .btn{padding:6px;min-width:36px;justify-content:center}
+  .topbar-r>div[style*="width:1px"]{display:none}
+  .sync-pill span:not(.sdot){display:none}
+  .sync-pill{padding:5px;gap:0}
+  .wrap{overflow-x:clip}
+}
 </style>
 </head>
 <body>
