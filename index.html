@@ -820,11 +820,22 @@ function updateHomeDots(){
   loadLocal();
   const bar=document.getElementById('home-countdown-bar');
   if(bar) bar.classList.toggle('show',localJobs.length>0);
+  renderHomeDots(localJobs);
+}
+// แสดงตัวเลขแจ้งเตือนของแต่ละแผนกจากชุดข้อมูลที่ส่งเข้ามา (นับงานที่ยังไม่เสร็จ)
+function renderHomeDots(jobs){
   [['Assembly','dot-Assembly'],['Grinding','dot-Grinding'],['First grinding','dot-FG'],['Engineering','dot-ENG']].forEach(([dept,dotId])=>{
     const el=document.getElementById(dotId);if(!el)return;
-    const c=localJobs.filter(j=>j.dept===dept&&j.status!=='เสร็จสิ้น').length;
+    const c=jobs.filter(j=>j.dept===dept&&j.status!=='เสร็จสิ้น').length;
     if(c>0){el.textContent=c;el.style.display='flex';}else el.style.display='none';
   });
+}
+// ดึงข้อมูลล่าสุดจากเซิร์ฟเวอร์ตอนอยู่หน้า Home แบบเงียบ ๆ — ถ้าออฟไลน์ใช้ค่าที่แสดงอยู่เดิม
+async function syncHomeData(){
+  try{
+    const data=await callAPI({action:'get'});
+    if(Array.isArray(data)){ allJobs=data; renderHomeDots(data); }
+  }catch(e){ /* ออฟไลน์: คงตัวเลขเดิมไว้ */ }
 }
 
 // ---- API ----
@@ -954,6 +965,7 @@ function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{ret
 function goHome(){
   stopAutoRefresh();
   updateHomeDots();
+  syncHomeData();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
   window.scrollTo(0,0);
@@ -1913,6 +1925,11 @@ function openPDF(title,date,kpiHtml,headers,rows){
 document.getElementById('home-date').textContent=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
 document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
 loadLocal();updateHomeDots();startCountdown();
+syncHomeData(); // ดึงข้อมูลล่าสุดจากเซิร์ฟเวอร์ทันทีที่เปิดแอป
+// เมื่อกลับมาที่แอป (สลับแท็บ/เปิดใหม่) ขณะอยู่หน้า Home → อัปเดตอัตโนมัติ
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden && document.getElementById('page-home').classList.contains('active')) syncHomeData();
+});
 
 // Live clock on home page
 function updateHomeClock(){
