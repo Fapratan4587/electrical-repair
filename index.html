@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#E8192C">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -344,6 +344,40 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
   .kpi-grid{grid-template-columns:1fr 1fr}
   .home-hero h1{font-size:18px}
   .home-icon{width:52px;height:52px;font-size:22px}
+}
+
+/* ===== RESPONSIVE / POLISH ENHANCEMENTS ===== */
+canvas{max-width:100%}
+.tab-nav,.dept-filter-row,.tw{scrollbar-width:none}
+
+/* iPhone safe-area (รอยบาก / แถบล่าง) สำหรับใช้งานแบบ PWA */
+.topbar{padding-left:max(1.5rem,env(safe-area-inset-left));padding-right:max(1.5rem,env(safe-area-inset-right))}
+.home-topbar{padding-left:max(2rem,env(safe-area-inset-left));padding-right:max(2rem,env(safe-area-inset-right))}
+@supports(padding:max(0px)){ body{padding-bottom:env(safe-area-inset-bottom)} }
+
+/* Tablet (769–1024px) */
+@media(min-width:769px) and (max-width:1024px){
+  .wrap{padding:1.25rem 1rem}
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+/* มือถือ: ปุ่ม/ช่องกรอกแตะง่ายขึ้น + กันซูมตอนโฟกัส (font 16px) */
+@media(max-width:768px){
+  .btn{min-height:38px}
+  .tnb{min-height:38px;display:inline-flex;align-items:center;gap:5px}
+  .df-btn{min-height:34px;display:inline-flex;align-items:center}
+  .fg input,.fg select,.fg textarea,.efg input,.efg select,.efg textarea,.fbar select,.srch input{min-height:42px;font-size:16px}
+  .fg textarea,.efg textarea{min-height:84px}
+  table{min-width:680px}
+  #pm-list-content .btn{min-height:34px;padding:7px 12px}
+}
+
+/* จอเล็กมาก */
+@media(max-width:380px){
+  .topbar-title{font-size:11px}
+  .kpi-val{font-size:20px}
+  .tnb{font-size:11px;padding:7px 10px}
+  .dept-name{font-size:12px}
 }
 </style>
 </head>
