@@ -610,6 +610,7 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
       <button class="tnb" onclick="aGoTab('urgent',this)"><i class="ti ti-alert-triangle"></i>เร่งด่วน<span class="ndot" id="a-ndot" style="display:none"></span></button>
       <button class="tnb" onclick="aGoTab('analytics',this)"><i class="ti ti-chart-line"></i>Analytics</button>
       <button class="tnb" onclick="aGoTab('target',this)"><i class="ti ti-target"></i>Target/แผนงาน</button>
+      <button class="tnb" onclick="aGoTab('pm',this)"><i class="ti ti-calendar-repeat"></i>PM/บำรุงรักษา<span class="ndot" id="pm-ndot" style="display:none"></span></button>
       <button class="tnb" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
     </div>
 
@@ -741,6 +742,42 @@ input:checked+.toggle-sl:before{transform:translateX(18px)}
       </div>
     </div>
 
+    <!-- PM TAB -->
+    <div id="atab-pm" class="tab">
+      <div class="fcard">
+        <div class="fhdr"><i class="ti ti-calendar-repeat" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle" id="pm-form-title">เพิ่มงานบำรุงรักษาตามแผน (PM)</span></div>
+        <div class="fbody">
+          <div class="fgg">
+            <div class="fg full"><label>ชื่องาน PM *</label><input id="pm-title" placeholder="เช่น ตรวจเช็คมอเตอร์ Spindle, เปลี่ยนฟิลเตอร์ Coolant"></div>
+            <div class="fg"><label>แผนก *</label><select id="pm-dept" onchange="populateMachines(this.value,'pm-machine')"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option><option>อื่น ๆ</option></select></div>
+            <div class="fg"><label>เครื่อง / ระบบ *</label><select id="pm-machine"><option value="">-- เลือกเครื่องจักร --</option></select></div>
+            <div class="fg"><label>ตำแหน่ง / จุด <span style="font-size:10px;color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label><input id="pm-loc" placeholder="เช่น Line 3, โซน A"></div>
+            <div class="fg"><label>ผู้รับผิดชอบ <span style="font-size:10px;color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label><input id="pm-tech" placeholder="ชื่อช่าง / ทีม"></div>
+            <div class="fg full"><label>รายละเอียดงานที่ต้องทำ *</label><textarea id="pm-detail" placeholder="เช่น เช็คความตึงสายพาน, อัดจารบี, วัดค่ากระแสมอเตอร์..."></textarea></div>
+            <div class="fg"><label>ความถี่ *</label><select id="pm-freq" onchange="pmToggleCustom()"><option value="daily">ทุกวัน</option><option value="weekly" selected>ทุกสัปดาห์</option><option value="monthly">ทุกเดือน</option><option value="custom">กำหนดเอง (ระบุจำนวนวัน)</option></select></div>
+            <div class="fg" id="pm-interval-fg" style="display:none"><label>ทุก ๆ (วัน) *</label><input type="number" id="pm-interval" min="1" value="30" placeholder="จำนวนวัน"></div>
+            <div class="fg"><label>ครบกำหนดครั้งถัดไป *</label><input type="date" id="pm-start"></div>
+          </div>
+        </div>
+        <div class="fftr">
+          <div class="sving" id="pm-sving"><i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:13px"></i>กำลังบันทึก...</div>
+          <button class="btn" onclick="clearPMForm()">ล้างข้อมูล</button>
+          <button class="btn red" onclick="savePM()" id="pm-save-btn"><i class="ti ti-device-floppy"></i>บันทึก PM</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin:0 0 1rem;flex-wrap:wrap">
+        <div class="card" style="flex:1;min-width:110px;text-align:center;padding:14px;margin:0;border-top:3px solid #DC2626"><div style="font-size:24px;font-weight:700;color:#DC2626" id="pm-c-over">0</div><div style="font-size:11px;color:var(--text3)">เลยกำหนด</div></div>
+        <div class="card" style="flex:1;min-width:110px;text-align:center;padding:14px;margin:0;border-top:3px solid #F59E0B"><div style="font-size:24px;font-weight:700;color:#F59E0B" id="pm-c-soon">0</div><div style="font-size:11px;color:var(--text3)">ใกล้ถึง (3 วัน)</div></div>
+        <div class="card" style="flex:1;min-width:110px;text-align:center;padding:14px;margin:0;border-top:3px solid #16A34A"><div style="font-size:24px;font-weight:700;color:#16A34A" id="pm-c-ok">0</div><div style="font-size:11px;color:var(--text3)">ปกติ</div></div>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="pm-list-content"><div class="empty" style="padding:1.5rem"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>กำลังโหลด...</div></div>
+      </div>
+    </div>
+
+    <!-- ADD TAB -->
     <div id="atab-addnew" class="tab">
       <div class="fcard">
         <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
@@ -1646,12 +1683,208 @@ async function deleteTarget(id){
   }catch(e){toast('ลบไม่สำเร็จ');}
 }
 
+// ---------- PM (บำรุงรักษาตามแผน) ----------
+var pmTasks=[];
+var pmEditingId=null;
+
+function pmToday(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+function pmParse(s){if(!s)return null;var p=String(s).split('-');if(p.length<3)return null;return new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));}
+function pmFmt(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function pmFmtTH(s){var d=pmParse(s);if(!d)return '-';return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+(d.getFullYear()+543);}
+function pmDaysLeft(nextDue){var n=pmParse(nextDue);if(!n)return null;return Math.round((n-pmToday())/86400000);}
+function pmFreqLabel(f,iv){return f==='daily'?'ทุกวัน':f==='weekly'?'ทุกสัปดาห์':f==='monthly'?'ทุกเดือน':('ทุก '+(iv||0)+' วัน');}
+function computeNextDue(fromISO,freq,iv){
+  var d=pmParse(fromISO)||pmToday();
+  if(freq==='daily')d.setDate(d.getDate()+1);
+  else if(freq==='weekly')d.setDate(d.getDate()+7);
+  else if(freq==='monthly')d.setMonth(d.getMonth()+1);
+  else d.setDate(d.getDate()+(parseInt(iv)||30));
+  return pmFmt(d);
+}
+function pmStatus(t){
+  if(!t.active)return 'off';
+  var dl=pmDaysLeft(t.next_due);
+  if(dl===null)return 'ok';
+  if(dl<0)return 'overdue';
+  if(dl<=3)return 'soon';
+  return 'ok';
+}
+function pmToggleCustom(){
+  document.getElementById('pm-interval-fg').style.display=(document.getElementById('pm-freq').value==='custom')?'block':'none';
+}
+
+async function loadPM(silent){
+  try{
+    var r=await fetch(SUPABASE_URL+'/pm_tasks?select=*&order=next_due.asc',{headers:SB_HEADERS});
+    if(!r.ok)throw new Error('http '+r.status);
+    var data=await r.json();
+    pmTasks=Array.isArray(data)?data:[];
+    renderPM();updatePMDot();
+  }catch(e){
+    pmTasks=[];updatePMDot();
+    if(!silent){
+      var el=document.getElementById('pm-list-content');
+      if(el)el.innerHTML='<div class="empty" style="padding:1.5rem;line-height:1.7"><i class="ti ti-database-off" style="font-size:22px;display:block;margin-bottom:6px;opacity:.4"></i>ยังเชื่อมต่อตาราง PM ไม่ได้<br><small>ตรวจสอบว่าสร้างตาราง <b>pm_tasks</b> ใน Supabase แล้ว (ดู SQL ที่แนบให้)</small></div>';
+    }
+  }
+}
+
+function updatePMDot(){
+  var n=pmTasks.filter(function(t){var s=pmStatus(t);return s==='overdue'||s==='soon';}).length;
+  var el=document.getElementById('pm-ndot');if(!el)return;
+  el.style.display=n>0?'block':'none';
+}
+
+function renderPM(){
+  var over=0,soon=0,ok=0;
+  pmTasks.forEach(function(t){var s=pmStatus(t);if(s==='overdue')over++;else if(s==='soon')soon++;else if(s==='ok')ok++;});
+  document.getElementById('pm-c-over').textContent=over;
+  document.getElementById('pm-c-soon').textContent=soon;
+  document.getElementById('pm-c-ok').textContent=ok;
+
+  if(!pmTasks.length){document.getElementById('pm-list-content').innerHTML='<div class="empty" style="padding:2rem"><i class="ti ti-calendar-plus" style="font-size:28px;display:block;margin-bottom:8px;opacity:.35"></i>ยังไม่มีงาน PM<br><small style="margin-top:4px;display:block">เพิ่มงานบำรุงรักษาด้านบน</small></div>';return;}
+
+  var order={overdue:0,soon:1,ok:2,off:3};
+  var sorted=pmTasks.slice().sort(function(a,b){
+    var oa=order[pmStatus(a)],ob=order[pmStatus(b)];
+    if(oa!==ob)return oa-ob;
+    return (pmParse(a.next_due)||0)-(pmParse(b.next_due)||0);
+  });
+
+  document.getElementById('pm-list-content').innerHTML=sorted.map(function(t){
+    var s=pmStatus(t);
+    var badge=s==='overdue'?'<span class="badge" style="background:#FEE2E2;color:#DC2626">⏰ เลยกำหนด</span>':
+              s==='soon'?'<span class="badge" style="background:#FEF3C7;color:#B45309">⏳ ใกล้ถึง</span>':
+              s==='off'?'<span class="badge" style="background:#F3F4F6;color:#6B7280">⏸ ปิดใช้งาน</span>':
+              '<span class="badge" style="background:#DCFCE7;color:#16A34A">✓ ปกติ</span>';
+    var dl=pmDaysLeft(t.next_due);
+    var dlTxt=(t.active&&dl!==null)?(dl<0?('เลยมา '+Math.abs(dl)+' วัน'):dl===0?'ครบกำหนดวันนี้':('อีก '+dl+' วัน')):'';
+    return '<div style="padding:14px;border-bottom:1px solid var(--border)">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px"><span style="font-weight:600;font-size:14px">'+(t.title||'-')+'</span>'+badge+'</div>'+
+      '<div style="font-size:12px;color:var(--text2);margin-bottom:4px"><i class="ti ti-settings" style="font-size:12px"></i> '+(t.machine||'-')+(t.loc?' — '+t.loc:'')+' '+deptBadge(t.dept)+'</div>'+
+      (t.detail?'<div style="font-size:12px;color:var(--text3);margin-bottom:6px">'+t.detail+'</div>':'')+
+      '<div style="font-size:11px;color:var(--text3);margin-bottom:8px;display:flex;flex-wrap:wrap;gap:10px">'+
+        '<span><i class="ti ti-repeat" style="font-size:11px"></i> '+pmFreqLabel(t.frequency,t.interval_days)+'</span>'+
+        '<span style="color:'+(s==='overdue'?'#DC2626':s==='soon'?'#B45309':'var(--text3)')+'"><i class="ti ti-calendar-due" style="font-size:11px"></i> ครบกำหนด: '+pmFmtTH(t.next_due)+(dlTxt?' ('+dlTxt+')':'')+'</span>'+
+        (t.last_done?'<span><i class="ti ti-check" style="font-size:11px"></i> ทำล่าสุด: '+pmFmtTH(t.last_done)+'</span>':'')+
+        (t.tech?'<span><i class="ti ti-user" style="font-size:11px"></i> '+t.tech+'</span>':'')+
+      '</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn green" style="font-size:11px;padding:5px 10px" onclick="completePM(\''+t.id+'\')"><i class="ti ti-checkbox"></i>ทำเสร็จแล้ว</button>'+
+        '<button class="btn outline-blue" style="font-size:11px;padding:5px 10px" onclick="editPM(\''+t.id+'\')"><i class="ti ti-edit"></i>แก้ไข</button>'+
+        '<button class="btn" style="font-size:11px;padding:5px 10px" onclick="togglePM(\''+t.id+'\')"><i class="ti ti-'+(t.active?'player-pause':'player-play')+'"></i>'+(t.active?'พัก':'เปิด')+'</button>'+
+        '<button class="btn outline-red" style="font-size:11px;padding:5px 10px" onclick="deletePM(\''+t.id+'\')"><i class="ti ti-trash"></i></button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+async function savePM(){
+  var title=document.getElementById('pm-title').value.trim();
+  var dept=document.getElementById('pm-dept').value;
+  var machine=document.getElementById('pm-machine').value;
+  var loc=document.getElementById('pm-loc').value.trim();
+  var tech=document.getElementById('pm-tech').value.trim();
+  var detail=document.getElementById('pm-detail').value.trim();
+  var freq=document.getElementById('pm-freq').value;
+  var iv=freq==='custom'?(parseInt(document.getElementById('pm-interval').value)||0):0;
+  var start=document.getElementById('pm-start').value;
+  if(!title||!dept||!machine||!detail||!freq){toast('⚠ กรุณากรอกข้อมูลที่จำเป็น');return;}
+  if(freq==='custom'&&iv<1){toast('⚠ ระบุจำนวนวันให้ถูกต้อง');return;}
+  if(!start)start=pmFmt(pmToday());
+
+  var row={title:title,dept:dept,machine:machine,loc:loc,tech:tech,detail:detail,frequency:freq,interval_days:iv,next_due:start,active:true};
+  document.getElementById('pm-save-btn').disabled=true;
+  document.getElementById('pm-sving').classList.add('show');
+  try{
+    if(pmEditingId){
+      var r=await fetch(SUPABASE_URL+'/pm_tasks?id=eq.'+encodeURIComponent(pmEditingId),{method:'PATCH',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
+      if(!r.ok)throw new Error(await r.text());
+      toast('แก้ไข PM สำเร็จ');
+    }else{
+      row.id='PM'+Date.now();row.created=Date.now();row.last_done='';
+      var r2=await fetch(SUPABASE_URL+'/pm_tasks',{method:'POST',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
+      if(!r2.ok)throw new Error(await r2.text());
+      toast('เพิ่มงาน PM สำเร็จ');
+    }
+    clearPMForm();loadPM();
+  }catch(e){console.log(e);toast('บันทึกไม่สำเร็จ (ตรวจสอบตาราง pm_tasks)');}
+  document.getElementById('pm-save-btn').disabled=false;
+  document.getElementById('pm-sving').classList.remove('show');
+}
+
+function clearPMForm(){
+  pmEditingId=null;
+  document.getElementById('pm-title').value='';
+  document.getElementById('pm-dept').selectedIndex=0;
+  document.getElementById('pm-machine').innerHTML='<option value="">-- เลือกเครื่องจักร --</option>';
+  document.getElementById('pm-loc').value='';
+  document.getElementById('pm-tech').value='';
+  document.getElementById('pm-detail').value='';
+  document.getElementById('pm-freq').value='weekly';pmToggleCustom();
+  document.getElementById('pm-interval').value='30';
+  document.getElementById('pm-start').value=pmFmt(pmToday());
+  document.getElementById('pm-form-title').textContent='เพิ่มงานบำรุงรักษาตามแผน (PM)';
+  document.getElementById('pm-save-btn').innerHTML='<i class="ti ti-device-floppy"></i>บันทึก PM';
+}
+
+function editPM(id){
+  var t=pmTasks.find(function(x){return x.id===id;});if(!t)return;
+  pmEditingId=id;
+  document.getElementById('pm-title').value=t.title||'';
+  document.getElementById('pm-dept').value=t.dept||'';
+  populateMachines(t.dept,'pm-machine');
+  document.getElementById('pm-machine').value=t.machine||'';
+  document.getElementById('pm-loc').value=t.loc||'';
+  document.getElementById('pm-tech').value=t.tech||'';
+  document.getElementById('pm-detail').value=t.detail||'';
+  document.getElementById('pm-freq').value=t.frequency||'weekly';pmToggleCustom();
+  if(t.frequency==='custom')document.getElementById('pm-interval').value=t.interval_days||30;
+  document.getElementById('pm-start').value=t.next_due||pmFmt(pmToday());
+  document.getElementById('pm-form-title').textContent='แก้ไขงาน PM';
+  document.getElementById('pm-save-btn').innerHTML='<i class="ti ti-device-floppy"></i>บันทึกการแก้ไข';
+  document.getElementById('atab-pm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function completePM(id){
+  var t=pmTasks.find(function(x){return x.id===id;});if(!t)return;
+  if(!confirm('ยืนยันว่าทำงาน PM นี้เสร็จแล้ว?\n\n'+t.title+'\n('+(t.machine||'')+')\n\nระบบจะเลื่อนกำหนดถัดไปให้อัตโนมัติ'))return;
+  var today=pmFmt(pmToday());
+  var next=computeNextDue(today,t.frequency,t.interval_days);
+  try{
+    var r=await fetch(SUPABASE_URL+'/pm_tasks?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify({last_done:today,next_due:next})});
+    if(!r.ok)throw new Error(await r.text());
+    toast('บันทึกการทำ PM แล้ว — ครบกำหนดถัดไป '+pmFmtTH(next));
+    loadPM();
+  }catch(e){console.log(e);toast('บันทึกไม่สำเร็จ');}
+}
+
+async function togglePM(id){
+  var t=pmTasks.find(function(x){return x.id===id;});if(!t)return;
+  try{
+    var r=await fetch(SUPABASE_URL+'/pm_tasks?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify({active:!t.active})});
+    if(!r.ok)throw new Error(await r.text());
+    loadPM();
+  }catch(e){toast('อัปเดตไม่สำเร็จ');}
+}
+
+async function deletePM(id){
+  var t=pmTasks.find(function(x){return x.id===id;});
+  if(!confirm('ยืนยันลบงาน PM นี้?'+(t?'\n\n'+t.title:'')))return;
+  try{
+    var r=await fetch(SUPABASE_URL+'/pm_tasks?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:{...SB_HEADERS,'Prefer':'return=minimal'}});
+    if(!r.ok)throw new Error(await r.text());
+    toast('ลบสำเร็จ');loadPM();
+  }catch(e){toast('ลบไม่สำเร็จ');}
+}
+
 function aGoTab(id,btn){
   currentAdminTab=id;
   document.querySelectorAll('#page-admin .tab').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('#page-admin .tnb').forEach(e=>e.classList.remove('active'));
   document.getElementById('atab-'+id).classList.add('active');btn.classList.add('active');
   if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();if(id==='analytics')renderAnalytics();if(id==='target')loadTargets();
+  if(id==='pm'){if(!document.getElementById('pm-start').value)document.getElementById('pm-start').value=pmFmt(pmToday());loadPM();}
 }
 async function aLoad(silent){
   if(!silent){setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;}
@@ -1663,6 +1896,7 @@ async function aLoad(silent){
       setSS('a-sdot','a-stxt','ok');
       if(!silent)toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
       aCheckAlerts();aRenderDash();aRenderList();
+      loadPM(true);
       if(currentAdminTab==='analytics')renderAnalytics();
       if(currentAdminTab==='urgent')aRenderUrgent();
     }else throw new Error();
