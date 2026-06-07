@@ -1132,7 +1132,7 @@ function uGoTab(id,btn){
   document.querySelectorAll('#page-user .tab').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('#page-user .tnb').forEach(e=>e.classList.remove('active'));
   document.getElementById('utab-'+id).classList.add('active');btn.classList.add('active');
-  if(id==='track')uRenderTrack();
+  if(id==='track')uLoadJobs(true);
 }
 function previewRepairPhoto(input){
   var box=document.getElementById('u-photo-preview');
@@ -1221,7 +1221,11 @@ async function uLoadJobs(silent){
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
       const apiMine=data.filter(r=>r.dept===currentDept);
-      localJobs=localJobs.map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate}:lj;});
+      const apiIds=new Set(apiMine.map(aj=>aj.id));
+      // ตัดงานของแผนกนี้ที่ถูกลบจากเซิร์ฟเวอร์แล้วออกจาก local + อัปเดตสถานะงานที่ยังอยู่
+      localJobs=localJobs
+        .filter(lj=>lj.dept!==currentDept||apiIds.has(lj.id))
+        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo}:lj;});
       apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',created:parseInt(aj.created)||0});});
       saveLocal();document.getElementById('u-sdot').className='sdot';document.getElementById('u-stxt').textContent='อัปเดตแล้ว';
       uRenderTrack();updateHomeDots();
