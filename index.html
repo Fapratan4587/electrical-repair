@@ -351,8 +351,8 @@ canvas{max-width:100%}
 .tab-nav,.dept-filter-row,.tw{scrollbar-width:none}
 
 /* iPhone safe-area (รอยบาก / แถบล่าง) สำหรับใช้งานแบบ PWA */
-.topbar{padding-left:max(1.5rem,env(safe-area-inset-left));padding-right:max(1.5rem,env(safe-area-inset-right))}
-.home-topbar{padding-left:max(2rem,env(safe-area-inset-left));padding-right:max(2rem,env(safe-area-inset-right))}
+.topbar{padding-left:max(1.5rem,env(safe-area-inset-left));padding-right:max(1.5rem,env(safe-area-inset-right));padding-top:env(safe-area-inset-top);height:calc(56px + env(safe-area-inset-top))}
+.home-topbar{padding-left:max(2rem,env(safe-area-inset-left));padding-right:max(2rem,env(safe-area-inset-right));padding-top:env(safe-area-inset-top);height:calc(56px + env(safe-area-inset-top))}
 @supports(padding:max(0px)){ body{padding-bottom:env(safe-area-inset-bottom)} }
 
 /* Tablet (769–1024px) */
