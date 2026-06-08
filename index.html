@@ -124,6 +124,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tab-nav{display:flex;gap:2px;padding:4px;background:var(--surface2);border-radius:var(--r2);width:fit-content;margin-bottom:1.5rem;border:1px solid var(--border)}
 .tnb{padding:7px 16px;border:none;background:none;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:6px;display:flex;align-items:center;gap:5px;transition:all .15s;font-family:var(--font)}
 .tnb.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid var(--border)}
+/* แท็บฝั่ง user แบบปุ่มใหญ่ชัดเจนสำหรับผู้ใช้ใหม่ */
+.user-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.user-tabs .tnb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:15px 8px;border-radius:16px;border:2px solid var(--border2);background:var(--surface);color:var(--text2);font-size:15px;font-weight:700;box-shadow:var(--sh);transition:all .18s;white-space:normal;min-height:auto}
+.user-tabs .tnb i{font-size:25px;margin-bottom:3px}
+.user-tabs .tnb .ut-sub{font-size:11px;font-weight:400;color:var(--text3)}
+.user-tabs .tnb.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 8px 20px rgba(232,25,44,.30);transform:translateY(-2px)}
+.user-tabs .tnb.active .ut-sub{color:rgba(255,255,255,.9)}
+.user-tabs .tnb:active{transform:scale(.98)}
 .tnb:hover:not(.active){color:var(--text);background:rgba(0,0,0,0.03)}
 .ndot{width:6px;height:6px;background:var(--red);border-radius:50%}
 .tab{display:none}.tab.active{display:block}
@@ -450,115 +458,158 @@ canvas{max-width:100%}
   .alert-banner .ab-sub{display:none}
   .lb-name{width:64px;font-size:11px}
 }
+
+/* ===== HOME DASHBOARD REDESIGN ===== */
+#page-home{background:linear-gradient(175deg,#161d30 0%,#0e1422 62%,#0b101b 100%);min-height:100vh}
+.home-shell{max-width:600px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 20px) 18px calc(env(safe-area-inset-bottom) + 30px)}
+.hero{color:#fff}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.hero-wordmark{font-weight:800;font-size:20px;letter-spacing:.5px;color:#fff}
+.hero-wordmark::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin-left:4px;vertical-align:3px}
+.hero-gear{width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.hero-gear:hover{background:rgba(255,255,255,.13)}
+.hero-gear:active{transform:scale(.92)}
+.hero-mid{text-align:center;padding:4px 0 30px}
+.hero-bolt{width:74px;height:74px;border-radius:22px;background:linear-gradient(145deg,#ff3b4e,#d11122);display:flex;align-items:center;justify-content:center;font-size:35px;color:#fff;margin:0 auto 16px;box-shadow:0 14px 36px rgba(232,25,44,.5)}
+.hero-title{font-size:25px;font-weight:800;color:#fff;margin:0}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.55);margin:4px 0 0}
+.home-date{display:block;font-size:11px;color:rgba(255,255,255,.4);margin-top:8px}
+
+.stats-bar{display:flex;align-items:stretch;gap:6px;background:var(--surface);border-radius:18px;padding:14px 8px;box-shadow:0 16px 44px rgba(0,0,0,.4);margin-top:-12px;position:relative}
+.stats-bar .stat{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 8px;min-width:0}
+.stats-bar .stat-mid{border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.stats-bar .stat-prog{flex:1.5;justify-content:center}
+.live{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:800;color:#16A34A;letter-spacing:.05em;margin-bottom:2px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#16A34A;display:inline-block;animation:livepulse 1.8s infinite}
+@keyframes livepulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 6px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+.stat-num{font-size:26px;font-weight:800;line-height:1.1;color:var(--text)}
+.stat-num.red{color:#DC2626}
+.stat-lbl{font-size:10.5px;color:var(--text3);margin-top:1px}
+.stat-ico{font-size:15px;color:#DC2626;margin-bottom:2px}
+.prog{display:flex;height:9px;border-radius:99px;overflow:hidden;background:#EEF0F3;margin-bottom:8px}
+.prog .seg{height:100%;transition:width .45s ease}
+.prog .sd{background:#16A34A}.prog .sp{background:#F59E0B}.prog .su{background:#DC2626}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:9.5px;color:var(--text3)}
+.legend span{display:inline-flex;align-items:center;gap:3px}
+.legend i{width:7px;height:7px;border-radius:2px;display:inline-block}
+
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.dcard{background:var(--surface);border-radius:18px;padding:16px;cursor:pointer;border:1px solid var(--border);transition:transform .15s,box-shadow .15s;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.dcard:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(0,0,0,.3)}
+.dcard:active{transform:scale(.98)}
+.dc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.dc-ico{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:23px;color:#fff}
+.c-asm .dc-ico{background:linear-gradient(145deg,#3b8bf6,#1877F2)}
+.c-grd .dc-ico{background:linear-gradient(145deg,#28c265,#16A34A)}
+.c-fg .dc-ico{background:linear-gradient(145deg,#fb923c,#EA580C)}
+.c-eng .dc-ico{background:linear-gradient(145deg,#a065f5,#7C3AED)}
+.dc-live{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--text2);background:var(--surface2);padding:4px 8px;border-radius:99px;white-space:nowrap}
+.dc-name{font-size:16px;font-weight:800;color:var(--text)}
+.eng-tag{font-size:9px;font-weight:700;color:#fff;background:#7C3AED;padding:2px 7px;border-radius:99px;vertical-align:middle;margin-left:2px}
+.dc-sub{font-size:11px;color:var(--text3);margin-top:2px;min-height:28px}
+.dc-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)}
+.dstat{font-size:11px;font-weight:600;color:#16A34A;white-space:nowrap}
+.dstat-amber{color:#D97706}.dstat-red{color:#DC2626}.dstat-green{color:#16A34A}
+.dc-cta{font-size:11px;font-weight:700;color:var(--red);display:inline-flex;align-items:center;gap:1px;white-space:nowrap}
+
+.admin-card{margin-top:14px;background:linear-gradient(145deg,#1c2536,#11192a);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;cursor:pointer;transition:.15s;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.admin-card:hover{border-color:rgba(255,255,255,.2)}
+.admin-card:active{transform:scale(.99)}
+.adm-top{display:flex;align-items:center;gap:12px}
+.adm-ico{width:46px;height:46px;border-radius:14px;background:linear-gradient(145deg,#ff3b4e,#d11122);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex-shrink:0;box-shadow:0 6px 16px rgba(232,25,44,.4)}
+.adm-txt{flex:1;min-width:0}
+.adm-title{font-size:16px;font-weight:800;color:#fff}
+.adm-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:1px}
+.adm-alert{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#fff;background:#DC2626;padding:5px 9px;border-radius:99px;white-space:nowrap}
+.adm-links{display:flex;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
+.adm-links span{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,.65)}
+.adm-links i{font-size:14px}
+
+@media(max-width:560px){
+  .stats-bar{flex-wrap:wrap}
+  .stats-bar .stat{flex:1}
+  .stats-bar .stat-mid{border-right:none}
+  .stats-bar .stat-prog{flex-basis:100%;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)}
+}
+@media(max-width:420px){
+  .dgrid{gap:10px}
+  .dcard{padding:13px;border-radius:15px}
+  .dc-ico{width:42px;height:42px;font-size:21px;border-radius:12px}
+  .hero-title{font-size:22px}
+  .stat-num{font-size:23px}
+}
 </style>
 </head>
 <body>
 
 <!-- ======= HOME PAGE ======= -->
 <div id="page-home" class="page active">
-  <div class="home-page">
-    <div class="home-topbar">
-      <div class="home-brand">
-        <img src="data:image/png;base64,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" alt="NACHI" class="nachi-logo">
-        <div class="brand-divider"></div>
-        <span class="brand-text">Factory 4 · Engineering</span>
+  <div class="home-shell">
+    <header class="hero">
+      <div class="hero-top">
+        <span class="hero-wordmark">NACHI FACTORY 4</span>
+        <button class="hero-gear" onclick="syncHomeData()" aria-label="รีเฟรช"><i class="ti ti-refresh"></i></button>
       </div>
-      <span class="home-date" id="home-date"></span>
-    </div>
-    <div class="home-body">
-      <div class="home-center">
-        <div class="home-hero">
-          <div class="home-icon"><i class="ti ti-bolt"></i></div>
-          <h1>ระบบงานซ่อมไฟฟ้า</h1>
-          <p>Electrical Maintenance Management System</p>
-        </div>
-<div class="dept-grid">
-          <div class="dept-card dept-Assembly" onclick="enterUser('Assembly')">
-            <span class="dept-badge-count" id="dot-Assembly"></span>
-            <div class="dept-icon">
-              <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <rect x="3" y="18" width="22" height="4" rx="2" fill="white" opacity="0.9"/>
-                <rect x="7" y="10" width="14" height="3" rx="1.5" fill="white" opacity="0.75"/>
-                <circle cx="9" cy="10" r="2.5" fill="white"/>
-                <circle cx="19" cy="10" r="2.5" fill="white"/>
-                <rect x="12.5" y="3" width="3" height="7" rx="1.5" fill="white" opacity="0.85"/>
-                <circle cx="14" cy="3" r="2" fill="white"/>
-                <rect x="6" y="22" width="3" height="3" rx="1" fill="white" opacity="0.6"/>
-                <rect x="12.5" y="22" width="3" height="3" rx="1" fill="white" opacity="0.6"/>
-                <rect x="19" y="22" width="3" height="3" rx="1" fill="white" opacity="0.6"/>
-              </svg>
-            </div>
-            <div class="dept-name">Assembly</div>
-            <div class="dept-desc">แจ้งซ่อม & ติดตามสถานะ</div>
-            <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#1877F2;margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าใช้งาน <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
-          </div>
-          <div class="dept-card dept-Grinding" onclick="enterUser('Grinding')">
-            <span class="dept-badge-count" id="dot-Grinding"></span>
-            <div class="dept-icon">
-              <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <circle cx="14" cy="14" r="9" stroke="white" stroke-width="2.5" opacity="0.9"/>
-                <circle cx="14" cy="14" r="4.5" stroke="white" stroke-width="2" opacity="0.7"/>
-                <circle cx="14" cy="14" r="1.5" fill="white"/>
-                <line x1="14" y1="3" x2="14" y2="6" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-                <line x1="14" y1="22" x2="14" y2="25" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-                <line x1="3" y1="14" x2="6" y2="14" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-                <line x1="22" y1="14" x2="25" y2="14" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-                <line x1="5.8" y1="5.8" x2="7.9" y2="7.9" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-                <line x1="20.1" y1="20.1" x2="22.2" y2="22.2" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-                <line x1="22.2" y1="5.8" x2="20.1" y2="7.9" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-                <line x1="7.9" y1="20.1" x2="5.8" y2="22.2" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-              </svg>
-            </div>
-            <div class="dept-name">Grinding</div>
-            <div class="dept-desc">แจ้งซ่อม & ติดตามสถานะ</div>
-            <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#16A34A;margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าใช้งาน <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
-          </div>
-          <div class="dept-card dept-FG" onclick="enterUser('First grinding')">
-            <span class="dept-badge-count" id="dot-FG"></span>
-            <div class="dept-icon">
-              <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <rect x="2" y="12" width="18" height="4" rx="2" fill="white" opacity="0.85"/>
-                <circle cx="22" cy="14" r="4" fill="white" opacity="0.9"/>
-                <circle cx="22" cy="14" r="2" fill="white" opacity="0.5"/>
-                <rect x="10" y="8" width="3" height="12" rx="1.5" fill="white" opacity="0.7"/>
-                <rect x="2" y="9" width="6" height="2" rx="1" fill="white" opacity="0.6"/>
-                <rect x="2" y="17" width="6" height="2" rx="1" fill="white" opacity="0.6"/>
-                <circle cx="5" cy="22" r="2" stroke="white" stroke-width="1.5" opacity="0.7"/>
-                <circle cx="12" cy="22" r="2" stroke="white" stroke-width="1.5" opacity="0.7"/>
-              </svg>
-            </div>
-            <div class="dept-name">First grinding</div>
-            <div class="dept-desc">แจ้งซ่อม & ติดตามสถานะ</div>
-            <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#EA580C;margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าใช้งาน <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
-          </div>
-          <div class="dept-card dept-ENG" onclick="enterUser('Engineering')" style="background:linear-gradient(135deg,#FAF7FF 0%,#F3EDFF 100%);border-color:#E0D4FB">
-            <span class="dept-badge-count" id="dot-ENG"></span>
-            <div class="dept-icon">
-              <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M14 9a5 5 0 100 10 5 5 0 000-10zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" fill="white" opacity="0.9"/>
-                <path d="M14 2v3M14 23v3M2 14h3M23 14h3M5.5 5.5l2 2M20.5 5.5l-2 2M5.5 22.5l2-2M20.5 22.5l-2-2" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
-              </svg>
-            </div>
-            <div class="dept-name">Engineering <span style="display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#7C3AED;padding:2px 7px;border-radius:99px;vertical-align:middle;margin-left:4px;letter-spacing:.03em">ปัญหาอื่นๆ</span></div>
-            <div class="dept-desc" style="color:#7C3AED;font-weight:500">เติมน้ำมัน · ไฟ · แอร์ · รถ · อื่นๆ</div>
-            <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#7C3AED;margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าใช้งาน <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
-          </div>
-          <div class="dept-card dept-admin-card" onclick="showAdminLogin()">
-            <div class="dept-icon">
-              <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M14 3L4 7V13C4 18.5 8.5 23.5 14 25C19.5 23.5 24 18.5 24 13V7L14 3Z" fill="white" opacity="0.2" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
-                <path d="M16 11H15V9.5C15 8.7 14.3 8 13.5 8H14.5C13.7 8 13 8.7 13 9.5V11H12C11.4 11 11 11.4 11 12V16C11 16.6 11.4 17 12 17H16C16.6 17 17 16.6 17 16V12C17 11.4 16.6 11 16 11Z" fill="white" opacity="0.9"/>
-                <circle cx="14" cy="13.5" r="1.2" fill="white" opacity="0.5"/>
-                <rect x="13.4" y="13.5" width="1.2" height="2" rx="0.6" fill="white" opacity="0.5"/>
-              </svg>
-            </div>
-            <div class="dept-name">Admin</div>
-            <div class="dept-desc">จัดการงานซ่อม · Dashboard · Export</div>
-            <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:rgba(255,150,150,0.9);margin-top:10px;opacity:0;transition:opacity .15s" class="dept-arrow">เข้าสู่ระบบ <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px"></i></div>
-          </div>
-        </div>
+      <div class="hero-mid">
+        <div class="hero-bolt"><i class="ti ti-bolt"></i></div>
+        <h1 class="hero-title">ระบบงานซ่อมไฟฟ้า</h1>
+        <p class="hero-sub">Electrical Maintenance Management System</p>
+        <span class="home-date" id="home-date"></span>
       </div>
-    </div>
+    </header>
+
+    <section class="stats-bar">
+      <div class="stat">
+        <span class="live"><span class="live-dot"></span>LIVE</span>
+        <div class="stat-num" id="h-total">0</div>
+        <div class="stat-lbl">งานค้างทั้งหมด</div>
+      </div>
+      <div class="stat stat-mid">
+        <span class="stat-ico"><i class="ti ti-alert-triangle"></i></span>
+        <div class="stat-num red" id="h-critical">0</div>
+        <div class="stat-lbl">งานเร่งด่วน</div>
+      </div>
+      <div class="stat stat-prog">
+        <div class="prog"><span class="seg sd" id="h-bar-done"></span><span class="seg sp" id="h-bar-pending"></span><span class="seg su" id="h-bar-urgent"></span></div>
+        <div class="legend"><span><i style="background:#16A34A"></i>เสร็จ</span><span><i style="background:#F59E0B"></i>รอ/ทำอยู่</span><span><i style="background:#DC2626"></i>เร่งด่วน</span></div>
+      </div>
+    </section>
+
+    <section class="dgrid">
+      <article class="dcard c-asm" onclick="enterUser('Assembly')">
+        <div class="dc-top"><span class="dc-ico"><i class="ti ti-tools"></i></span><span class="dc-live" id="cnt-Assembly"><span class="live-dot"></span>0 งาน</span></div>
+        <div class="dc-name">Assembly</div>
+        <div class="dc-sub">แจ้งซ่อม &amp; ติดตามสถานะ</div>
+        <div class="dc-foot"><span class="dstat" id="st-Assembly">● ปกติ</span><span class="dc-cta">แจ้งซ่อม <i class="ti ti-chevron-right"></i></span></div>
+      </article>
+      <article class="dcard c-grd" onclick="enterUser('Grinding')">
+        <div class="dc-top"><span class="dc-ico"><i class="ti ti-circle-dot"></i></span><span class="dc-live" id="cnt-Grinding"><span class="live-dot"></span>0 งาน</span></div>
+        <div class="dc-name">Grinding</div>
+        <div class="dc-sub">แจ้งซ่อม &amp; ติดตามสถานะ</div>
+        <div class="dc-foot"><span class="dstat" id="st-Grinding">● ปกติ</span><span class="dc-cta">แจ้งซ่อม <i class="ti ti-chevron-right"></i></span></div>
+      </article>
+      <article class="dcard c-fg" onclick="enterUser('First grinding')">
+        <div class="dc-top"><span class="dc-ico"><i class="ti ti-adjustments"></i></span><span class="dc-live" id="cnt-FG"><span class="live-dot"></span>0 งาน</span></div>
+        <div class="dc-name">First grinding</div>
+        <div class="dc-sub">แจ้งซ่อม &amp; ติดตามสถานะ</div>
+        <div class="dc-foot"><span class="dstat" id="st-FG">● ปกติ</span><span class="dc-cta">แจ้งซ่อม <i class="ti ti-chevron-right"></i></span></div>
+      </article>
+      <article class="dcard c-eng" onclick="enterUser('Engineering')">
+        <div class="dc-top"><span class="dc-ico"><i class="ti ti-bulb"></i></span><span class="dc-live" id="cnt-ENG"><span class="live-dot"></span>0 งาน</span></div>
+        <div class="dc-name">Engineering <span class="eng-tag">ปัญหาอื่นๆ</span></div>
+        <div class="dc-sub">เติมน้ำมัน · ไฟ · แอร์ · รถ · อื่นๆ</div>
+        <div class="dc-foot"><span class="dstat" id="st-ENG">● ปกติ</span><span class="dc-cta">แจ้งซ่อม <i class="ti ti-chevron-right"></i></span></div>
+      </article>
+    </section>
+
+    <section class="admin-card" onclick="showAdminLogin()">
+      <div class="adm-top">
+        <span class="adm-ico"><i class="ti ti-shield-lock"></i></span>
+        <div class="adm-txt"><div class="adm-title">Admin &amp; Reporting</div><div class="adm-sub">จัดการงานซ่อม · Dashboard · Export</div></div>
+        <span class="adm-alert" id="adm-alert" style="display:none"></span>
+      </div>
+      <div class="adm-links"><span><i class="ti ti-layout-dashboard"></i>Dashboard</span><span><i class="ti ti-list-details"></i>จัดการงาน</span><span><i class="ti ti-download"></i>Export</span></div>
+    </section>
   </div>
 </div>
 
@@ -572,6 +623,13 @@ canvas{max-width:100%}
       <button class="btn" onclick="closeAdminModal()">ยกเลิก</button>
       <button class="btn red" onclick="doLogin()"><i class="ti ti-login"></i>เข้าสู่ระบบ</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="user-view-modal" onclick="if(event.target===this)uCloseView()">
+  <div class="modal-box" style="max-width:430px;max-height:88vh;overflow-y:auto">
+    <div id="uview-body"></div>
+    <button class="btn" style="width:100%;margin-top:14px" onclick="uCloseView()"><i class="ti ti-x"></i>ปิด</button>
   </div>
 </div>
 
@@ -627,9 +685,9 @@ canvas{max-width:100%}
   </div>
   <div class="wrap">
 
-    <div class="tab-nav">
-      <button class="tnb active" onclick="uGoTab('report',this)"><i class="ti ti-plus"></i>แจ้งซ่อม</button>
-      <button class="tnb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i>ติดตามสถานะ</button>
+    <div class="tab-nav user-tabs">
+      <button class="tnb active" onclick="uGoTab('report',this)"><i class="ti ti-tool"></i><span>แจ้งซ่อม</span><span class="ut-sub">แจ้งงานเสียใหม่</span></button>
+      <button class="tnb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i><span>ติดตามสถานะ</span><span class="ut-sub">ดูความคืบหน้างาน</span></button>
     </div>
     <div id="utab-report" class="tab active">
       <div class="fcard">
@@ -962,23 +1020,46 @@ function startCountdown(){
 
 function updateHomeDots(){
   loadLocal();
-  const bar=document.getElementById('home-countdown-bar');
-  if(bar) bar.classList.toggle('show',localJobs.length>0);
-  renderHomeDots(localJobs);
+  renderHome(localJobs);
 }
-// แสดงตัวเลขแจ้งเตือนของแต่ละแผนกจากชุดข้อมูลที่ส่งเข้ามา (นับงานที่ยังไม่เสร็จ)
-function renderHomeDots(jobs){
-  [['Assembly','dot-Assembly'],['Grinding','dot-Grinding'],['First grinding','dot-FG'],['Engineering','dot-ENG']].forEach(([dept,dotId])=>{
-    const el=document.getElementById(dotId);if(!el)return;
-    const c=jobs.filter(j=>j.dept===dept&&j.status!=='เสร็จสิ้น').length;
-    if(c>0){el.textContent=c;el.style.display='flex';}else el.style.display='none';
+// เรนเดอร์หน้า Home แบบ dashboard จากชุดข้อมูลที่ส่งเข้ามา
+function renderHome(jobs){
+  jobs=jobs||[];
+  function gid(id){return document.getElementById(id);}
+  var total=jobs.length;
+  var done=jobs.filter(function(j){return j.status==='เสร็จสิ้น';}).length;
+  var urgent=jobs.filter(function(j){return j.status==='เร่งด่วน';}).length;
+  var pending=total-done-urgent; if(pending<0)pending=0;
+  if(gid('h-total'))gid('h-total').textContent=(total-done);
+  if(gid('h-critical'))gid('h-critical').textContent=urgent;
+  var t=total||1;
+  if(gid('h-bar-done'))gid('h-bar-done').style.width=(done/t*100)+'%';
+  if(gid('h-bar-pending'))gid('h-bar-pending').style.width=(pending/t*100)+'%';
+  if(gid('h-bar-urgent'))gid('h-bar-urgent').style.width=(urgent/t*100)+'%';
+  [['Assembly','Assembly'],['Grinding','Grinding'],['First grinding','FG'],['Engineering','ENG']].forEach(function(p){
+    var dj=jobs.filter(function(j){return j.dept===p[0];});
+    var a=dj.filter(function(j){return j.status!=='เสร็จสิ้น';}).length;
+    var u=dj.filter(function(j){return j.status==='เร่งด่วน';}).length;
+    var pn=dj.filter(function(j){return j.status==='รอดำเนินการ'||j.status==='กำลังดำเนินการ';}).length;
+    var cnt=gid('cnt-'+p[1]); if(cnt)cnt.innerHTML='<span class="live-dot"></span>'+a+' งาน';
+    var st=gid('st-'+p[1]);
+    if(st){
+      if(u>0){st.className='dstat dstat-red';st.textContent='● มีงานเร่งด่วน '+u;}
+      else if(pn>0){st.className='dstat dstat-amber';st.textContent='● มีงานรอ '+pn;}
+      else{st.className='dstat dstat-green';st.textContent='● ปกติ';}
+    }
   });
+  var adm=gid('adm-alert');
+  if(adm){
+    if(urgent>0){adm.style.display='inline-flex';adm.innerHTML='<i class="ti ti-alert-triangle"></i>'+urgent+' งานเร่งด่วน';}
+    else adm.style.display='none';
+  }
 }
 // ดึงข้อมูลล่าสุดจากเซิร์ฟเวอร์ตอนอยู่หน้า Home แบบเงียบ ๆ — ถ้าออฟไลน์ใช้ค่าที่แสดงอยู่เดิม
 async function syncHomeData(){
   try{
     const data=await callAPI({action:'get'});
-    if(Array.isArray(data)){ allJobs=data; renderHomeDots(data); }
+    if(Array.isArray(data)){ allJobs=data; renderHome(data); }
   }catch(e){ /* ออฟไลน์: คงตัวเลขเดิมไว้ */ }
 }
 
@@ -1381,19 +1462,62 @@ async function uLoadJobs(silent){
       // ตัดงานของแผนกนี้ที่ถูกลบจากเซิร์ฟเวอร์แล้วออกจาก local + อัปเดตสถานะงานที่ยังอยู่
       localJobs=localJobs
         .filter(lj=>lj.dept!==currentDept||apiIds.has(lj.id))
-        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo}:lj;});
-      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',created:parseInt(aj.created)||0});});
+        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo,repairDetail:f.repairDetail||'',note:f.note||'',cost:f.cost||0}:lj;});
+      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',repairDetail:aj.repairDetail||'',note:aj.note||'',cost:aj.cost||0,created:parseInt(aj.created)||0});});
       saveLocal();document.getElementById('u-sdot').className='sdot';document.getElementById('u-stxt').textContent='อัปเดตแล้ว';
       uRenderTrack();updateHomeDots();
     }
   }catch(e){document.getElementById('u-sdot').className='sdot error';document.getElementById('u-stxt').textContent='ใช้ข้อมูล local';uRenderTrack();}
 }
+function uViewJob(id){
+  var j=localJobs.find(function(x){return x.id===id;});if(!j)return;
+  var equips=parseEquip(j.note||'');
+  var equipHtml='';
+  if(equips.length){
+    equipHtml='<div style="margin-top:10px"><div style="font-size:12px;color:var(--text3);margin-bottom:4px">อุปกรณ์ที่เปลี่ยน</div>';
+    equips.forEach(function(eq,i){
+      var p=eq.price?Number(eq.price):0;
+      equipHtml+='<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--border)"><span>'+(i+1)+'. '+(eq.name||'-')+(eq.model?' <span style="color:var(--text3)">('+eq.model+')</span>':'')+'</span><span style="white-space:nowrap;color:var(--text2)">'+(p?p.toLocaleString()+' บ.':'-')+'</span></div>';
+    });
+    equipHtml+='</div>';
+  }
+  var hasWork=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ'||j.repairDetail||j.tech||equips.length);
+  var body=
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:12px;color:var(--text3)">'+j.id+'</span>'+bdg(j.status)+'</div>'+
+    '<div style="font-weight:700;font-size:16px;margin-bottom:2px"><i class="ti ti-map-pin" style="font-size:14px;color:var(--red)"></i> '+j.location+'</div>'+
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:12px">'+j.type+'</div>'+
+    '<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:14px">'+
+      '<div style="font-size:12px;color:var(--text3);margin-bottom:4px">อาการที่แจ้ง</div>'+
+      '<div style="font-size:14px;margin-bottom:6px">'+(j.detail||'-')+'</div>'+
+      (j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+
+      '<div style="font-size:11px;color:var(--text3);margin-top:8px">โดย '+(j.reporter||'—')+' · '+formatDatetime(j.date)+'</div>'+
+    '</div>'+
+    '<div style="font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-tool" style="color:#16A34A"></i>การดำเนินการซ่อม</div>';
+  if(hasWork){
+    body+='<div style="font-size:13px;line-height:1.9">'+
+      '<div><span style="color:var(--text3)">ช่างผู้ซ่อม:</span> '+(j.tech||'ยังไม่ระบุ')+'</div>'+
+      (j.doneDate?'<div><span style="color:var(--text3)">วันที่เสร็จ:</span> '+formatDatetime(j.doneDate)+'</div>':'')+
+      '<div style="margin-top:6px"><span style="color:var(--text3)">วิธีซ่อม / สิ่งที่แก้ไข:</span><br>'+(j.repairDetail?j.repairDetail:'<span style="color:var(--text3)">— ไม่ได้ระบุ —</span>')+'</div>'+
+    '</div>'+equipHtml+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:2px solid var(--border);font-weight:700"><span>ค่าใช้จ่ายรวม</span><span style="color:var(--red);font-size:17px">'+(j.cost?Number(j.cost).toLocaleString():'0')+' บาท</span></div>';
+  }else{
+    body+='<div class="empty" style="padding:1rem;font-size:13px"><i class="ti ti-clock"></i> ยังไม่มีการดำเนินการซ่อม</div>';
+  }
+  document.getElementById('uview-body').innerHTML=body;
+  document.getElementById('user-view-modal').classList.add('show');
+}
+function uCloseView(){document.getElementById('user-view-modal').classList.remove('show');}
+
 function uRenderTrack(){
   const fs=document.getElementById('u-filter-status').value;
   const mine=localJobs.filter(j=>j.dept===currentDept&&(!fs||j.status===fs));
   const c=document.getElementById('u-track-content');
   if(!mine.length){c.innerHTML='<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>';return;}
-  c.innerHTML='<div class="status-grid">'+mine.map(j=>'<div class="sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default')+'"><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+'</div>').join('')+'</div>';
+  c.innerHTML='<div class="status-grid">'+mine.map(function(j){
+    var clickable=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ');
+    var cls='sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default');
+    return '<div class="'+cls+'"'+(clickable?' onclick="uViewJob(\''+j.id+'\')" style="cursor:pointer"':'')+'><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<img src="'+j.photo+'" onclick="event.stopPropagation();window.open(\''+j.photo+'\',\'_blank\')" style="margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+(clickable?'<div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:2px">ดูรายละเอียดการซ่อม <i class="ti ti-chevron-right" style="font-size:13px"></i></div>':'')+'</div>';
+  }).join('')+'</div>';
 }
 
 // ---- ADMIN ----
