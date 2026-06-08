@@ -124,14 +124,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tab-nav{display:flex;gap:2px;padding:4px;background:var(--surface2);border-radius:var(--r2);width:fit-content;margin-bottom:1.5rem;border:1px solid var(--border)}
 .tnb{padding:7px 16px;border:none;background:none;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:6px;display:flex;align-items:center;gap:5px;transition:all .15s;font-family:var(--font)}
 .tnb.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid var(--border)}
-/* แท็บฝั่ง user แบบปุ่มใหญ่ชัดเจนสำหรับผู้ใช้ใหม่ */
-.user-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
-.user-tabs .tnb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:15px 8px;border-radius:16px;border:2px solid var(--border2);background:var(--surface);color:var(--text2);font-size:15px;font-weight:700;box-shadow:var(--sh);transition:all .18s;white-space:normal;min-height:auto}
-.user-tabs .tnb i{font-size:25px;margin-bottom:3px}
-.user-tabs .tnb .ut-sub{font-size:11px;font-weight:400;color:var(--text3)}
-.user-tabs .tnb.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 8px 20px rgba(232,25,44,.30);transform:translateY(-2px)}
-.user-tabs .tnb.active .ut-sub{color:rgba(255,255,255,.9)}
-.user-tabs .tnb:active{transform:scale(.98)}
 .tnb:hover:not(.active){color:var(--text);background:rgba(0,0,0,0.03)}
 .ndot{width:6px;height:6px;background:var(--red);border-radius:50%}
 .tab{display:none}.tab.active{display:block}
@@ -399,6 +391,65 @@ canvas{max-width:100%}
   .sync-pill{padding:5px;gap:0}
   .wrap{overflow-x:clip}
 }
+
+/* ===== ADMIN DASHBOARD — DARK MODE (scoped to #atab-dash) ===== */
+#atab-dash{
+  --surface:#161d2e;--surface2:#1e2740;--text:#f1f5f9;--text2:#c2cbd9;--text3:#8896ad;--border:#273150;--border2:#34406499;
+  background:linear-gradient(180deg,#0f1626 0%,#0b101b 100%);
+  margin:0 -4px;padding:16px 12px 20px;border-radius:18px;border:1px solid #1c2740;
+}
+#atab-dash .kpi-card{background:linear-gradient(160deg,#1a2336,#151c2c);border:1px solid #273150;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+#atab-dash .kpi-card.kpi-urgent{box-shadow:0 0 0 1px rgba(232,25,44,.35),0 6px 22px rgba(232,25,44,.18)}
+#atab-dash .kpi-card.kpi-done{box-shadow:0 0 0 1px rgba(34,197,94,.25),0 6px 22px rgba(34,197,94,.12)}
+#atab-dash .kpi-label{color:#9aa6bd}
+#atab-dash .kpi-foot{color:#7e8aa3}
+#atab-dash .card{background:linear-gradient(160deg,#1a2336,#151c2c);border:1px solid #273150;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+#atab-dash .card-title{color:#e8edf5}
+#atab-dash .leg{color:#b9c2d4}
+#atab-dash .df-btn{background:#1e2740;border-color:#2f3a5a;color:#c2cbd9}
+#atab-dash .df-btn.active{background:#fff;color:#0f1626;border-color:#fff}
+#atab-dash table{min-width:760px}
+#atab-dash th{background:#1b2436;color:#aab4c9;border-bottom:1px solid #2f3a5a}
+#atab-dash td{border-bottom:1px solid #232d45;color:#dbe2ee}
+#atab-dash tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+#atab-dash tr.urg td{background:rgba(232,25,44,.10)}
+#atab-dash .tw{border:1px solid #273150}
+#atab-dash .empty{color:#7e8aa3}
+#atab-dash .btn.outline-blue{background:transparent;border:1px solid #3b82f6;color:#7eb0ff}
+
+/* Level-1 alert banner */
+.alert-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(100deg,rgba(232,25,44,.22),rgba(232,25,44,.08));border:1px solid rgba(232,25,44,.45);border-radius:14px;padding:13px 15px;margin-bottom:14px;box-shadow:0 0 0 1px rgba(232,25,44,.15),0 8px 26px rgba(232,25,44,.16);animation:abpulse 2.5s ease-in-out infinite}
+@keyframes abpulse{0%,100%{box-shadow:0 0 0 1px rgba(232,25,44,.15),0 8px 26px rgba(232,25,44,.14)}50%{box-shadow:0 0 0 1px rgba(232,25,44,.4),0 8px 30px rgba(232,25,44,.3)}}
+.alert-banner .ab-ico{width:38px;height:38px;border-radius:11px;background:#E8192C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.alert-banner .ab-txt{flex:1;min-width:0}
+.alert-banner .ab-title{font-size:14px;font-weight:800;color:#fff}
+.alert-banner .ab-sub{font-size:11.5px;color:#ffc9cf;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-banner .ab-btn{background:#E8192C;color:#fff;border:none;border-radius:9px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;font-family:var(--font);flex-shrink:0}
+.alert-banner .ab-btn:hover{background:#c5142390;background:#c11422}
+
+/* MTTR strip */
+.mttr-strip{display:flex;align-items:center;gap:18px;background:linear-gradient(120deg,#1a2336,#141b2b);border:1px solid #273150;border-radius:16px;padding:16px 20px;margin-bottom:16px}
+.mttr-big{font-size:46px;font-weight:800;line-height:1;letter-spacing:-1px;flex-shrink:0}
+.mttr-meta{flex:1;min-width:0}
+.mttr-title{font-size:14px;font-weight:700;color:#e8edf5;display:flex;align-items:center;gap:6px}
+.mttr-sub{font-size:11.5px;color:#8896ad;margin-top:3px}
+.mttr-badge{font-size:11px;font-weight:700;border:1.5px solid;border-radius:99px;padding:5px 12px;white-space:nowrap;flex-shrink:0}
+
+/* Load bars */
+.lb-row{display:flex;align-items:center;gap:10px;margin:11px 0}
+.lb-name{width:88px;font-size:12px;color:#c2cbd9;text-align:right;flex-shrink:0;font-weight:500}
+.lb-track{flex:1;height:22px;background:#222c44;border-radius:8px;overflow:hidden}
+.lb-fill{height:100%;border-radius:8px;min-width:0;transition:width .5s ease}
+.lb-val{width:30px;font-size:13px;font-weight:700;color:#e8edf5;flex-shrink:0}
+.lb-note{font-size:11.5px;color:#8896ad;margin-top:14px;display:flex;align-items:center;gap:6px;font-style:italic}
+
+@media(max-width:560px){
+  .mttr-strip{gap:12px;padding:14px}
+  .mttr-big{font-size:34px}
+  .mttr-badge{display:none}
+  .alert-banner .ab-sub{display:none}
+  .lb-name{width:64px;font-size:11px}
+}
 </style>
 </head>
 <body>
@@ -524,13 +575,6 @@ canvas{max-width:100%}
   </div>
 </div>
 
-<div class="modal-overlay" id="user-view-modal" onclick="if(event.target===this)uCloseView()">
-  <div class="modal-box" style="max-width:430px;max-height:88vh;overflow-y:auto">
-    <div id="uview-body"></div>
-    <button class="btn" style="width:100%;margin-top:14px" onclick="uCloseView()"><i class="ti ti-x"></i>ปิด</button>
-  </div>
-</div>
-
 <div class="modal-overlay" id="edit-modal">
   <div class="edit-box">
     <div class="modal-title"><i class="ti ti-edit" style="color:#1877F2"></i>อัปเดตงานซ่อม</div>
@@ -583,9 +627,9 @@ canvas{max-width:100%}
   </div>
   <div class="wrap">
 
-    <div class="tab-nav user-tabs">
-      <button class="tnb active" onclick="uGoTab('report',this)"><i class="ti ti-tool"></i><span>แจ้งซ่อม</span><span class="ut-sub">แจ้งงานเสียใหม่</span></button>
-      <button class="tnb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i><span>ติดตามสถานะ</span><span class="ut-sub">ดูความคืบหน้างาน</span></button>
+    <div class="tab-nav">
+      <button class="tnb active" onclick="uGoTab('report',this)"><i class="ti ti-plus"></i>แจ้งซ่อม</button>
+      <button class="tnb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i>ติดตามสถานะ</button>
     </div>
     <div id="utab-report" class="tab active">
       <div class="fcard">
@@ -677,12 +721,14 @@ canvas{max-width:100%}
 
     <!-- DASH TAB -->
     <div id="atab-dash" class="tab active">
+      <div id="a-alert"></div>
       <div class="kpi-grid" id="a-kpis">
         <div class="kpi-card kpi-all"><div class="ktop"><span class="kpi-label">ทั้งหมด</span></div><div class="skel" style="width:40%;height:28px"></div></div>
         <div class="kpi-card kpi-inprog"><div class="ktop"><span class="kpi-label">ดำเนินการ</span></div><div class="skel" style="width:40%;height:28px"></div></div>
         <div class="kpi-card kpi-done"><div class="ktop"><span class="kpi-label">เสร็จสิ้น</span></div><div class="skel" style="width:40%;height:28px"></div></div>
         <div class="kpi-card kpi-urgent"><div class="ktop"><span class="kpi-label">เร่งด่วน</span></div><div class="skel" style="width:40%;height:28px"></div></div>
       </div>
+      <div id="a-mttr"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div class="dept-filter-row" id="dept-filter-row" style="margin-bottom:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
         <button class="df-btn active" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
         <button class="df-btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span class="df-dot" style="background:#1877F2"></span>Assembly</button>
@@ -693,11 +739,11 @@ canvas{max-width:100%}
       </div>
       <div class="chart-row">
         <div class="card"><div class="card-title"><i class="ti ti-chart-donut" style="font-size:14px;color:var(--text3)"></i>สถานะงาน</div><div class="legrow" id="a-legS"></div><div style="position:relative;height:170px"><canvas id="a-cS" role="img" aria-label="สถานะ"></canvas></div></div>
-        <div class="card"><div class="card-title"><i class="ti ti-chart-bar" style="font-size:14px;color:var(--text3)"></i>แผนก</div><div class="legrow" id="a-legD"></div><div style="position:relative;height:170px"><canvas id="a-cD" role="img" aria-label="แผนก"></canvas></div></div>
+        <div class="card"><div class="card-title"><i class="ti ti-layout-distribute-horizontal" style="font-size:14px;color:var(--text3)"></i>การกระจายงานตามแผนก (Load)</div><div id="a-loadbars"></div></div>
       </div>
       <div class="card" style="margin-bottom:0;border-radius:var(--r) var(--r) 0 0;border-bottom:none"><div class="card-title" style="margin-bottom:0;display:flex;align-items:center;justify-content:space-between"><span style="display:flex;align-items:center;gap:6px"><i class="ti ti-clock" style="font-size:14px;color:var(--text3)"></i>งานล่าสุด</span><button class="btn" onclick="aGoTab('list',document.querySelectorAll('#page-admin .tnb')[1])" style="font-size:11px;padding:4px 10px;height:auto"><i class="ti ti-list-details" style="font-size:12px"></i>ดูทั้งหมด</button></div></div>
       <div class="tw" style="border-radius:0 0 var(--r) var(--r)">
-        <table><thead><tr><th style="width:50px">แก้ไข</th><th style="width:75px">รหัส</th><th style="width:105px">แผนก</th><th style="width:110px">ผู้แจ้ง</th><th style="width:120px">สถานที่</th><th style="width:110px">ประเภท</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th>วันที่</th></tr></thead><tbody id="a-recBody"></tbody></table>
+        <table><thead><tr><th style="width:50px">แก้ไข</th><th style="width:75px">รหัส</th><th style="width:105px">แผนก</th><th style="width:110px">ผู้แจ้ง</th><th style="width:120px">สถานที่</th><th style="width:110px">ประเภท</th><th style="width:100px">สถานะ</th><th style="width:90px">ช่าง</th><th style="width:95px">ระยะเวลา</th><th>วันที่</th></tr></thead><tbody id="a-recBody"></tbody></table>
       </div>
     </div>
 
@@ -1335,62 +1381,19 @@ async function uLoadJobs(silent){
       // ตัดงานของแผนกนี้ที่ถูกลบจากเซิร์ฟเวอร์แล้วออกจาก local + อัปเดตสถานะงานที่ยังอยู่
       localJobs=localJobs
         .filter(lj=>lj.dept!==currentDept||apiIds.has(lj.id))
-        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo,repairDetail:f.repairDetail||'',note:f.note||'',cost:f.cost||0}:lj;});
-      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',repairDetail:aj.repairDetail||'',note:aj.note||'',cost:aj.cost||0,created:parseInt(aj.created)||0});});
+        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo}:lj;});
+      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',created:parseInt(aj.created)||0});});
       saveLocal();document.getElementById('u-sdot').className='sdot';document.getElementById('u-stxt').textContent='อัปเดตแล้ว';
       uRenderTrack();updateHomeDots();
     }
   }catch(e){document.getElementById('u-sdot').className='sdot error';document.getElementById('u-stxt').textContent='ใช้ข้อมูล local';uRenderTrack();}
 }
-function uViewJob(id){
-  var j=localJobs.find(function(x){return x.id===id;});if(!j)return;
-  var equips=parseEquip(j.note||'');
-  var equipHtml='';
-  if(equips.length){
-    equipHtml='<div style="margin-top:10px"><div style="font-size:12px;color:var(--text3);margin-bottom:4px">อุปกรณ์ที่เปลี่ยน</div>';
-    equips.forEach(function(eq,i){
-      var p=eq.price?Number(eq.price):0;
-      equipHtml+='<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--border)"><span>'+(i+1)+'. '+(eq.name||'-')+(eq.model?' <span style="color:var(--text3)">('+eq.model+')</span>':'')+'</span><span style="white-space:nowrap;color:var(--text2)">'+(p?p.toLocaleString()+' บ.':'-')+'</span></div>';
-    });
-    equipHtml+='</div>';
-  }
-  var hasWork=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ'||j.repairDetail||j.tech||equips.length);
-  var body=
-    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:12px;color:var(--text3)">'+j.id+'</span>'+bdg(j.status)+'</div>'+
-    '<div style="font-weight:700;font-size:16px;margin-bottom:2px"><i class="ti ti-map-pin" style="font-size:14px;color:var(--red)"></i> '+j.location+'</div>'+
-    '<div style="font-size:13px;color:var(--text2);margin-bottom:12px">'+j.type+'</div>'+
-    '<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:14px">'+
-      '<div style="font-size:12px;color:var(--text3);margin-bottom:4px">อาการที่แจ้ง</div>'+
-      '<div style="font-size:14px;margin-bottom:6px">'+(j.detail||'-')+'</div>'+
-      (j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+
-      '<div style="font-size:11px;color:var(--text3);margin-top:8px">โดย '+(j.reporter||'—')+' · '+formatDatetime(j.date)+'</div>'+
-    '</div>'+
-    '<div style="font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-tool" style="color:#16A34A"></i>การดำเนินการซ่อม</div>';
-  if(hasWork){
-    body+='<div style="font-size:13px;line-height:1.9">'+
-      '<div><span style="color:var(--text3)">ช่างผู้ซ่อม:</span> '+(j.tech||'ยังไม่ระบุ')+'</div>'+
-      (j.doneDate?'<div><span style="color:var(--text3)">วันที่เสร็จ:</span> '+formatDatetime(j.doneDate)+'</div>':'')+
-      '<div style="margin-top:6px"><span style="color:var(--text3)">วิธีซ่อม / สิ่งที่แก้ไข:</span><br>'+(j.repairDetail?j.repairDetail:'<span style="color:var(--text3)">— ไม่ได้ระบุ —</span>')+'</div>'+
-    '</div>'+equipHtml+
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:2px solid var(--border);font-weight:700"><span>ค่าใช้จ่ายรวม</span><span style="color:var(--red);font-size:17px">'+(j.cost?Number(j.cost).toLocaleString():'0')+' บาท</span></div>';
-  }else{
-    body+='<div class="empty" style="padding:1rem;font-size:13px"><i class="ti ti-clock"></i> ยังไม่มีการดำเนินการซ่อม</div>';
-  }
-  document.getElementById('uview-body').innerHTML=body;
-  document.getElementById('user-view-modal').classList.add('show');
-}
-function uCloseView(){document.getElementById('user-view-modal').classList.remove('show');}
-
 function uRenderTrack(){
   const fs=document.getElementById('u-filter-status').value;
   const mine=localJobs.filter(j=>j.dept===currentDept&&(!fs||j.status===fs));
   const c=document.getElementById('u-track-content');
   if(!mine.length){c.innerHTML='<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>';return;}
-  c.innerHTML='<div class="status-grid">'+mine.map(function(j){
-    var clickable=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ');
-    var cls='sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default');
-    return '<div class="'+cls+'"'+(clickable?' onclick="uViewJob(\''+j.id+'\')" style="cursor:pointer"':'')+'><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<img src="'+j.photo+'" onclick="event.stopPropagation();window.open(\''+j.photo+'\',\'_blank\')" style="margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+(clickable?'<div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:2px">ดูรายละเอียดการซ่อม <i class="ti ti-chevron-right" style="font-size:13px"></i></div>':'')+'</div>';
-  }).join('')+'</div>';
+  c.innerHTML='<div class="status-grid">'+mine.map(j=>'<div class="sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default')+'"><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+'</div>').join('')+'</div>';
 }
 
 // ---- ADMIN ----
@@ -2049,6 +2052,17 @@ function getFiltered(){return deptFilter?allJobs.filter(j=>j.dept===deptFilter):
 function aRenderDash(){
   const fj=getFiltered();
   const total=fj.length,done=fj.filter(j=>j.status==='เสร็จสิ้น').length,urgent=fj.filter(j=>j.status==='เร่งด่วน').length,inprog=fj.filter(j=>j.status==='กำลังดำเนินการ').length,wait=fj.filter(j=>j.status==='รอดำเนินการ').length,cost=fj.reduce((s,j)=>s+(j.cost||0),0);
+
+  // Level-1 Awareness: แถบแจ้งเตือนงานเร่งด่วน
+  var alertEl=document.getElementById('a-alert');
+  if(alertEl){
+    if(urgent>0){
+      var ulist=fj.filter(j=>j.status==='เร่งด่วน').slice(0,3).map(j=>j.location+(j.dept?' ('+j.dept+')':'')).join(' · ');
+      if(urgent>3)ulist+=' …';
+      alertEl.innerHTML='<div class="alert-banner"><span class="ab-ico"><i class="ti ti-alert-triangle"></i></span><div class="ab-txt"><div class="ab-title">มีงานเร่งด่วน '+urgent+' รายการ — ต้องจัดการทันที</div><div class="ab-sub">'+ulist+'</div></div><button class="ab-btn" onclick="aGoTab(\'urgent\',document.querySelectorAll(\'#page-admin .tnb\')[2])">ดูงานด่วน <i class="ti ti-arrow-right"></i></button></div>';
+    } else alertEl.innerHTML='';
+  }
+
   document.getElementById('a-kpis').innerHTML=
     '<div class="kpi-card kpi-all"><div class="kpi-top"><span class="kpi-label">'+(deptFilter||'ทุกแผนก')+'</span><span class="kpi-ico" style="background:#F3F4F6"><i class="ti ti-clipboard-list"></i></span></div><div class="kpi-val">'+total+'</div><div class="kpi-foot">รายการทั้งหมด</div></div>'+
     '<div class="kpi-card kpi-wait"><div class="kpi-top"><span class="kpi-label">รอดำเนินการ</span><span class="kpi-ico" style="background:#FEF3C7;color:#F59E0B"><i class="ti ti-clock"></i></span></div><div class="kpi-val" style="color:#F59E0B">'+wait+'</div><div class="kpi-foot">งาน · '+(total?Math.round(wait/total*100):0)+'% ของทั้งหมด</div></div>'+
@@ -2056,6 +2070,15 @@ function aRenderDash(){
     '<div class="kpi-card kpi-done"><div class="kpi-top"><span class="kpi-label">เสร็จสิ้น</span><span class="kpi-ico" style="background:#F0FDF4;color:#16A34A"><i class="ti ti-circle-check"></i></span></div><div class="kpi-val" style="color:#16A34A">'+done+'</div><div class="kpi-foot">งาน · '+(total?Math.round(done/total*100):0)+'% ของทั้งหมด</div></div>'+
     '<div class="kpi-card kpi-urgent"><div class="kpi-top"><span class="kpi-label">งานเร่งด่วน</span><span class="kpi-ico" style="background:var(--red-light);color:var(--red)"><i class="ti ti-alert-triangle"></i></span></div><div class="kpi-val" style="color:var(--red)">'+urgent+'</div><div class="kpi-foot">งาน · '+(total?Math.round(urgent/total*100):0)+'% ของทั้งหมด</div></div>'+
     '<div class="kpi-card kpi-cost"><div class="kpi-top"><span class="kpi-label">ค่าอุปกรณ์รวม</span><span class="kpi-ico" style="background:#FEF9C3;color:#CA8A04"><i class="ti ti-coin"></i></span></div><div class="kpi-val" style="color:#CA8A04">'+cost.toLocaleString()+'</div><div class="kpi-foot">บาท</div></div>';
+
+  // MTTR เด่น
+  var mttr=calcMTTR(fj);
+  var mc=(mttr===null)?'#8a96ab':(mttr<2?'#22c55e':(mttr<4?'#F59E0B':'#DC2626'));
+  var mlabel=(mttr===null)?'ยังไม่มีข้อมูล':(mttr<2?'ดีเยี่ยม (World-Class)':(mttr<4?'พอใช้':'ควรปรับปรุง'));
+  var mEl=document.getElementById('a-mttr');
+  if(mEl)mEl.innerHTML='<div class="mttr-strip"><div class="mttr-big" style="color:'+mc+'">'+(mttr===null?'—':formatHours(mttr))+'</div><div class="mttr-meta"><div class="mttr-title"><i class="ti ti-clock-bolt"></i> เวลาซ่อมเฉลี่ย (MTTR)</div><div class="mttr-sub">เป้าหมายระดับสากล &lt; 2 ชม. · คำนวณจากงานที่เสร็จแล้ว '+done+' รายการ</div></div><span class="mttr-badge" style="color:'+mc+';border-color:'+mc+'">'+mlabel+'</span></div>';
+
+  // โดนัทสถานะงาน
   const sts=['รอดำเนินการ','กำลังดำเนินการ','เสร็จสิ้น','เร่งด่วน'],sC=['#F59E0B','#1877F2','#16A34A','#E8192C'],sD=sts.map(s=>fj.filter(j=>j.status===s).length);
   document.getElementById('a-legS').innerHTML=sts.map((s,i)=>'<span class="leg"><span class="legdot" style="background:'+sC[i]+'"></span>'+s+' '+sD[i]+'</span>').join('');
   if(cS)cS.destroy();
@@ -2067,19 +2090,27 @@ function aRenderDash(){
     document.getElementById('a-cS') ? document.getElementById('a-cS').parentElement.replaceChild(cv,document.getElementById('a-cS')) : null;
     cS=new Chart(document.getElementById('a-cS')||cv,{type:'doughnut',data:{labels:sts,datasets:[{data:sD,backgroundColor:sC,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
   }
-  const depts=['Assembly','Grinding','First grinding','Engineering'],dC=['#1877F2','#16A34A','#EA580C','#7C3AED'],dD=depts.map(d=>allJobs.filter(j=>j.dept===d).length);
-  document.getElementById('a-legD').innerHTML=depts.map((d,i)=>'<span class="leg"><span class="legdot" style="background:'+dC[i]+'"></span>'+d+' '+dD[i]+'</span>').join('');
-  if(cD)cD.destroy();
-  var hasData=dD.some(function(v){return v>0;});
-  if(!hasData){
-    document.getElementById('a-cD').parentElement.innerHTML='<div class="empty" style="padding:2rem;font-size:12px"><i class="ti ti-chart-bar" style="font-size:24px;display:block;margin-bottom:6px;opacity:.3"></i>ยังไม่มีข้อมูล</div>';
-  } else {
-    var canvas=document.createElement('canvas');canvas.id='a-cD';canvas.setAttribute('role','img');canvas.setAttribute('aria-label','แผนก');
-    document.getElementById('a-cD') ? document.getElementById('a-cD').parentElement.replaceChild(canvas, document.getElementById('a-cD')) : null;
-    cD=new Chart(document.getElementById('a-cD')||canvas,{type:'bar',data:{labels:depts,datasets:[{data:dD,backgroundColor:dC,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{grid:{display:false}},y:{ticks:{stepSize:1,precision:0},grid:{color:'rgba(0,0,0,.04)'},min:0}}}});
+
+  // Load bars การกระจายงานตามแผนก
+  if(cD){cD.destroy();cD=null;}
+  const depts=['Assembly','Grinding','First grinding','Engineering'],dC=['#3b82f6','#22c55e','#f97316','#a855f7'];
+  var act=depts.map(d=>allJobs.filter(j=>j.dept===d&&j.status!=='เสร็จสิ้น').length);
+  var mx=Math.max.apply(null,act.concat([1]));
+  var lb=document.getElementById('a-loadbars');
+  if(lb){
+    if(!allJobs.length){ lb.innerHTML='<div class="empty" style="padding:1.5rem;font-size:12px">ยังไม่มีข้อมูล</div>'; }
+    else{
+      lb.innerHTML=depts.map(function(d,i){
+        var w=Math.round(act[i]/mx*100); if(act[i]>0&&w<8)w=8;
+        return '<div class="lb-row"><span class="lb-name">'+d+'</span><div class="lb-track"><div class="lb-fill" style="width:'+w+'%;background:linear-gradient(90deg,'+dC[i]+'bb,'+dC[i]+')"></div></div><span class="lb-val">'+act[i]+'</span></div>';
+      }).join('');
+      var mxv=Math.max.apply(null,act);
+      if(mxv>0) lb.innerHTML+='<div class="lb-note"><i class="ti ti-info-circle"></i> '+depts[act.indexOf(mxv)]+' มีงานค้างมากที่สุด — ควรจัดสรรช่างเพิ่ม</div>';
+    }
   }
+
+  // ตารางงานล่าสุด + ระยะเวลา
   const rb=document.getElementById('a-recBody');
-  // เรียงงานที่ยังไม่เสร็จขึ้นก่อน (เร่งด่วน > รอดำเนินการ > กำลังดำเนินการ > เสร็จสิ้น) แล้วเรียงตามวันที่ล่าสุด
   var stOrder={'เร่งด่วน':0,'รอดำเนินการ':1,'กำลังดำเนินการ':2,'เสร็จสิ้น':3};
   var sorted=fj.slice().sort(function(a,b){
     var oa=stOrder[a.status]!==undefined?stOrder[a.status]:1;
@@ -2087,7 +2118,13 @@ function aRenderDash(){
     if(oa!==ob)return oa-ob;
     return (b.created||0)-(a.created||0);
   });
-  rb.innerHTML=sorted.slice(0,8).map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+(j.photo?'<i class="ti ti-photo" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="color:var(--red);cursor:pointer;margin-right:4px" title="มีรูป — กดดู"></i>':'')+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>').join('')||'<tr><td colspan="9"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
+  rb.innerHTML=sorted.slice(0,8).map(function(j){
+    var el;
+    if(j.status==='เสร็จสิ้น'&&j.date&&j.doneDate){ el='<span style="color:#22c55e">'+formatHours((new Date(j.doneDate)-new Date(j.date))/3600000)+'</span>'; }
+    else if(j.date){ var h=(Date.now()-new Date(j.date))/3600000; var c=(j.status==='เร่งด่วน')?'#f87171':(h>24?'#fbbf24':'var(--text2)'); el='<span style="color:'+c+'">'+formatHours(h)+'</span>'; }
+    else el='—';
+    return '<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+(j.reporter||'—')+'</td><td>'+(j.photo?'<i class="ti ti-photo" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="color:var(--red);cursor:pointer;margin-right:4px" title="มีรูป — กดดู"></i>':'')+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+(j.tech||'—')+'</td><td style="font-size:11px">'+el+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>';
+  }).join('')||'<tr><td colspan="10"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
 }
 function planFlag(j){
   var note=j.note||'';
