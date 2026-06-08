@@ -1526,6 +1526,13 @@ function uCloseView(){document.getElementById('user-view-modal').classList.remov
 function uRenderTrack(){
   const fs=document.getElementById('u-filter-status').value;
   const mine=localJobs.filter(j=>j.dept===currentDept&&(!fs||j.status===fs));
+  var stOrder={'เร่งด่วน':0,'รอดำเนินการ':1,'กำลังดำเนินการ':2,'เสร็จสิ้น':3};
+  mine.sort(function(a,b){
+    var oa=stOrder[a.status]!==undefined?stOrder[a.status]:1, ob=stOrder[b.status]!==undefined?stOrder[b.status]:1;
+    if(oa!==ob)return oa-ob;
+    var ta=a.created||Date.parse(a.date)||0, tb=b.created||Date.parse(b.date)||0;
+    return tb-ta;
+  });
   const c=document.getElementById('u-track-content');
   if(!mine.length){c.innerHTML='<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>';return;}
   c.innerHTML='<div class="status-grid">'+mine.map(function(j){
