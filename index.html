@@ -524,6 +524,13 @@ canvas{max-width:100%}
   </div>
 </div>
 
+<div class="modal-overlay" id="user-view-modal" onclick="if(event.target===this)uCloseView()">
+  <div class="modal-box" style="max-width:430px;max-height:88vh;overflow-y:auto">
+    <div id="uview-body"></div>
+    <button class="btn" style="width:100%;margin-top:14px" onclick="uCloseView()"><i class="ti ti-x"></i>ปิด</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="edit-modal">
   <div class="edit-box">
     <div class="modal-title"><i class="ti ti-edit" style="color:#1877F2"></i>อัปเดตงานซ่อม</div>
@@ -1328,19 +1335,62 @@ async function uLoadJobs(silent){
       // ตัดงานของแผนกนี้ที่ถูกลบจากเซิร์ฟเวอร์แล้วออกจาก local + อัปเดตสถานะงานที่ยังอยู่
       localJobs=localJobs
         .filter(lj=>lj.dept!==currentDept||apiIds.has(lj.id))
-        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo}:lj;});
-      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',created:parseInt(aj.created)||0});});
+        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo,repairDetail:f.repairDetail||'',note:f.note||'',cost:f.cost||0}:lj;});
+      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',repairDetail:aj.repairDetail||'',note:aj.note||'',cost:aj.cost||0,created:parseInt(aj.created)||0});});
       saveLocal();document.getElementById('u-sdot').className='sdot';document.getElementById('u-stxt').textContent='อัปเดตแล้ว';
       uRenderTrack();updateHomeDots();
     }
   }catch(e){document.getElementById('u-sdot').className='sdot error';document.getElementById('u-stxt').textContent='ใช้ข้อมูล local';uRenderTrack();}
 }
+function uViewJob(id){
+  var j=localJobs.find(function(x){return x.id===id;});if(!j)return;
+  var equips=parseEquip(j.note||'');
+  var equipHtml='';
+  if(equips.length){
+    equipHtml='<div style="margin-top:10px"><div style="font-size:12px;color:var(--text3);margin-bottom:4px">อุปกรณ์ที่เปลี่ยน</div>';
+    equips.forEach(function(eq,i){
+      var p=eq.price?Number(eq.price):0;
+      equipHtml+='<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--border)"><span>'+(i+1)+'. '+(eq.name||'-')+(eq.model?' <span style="color:var(--text3)">('+eq.model+')</span>':'')+'</span><span style="white-space:nowrap;color:var(--text2)">'+(p?p.toLocaleString()+' บ.':'-')+'</span></div>';
+    });
+    equipHtml+='</div>';
+  }
+  var hasWork=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ'||j.repairDetail||j.tech||equips.length);
+  var body=
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:12px;color:var(--text3)">'+j.id+'</span>'+bdg(j.status)+'</div>'+
+    '<div style="font-weight:700;font-size:16px;margin-bottom:2px"><i class="ti ti-map-pin" style="font-size:14px;color:var(--red)"></i> '+j.location+'</div>'+
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:12px">'+j.type+'</div>'+
+    '<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:14px">'+
+      '<div style="font-size:12px;color:var(--text3);margin-bottom:4px">อาการที่แจ้ง</div>'+
+      '<div style="font-size:14px;margin-bottom:6px">'+(j.detail||'-')+'</div>'+
+      (j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+
+      '<div style="font-size:11px;color:var(--text3);margin-top:8px">โดย '+(j.reporter||'—')+' · '+formatDatetime(j.date)+'</div>'+
+    '</div>'+
+    '<div style="font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-tool" style="color:#16A34A"></i>การดำเนินการซ่อม</div>';
+  if(hasWork){
+    body+='<div style="font-size:13px;line-height:1.9">'+
+      '<div><span style="color:var(--text3)">ช่างผู้ซ่อม:</span> '+(j.tech||'ยังไม่ระบุ')+'</div>'+
+      (j.doneDate?'<div><span style="color:var(--text3)">วันที่เสร็จ:</span> '+formatDatetime(j.doneDate)+'</div>':'')+
+      '<div style="margin-top:6px"><span style="color:var(--text3)">วิธีซ่อม / สิ่งที่แก้ไข:</span><br>'+(j.repairDetail?j.repairDetail:'<span style="color:var(--text3)">— ไม่ได้ระบุ —</span>')+'</div>'+
+    '</div>'+equipHtml+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:2px solid var(--border);font-weight:700"><span>ค่าใช้จ่ายรวม</span><span style="color:var(--red);font-size:17px">'+(j.cost?Number(j.cost).toLocaleString():'0')+' บาท</span></div>';
+  }else{
+    body+='<div class="empty" style="padding:1rem;font-size:13px"><i class="ti ti-clock"></i> ยังไม่มีการดำเนินการซ่อม</div>';
+  }
+  document.getElementById('uview-body').innerHTML=body;
+  document.getElementById('user-view-modal').classList.add('show');
+}
+function uCloseView(){document.getElementById('user-view-modal').classList.remove('show');}
+
 function uRenderTrack(){
   const fs=document.getElementById('u-filter-status').value;
   const mine=localJobs.filter(j=>j.dept===currentDept&&(!fs||j.status===fs));
   const c=document.getElementById('u-track-content');
   if(!mine.length){c.innerHTML='<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>';return;}
-  c.innerHTML='<div class="status-grid">'+mine.map(j=>'<div class="sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default')+'"><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+'</div>').join('')+'</div>';
+  c.innerHTML='<div class="status-grid">'+mine.map(function(j){
+    var clickable=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ');
+    var cls='sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':'sc-default');
+    return '<div class="'+cls+'"'+(clickable?' onclick="uViewJob(\''+j.id+'\')" style="cursor:pointer"':'')+'><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<img src="'+j.photo+'" onclick="event.stopPropagation();window.open(\''+j.photo+'\',\'_blank\')" style="margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+(clickable?'<div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:2px">ดูรายละเอียดการซ่อม <i class="ti ti-chevron-right" style="font-size:13px"></i></div>':'')+'</div>';
+  }).join('')+'</div>';
 }
 
 // ---- ADMIN ----
