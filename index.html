@@ -124,6 +124,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tab-nav{display:flex;gap:2px;padding:4px;background:var(--surface2);border-radius:var(--r2);width:fit-content;margin-bottom:1.5rem;border:1px solid var(--border)}
 .tnb{padding:7px 16px;border:none;background:none;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:6px;display:flex;align-items:center;gap:5px;transition:all .15s;font-family:var(--font)}
 .tnb.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid var(--border)}
+/* แท็บฝั่ง user แบบปุ่มใหญ่ชัดเจนสำหรับผู้ใช้ใหม่ */
+.user-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.user-tabs .tnb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:15px 8px;border-radius:16px;border:2px solid var(--border2);background:var(--surface);color:var(--text2);font-size:15px;font-weight:700;box-shadow:var(--sh);transition:all .18s;white-space:normal;min-height:auto}
+.user-tabs .tnb i{font-size:25px;margin-bottom:3px}
+.user-tabs .tnb .ut-sub{font-size:11px;font-weight:400;color:var(--text3)}
+.user-tabs .tnb.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 8px 20px rgba(232,25,44,.30);transform:translateY(-2px)}
+.user-tabs .tnb.active .ut-sub{color:rgba(255,255,255,.9)}
+.user-tabs .tnb:active{transform:scale(.98)}
 .tnb:hover:not(.active){color:var(--text);background:rgba(0,0,0,0.03)}
 .ndot{width:6px;height:6px;background:var(--red);border-radius:50%}
 .tab{display:none}.tab.active{display:block}
@@ -568,9 +576,9 @@ canvas{max-width:100%}
   </div>
   <div class="wrap">
 
-    <div class="tab-nav">
-      <button class="tnb active" onclick="uGoTab('report',this)"><i class="ti ti-plus"></i>แจ้งซ่อม</button>
-      <button class="tnb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i>ติดตามสถานะ</button>
+    <div class="tab-nav user-tabs">
+      <button class="tnb active" onclick="uGoTab('report',this)"><i class="ti ti-tool"></i><span>แจ้งซ่อม</span><span class="ut-sub">แจ้งงานเสียใหม่</span></button>
+      <button class="tnb" onclick="uGoTab('track',this)"><i class="ti ti-list-search"></i><span>ติดตามสถานะ</span><span class="ut-sub">ดูความคืบหน้างาน</span></button>
     </div>
     <div id="utab-report" class="tab active">
       <div class="fcard">
