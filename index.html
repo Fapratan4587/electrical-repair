@@ -553,6 +553,48 @@ canvas{max-width:100%}
   .hero-title{font-size:22px}
   .stat-num{font-size:23px}
 }
+
+/* ===== HOME v2: metric bar + tinted cards + sparkline + admin trend ===== */
+.metric-bar{display:flex;gap:6px;background:var(--surface);border-radius:18px;padding:14px 8px;box-shadow:0 16px 44px rgba(0,0,0,.4);margin-top:-12px;position:relative}
+.metric{flex:1;display:flex;align-items:center;gap:9px;min-width:0;padding:0 4px}
+.metric-ico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;border:1.5px solid}
+.metric-ico.m-green{color:#22c55e;border-color:#22c55e;box-shadow:0 0 14px rgba(34,197,94,.45),inset 0 0 10px rgba(34,197,94,.18)}
+.metric-ico.m-blue{color:#3b82f6;border-color:#3b82f6;box-shadow:0 0 14px rgba(59,130,246,.45),inset 0 0 10px rgba(59,130,246,.18)}
+.metric-ico.m-amber{color:#f59e0b;border-color:#f59e0b;box-shadow:0 0 14px rgba(245,158,11,.5),inset 0 0 10px rgba(245,158,11,.18)}
+.metric-ico.m-red{color:#ef4444;border-color:#ef4444;box-shadow:0 0 14px rgba(239,68,68,.55),inset 0 0 10px rgba(239,68,68,.2)}
+.metric-txt{min-width:0}
+.metric-lbl{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric-val{font-size:19px;font-weight:800;color:var(--text);line-height:1.15}
+
+.dcard{color:#fff}
+.dcard .dc-name{color:#fff}
+.dcard .dc-sub{color:rgba(255,255,255,.6)}
+.c-asm{background:linear-gradient(155deg,#1d3a68,#15233f);border:1px solid #2c4a80}
+.c-grd{background:linear-gradient(155deg,#1c4a36,#143124);border:1px solid #266b48}
+.c-fg{background:linear-gradient(155deg,#5b3f17,#3a2810);border:1px solid #855e22}
+.c-eng{background:linear-gradient(155deg,#3a296a,#221940);border:1px solid #553a9a}
+.dcard .dc-ico{background:rgba(255,255,255,.14);color:#fff}
+.dc-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.dc-avail{font-size:11px;font-weight:700;color:rgba(255,255,255,.92)}
+.spark{display:flex;align-items:flex-end;gap:2px;height:26px;width:66px}
+.spark-bar{flex:1;border-radius:2px;min-height:3px}
+.dcard .dc-foot{border-top:1px solid rgba(255,255,255,.13)}
+.dcard .dc-cta{color:#fff}
+.dcard .eng-tag{background:rgba(255,255,255,.22);color:#fff}
+.dstat-amber{color:#fbbf24}.dstat-red{color:#f87171}.dstat-green{color:#4ade80}
+
+.adm-trend{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.adm-trend-head{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:6px}
+.adm-trend-sub{font-size:10px;color:rgba(255,255,255,.4);font-weight:400}
+.trend-svg{width:100%;height:64px;display:block}
+
+@media(max-width:420px){
+  .metric{gap:6px;padding:0 2px}
+  .metric-ico{width:34px;height:34px;font-size:16px}
+  .metric-val{font-size:16px}
+  .metric-lbl{font-size:9px}
+  .spark{width:52px;height:22px}
+}
 </style>
 </head>
 <body>
@@ -573,44 +615,33 @@ canvas{max-width:100%}
       </div>
     </header>
 
-    <section class="stats-bar">
-      <div class="stat">
-        <span class="live"><span class="live-dot"></span>LIVE</span>
-        <div class="stat-num" id="h-total">0</div>
-        <div class="stat-lbl">งานค้างทั้งหมด</div>
-      </div>
-      <div class="stat stat-mid">
-        <span class="stat-ico"><i class="ti ti-alert-triangle"></i></span>
-        <div class="stat-num red" id="h-critical">0</div>
-        <div class="stat-lbl">งานเร่งด่วน</div>
-      </div>
-      <div class="stat stat-prog">
-        <div class="prog"><span class="seg sd" id="h-bar-done"></span><span class="seg sp" id="h-bar-pending"></span><span class="seg su" id="h-bar-urgent"></span></div>
-        <div class="legend"><span><i style="background:#16A34A"></i>เสร็จ</span><span><i style="background:#F59E0B"></i>รอ/ทำอยู่</span><span><i style="background:#DC2626"></i>เร่งด่วน</span></div>
-      </div>
+    <section class="metric-bar">
+      <div class="metric"><span class="metric-ico m-green"><i class="ti ti-clock-bolt"></i></span><div class="metric-txt"><div class="metric-lbl">MTTR เฉลี่ย</div><div class="metric-val" id="m-mttr">—</div></div></div>
+      <div class="metric"><span class="metric-ico m-blue"><i class="ti ti-clock-hour-4"></i></span><div class="metric-txt"><div class="metric-lbl">ชม.ซ่อม 7 วัน</div><div class="metric-val" id="m-week">0</div></div></div>
+      <div class="metric"><span class="metric-ico m-red"><i class="ti ti-alert-triangle"></i></span><div class="metric-txt"><div class="metric-lbl">งานเร่งด่วน</div><div class="metric-val" id="m-crit">0</div></div></div>
     </section>
 
     <section class="dgrid">
       <article class="dcard c-asm" onclick="enterUser('Assembly')">
-        <div class="dc-top"><span class="dc-ico"><i class="ti ti-tools"></i></span><span class="dc-live" id="cnt-Assembly"><span class="live-dot"></span>0 งาน</span></div>
+        <div class="dc-top"><span class="dc-ico"><i class="ti ti-tools"></i></span><div class="dc-right"><div class="dc-avail" id="av-Assembly">เสร็จ —%</div><div class="spark" id="sp-Assembly"></div></div></div>
         <div class="dc-name">Assembly</div>
         <div class="dc-sub">แจ้งซ่อม &amp; ติดตามสถานะ</div>
         <div class="dc-foot"><span class="dstat" id="st-Assembly">● ปกติ</span><span class="dc-cta">แจ้งซ่อม <i class="ti ti-chevron-right"></i></span></div>
       </article>
       <article class="dcard c-grd" onclick="enterUser('Grinding')">
-        <div class="dc-top"><span class="dc-ico"><i class="ti ti-circle-dot"></i></span><span class="dc-live" id="cnt-Grinding"><span class="live-dot"></span>0 งาน</span></div>
+        <div class="dc-top"><span class="dc-ico"><i class="ti ti-settings"></i></span><div class="dc-right"><div class="dc-avail" id="av-Grinding">เสร็จ —%</div><div class="spark" id="sp-Grinding"></div></div></div>
         <div class="dc-name">Grinding</div>
         <div class="dc-sub">แจ้งซ่อม &amp; ติดตามสถานะ</div>
         <div class="dc-foot"><span class="dstat" id="st-Grinding">● ปกติ</span><span class="dc-cta">แจ้งซ่อม <i class="ti ti-chevron-right"></i></span></div>
       </article>
       <article class="dcard c-fg" onclick="enterUser('First grinding')">
-        <div class="dc-top"><span class="dc-ico"><i class="ti ti-adjustments"></i></span><span class="dc-live" id="cnt-FG"><span class="live-dot"></span>0 งาน</span></div>
+        <div class="dc-top"><span class="dc-ico"><i class="ti ti-adjustments"></i></span><div class="dc-right"><div class="dc-avail" id="av-FG">เสร็จ —%</div><div class="spark" id="sp-FG"></div></div></div>
         <div class="dc-name">First grinding</div>
         <div class="dc-sub">แจ้งซ่อม &amp; ติดตามสถานะ</div>
         <div class="dc-foot"><span class="dstat" id="st-FG">● ปกติ</span><span class="dc-cta">แจ้งซ่อม <i class="ti ti-chevron-right"></i></span></div>
       </article>
       <article class="dcard c-eng" onclick="enterUser('Engineering')">
-        <div class="dc-top"><span class="dc-ico"><i class="ti ti-bulb"></i></span><span class="dc-live" id="cnt-ENG"><span class="live-dot"></span>0 งาน</span></div>
+        <div class="dc-top"><span class="dc-ico"><i class="ti ti-bulb"></i></span><div class="dc-right"><div class="dc-avail" id="av-ENG">เสร็จ —%</div><div class="spark" id="sp-ENG"></div></div></div>
         <div class="dc-name">Engineering <span class="eng-tag">ปัญหาอื่นๆ</span></div>
         <div class="dc-sub">เติมน้ำมัน · ไฟ · แอร์ · รถ · อื่นๆ</div>
         <div class="dc-foot"><span class="dstat" id="st-ENG">● ปกติ</span><span class="dc-cta">แจ้งซ่อม <i class="ti ti-chevron-right"></i></span></div>
@@ -620,8 +651,12 @@ canvas{max-width:100%}
     <section class="admin-card" onclick="showAdminLogin()">
       <div class="adm-top">
         <span class="adm-ico"><i class="ti ti-shield-lock"></i></span>
-        <div class="adm-txt"><div class="adm-title">Admin &amp; Reporting</div><div class="adm-sub">จัดการงานซ่อม · Dashboard · Export</div></div>
+        <div class="adm-txt"><div class="adm-title">Admin Control Panel</div><div class="adm-sub">จัดการงานซ่อม · Dashboard · Export</div></div>
         <span class="adm-alert" id="adm-alert" style="display:none"></span>
+      </div>
+      <div class="adm-trend">
+        <div class="adm-trend-head"><span>แนวโน้มงานซ่อม</span><span class="adm-trend-sub">7 วันล่าสุด</span></div>
+        <svg class="trend-svg" id="trend-svg" viewBox="0 0 280 70" preserveAspectRatio="none"><defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b82f6" stop-opacity="0.35"/><stop offset="1" stop-color="#3b82f6" stop-opacity="0"/></linearGradient></defs><polygon id="trend-area" fill="url(#tg)" points=""></polygon><polyline id="trend-line" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points=""></polyline></svg>
       </div>
       <div class="adm-links"><span><i class="ti ti-layout-dashboard"></i>Dashboard</span><span><i class="ti ti-list-details"></i>จัดการงาน</span><span><i class="ti ti-download"></i>Export</span></div>
     </section>
@@ -1035,40 +1070,58 @@ function startCountdown(){
 
 function updateHomeDots(){
   loadLocal();
-  renderHome(localJobs);
+  renderHome((typeof allJobs!=='undefined'&&allJobs&&allJobs.length)?allJobs:localJobs);
 }
-// เรนเดอร์หน้า Home แบบ dashboard จากชุดข้อมูลที่ส่งเข้ามา
+// นับจำนวนงาน 7 วันล่าสุด (รายวัน) ของแผนก (dept=null = ทุกแผนก) จากวันที่แจ้ง
+function homeLast7(jobs,dept){
+  var out=[],now=new Date();now.setHours(0,0,0,0);
+  for(var i=6;i>=0;i--){
+    var d=new Date(now);d.setDate(d.getDate()-i);var nx=new Date(d);nx.setDate(nx.getDate()+1);
+    out.push(jobs.filter(function(j){
+      if(dept&&j.dept!==dept)return false;
+      var t=j.created?new Date(Number(j.created)||Date.parse(j.created)):(j.date?new Date(j.date):null);
+      return t&&!isNaN(t.getTime())&&t>=d&&t<nx;
+    }).length);
+  }
+  return out;
+}
+// เรนเดอร์หน้า Home แบบ dashboard จากข้อมูลจริง
 function renderHome(jobs){
   jobs=jobs||[];
   function gid(id){return document.getElementById(id);}
-  var total=jobs.length;
   var done=jobs.filter(function(j){return j.status==='เสร็จสิ้น';}).length;
   var urgent=jobs.filter(function(j){return j.status==='เร่งด่วน';}).length;
-  var pending=total-done-urgent; if(pending<0)pending=0;
-  if(gid('h-total'))gid('h-total').textContent=(total-done);
-  if(gid('h-critical'))gid('h-critical').textContent=urgent;
-  var t=total||1;
-  if(gid('h-bar-done'))gid('h-bar-done').style.width=(done/t*100)+'%';
-  if(gid('h-bar-pending'))gid('h-bar-pending').style.width=(pending/t*100)+'%';
-  if(gid('h-bar-urgent'))gid('h-bar-urgent').style.width=(urgent/t*100)+'%';
-  [['Assembly','Assembly'],['Grinding','Grinding'],['First grinding','FG'],['Engineering','ENG']].forEach(function(p){
+  // แถบ metric ด้านบน
+  var mttr=(typeof calcMTTR==='function')?calcMTTR(jobs):null;
+  if(gid('m-mttr'))gid('m-mttr').textContent=(mttr===null?'—':formatHours(mttr));
+  var wk=0,wkAgo=Date.now()-7*86400000;
+  jobs.forEach(function(j){ if(j.status==='เสร็จสิ้น'&&j.date&&j.doneDate){var dd=new Date(j.doneDate).getTime(); if(dd>=wkAgo){var h=(dd-new Date(j.date).getTime())/3600000; if(h>0&&h<24*30)wk+=h;} } });
+  if(gid('m-week'))gid('m-week').textContent=formatHours(wk);
+  if(gid('m-crit'))gid('m-crit').textContent=urgent;
+  // การ์ดแผนก
+  [['Assembly','Assembly','#3b82f6'],['Grinding','Grinding','#22c55e'],['First grinding','FG','#f59e0b'],['Engineering','ENG','#a855f7']].forEach(function(p){
     var dj=jobs.filter(function(j){return j.dept===p[0];});
-    var a=dj.filter(function(j){return j.status!=='เสร็จสิ้น';}).length;
-    var u=dj.filter(function(j){return j.status==='เร่งด่วน';}).length;
-    var pn=dj.filter(function(j){return j.status==='รอดำเนินการ'||j.status==='กำลังดำเนินการ';}).length;
-    var cnt=gid('cnt-'+p[1]); if(cnt)cnt.innerHTML='<span class="live-dot"></span>'+a+' งาน';
+    var dtot=dj.length, ddone=dj.filter(function(j){return j.status==='เสร็จสิ้น';}).length;
+    var a=dtot-ddone, u=dj.filter(function(j){return j.status==='เร่งด่วน';}).length;
+    var av=gid('av-'+p[1]); if(av)av.textContent='เสร็จ '+(dtot?Math.round(ddone/dtot*100):0)+'%';
     var st=gid('st-'+p[1]);
     if(st){
-      if(u>0){st.className='dstat dstat-red';st.textContent='● มีงานเร่งด่วน '+u;}
-      else if(pn>0){st.className='dstat dstat-amber';st.textContent='● มีงานรอ '+pn;}
+      if(u>0){st.className='dstat dstat-red';st.textContent='● เร่งด่วน '+u;}
+      else if(a>0){st.className='dstat dstat-amber';st.textContent='● งานค้าง '+a;}
       else{st.className='dstat dstat-green';st.textContent='● ปกติ';}
     }
+    var sp=gid('sp-'+p[1]);
+    if(sp){ var c=homeLast7(jobs,p[0]); var mx=Math.max.apply(null,c.concat([1]));
+      sp.innerHTML=c.map(function(v,idx){var h=v===0?6:Math.max(10,Math.round(v/mx*100)); return '<span class="spark-bar" style="height:'+h+'%;background:'+p[2]+';opacity:'+(idx===6?1:0.5)+'"></span>';}).join(''); }
   });
+  // การ์ด Admin: alert + กราฟแนวโน้ม 7 วัน
   var adm=gid('adm-alert');
-  if(adm){
-    if(urgent>0){adm.style.display='inline-flex';adm.innerHTML='<i class="ti ti-alert-triangle"></i>'+urgent+' งานเร่งด่วน';}
-    else adm.style.display='none';
-  }
+  if(adm){ if(urgent>0){adm.style.display='inline-flex';adm.innerHTML='<i class="ti ti-alert-triangle"></i>'+urgent+' งานเร่งด่วน';} else adm.style.display='none'; }
+  var c7=homeLast7(jobs,null), mx7=Math.max.apply(null,c7.concat([1]));
+  var pts=c7.map(function(v,i){var x=(i/6*280); var y=66-(v/mx7*54); return x.toFixed(1)+','+y.toFixed(1);});
+  var line=gid('trend-line'), area=gid('trend-area');
+  if(line)line.setAttribute('points',pts.join(' '));
+  if(area)area.setAttribute('points','0,70 '+pts.join(' ')+' 280,70');
 }
 // ดึงข้อมูลล่าสุดจากเซิร์ฟเวอร์ตอนอยู่หน้า Home แบบเงียบ ๆ — ถ้าออฟไลน์ใช้ค่าที่แสดงอยู่เดิม
 async function syncHomeData(){
