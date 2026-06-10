@@ -706,6 +706,10 @@ canvas{max-width:100%}
         <option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option>
       </select>
     </div>
+    <div class="efg" style="margin-top:-2px">
+      <button class="btn" onclick="quickStart()" style="font-size:12.5px;padding:8px 14px;background:#1877F2;color:#fff;border:none;align-self:flex-start"><i class="ti ti-player-play"></i> รับงาน / เริ่มจับเวลาซ่อม</button>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5">กดตอนช่างเริ่มลงมือซ่อม — ระบบจะบันทึก<strong>เวลาเริ่ม</strong> เพื่อแยกคำนวณ Response Time (แจ้ง→เริ่ม) และ Repair Time (เริ่ม→เสร็จ)</div>
+    </div>
     <div class="efg"><label>วันที่ซ่อมเสร็จ</label><input type="date" id="e-donedate"></div>
     <div class="efg"><label>รายละเอียดการซ่อม / วิธีแก้ไข</label><textarea id="e-repair-detail" placeholder="เช่น เปลี่ยน breaker, ตรวจสอบสายไฟ, ปรับ parameter..." style="min-height:64px;resize:vertical"></textarea></div>
     <div class="efg"><label>รูปหลังซ่อม / แนบส่งให้ผู้แจ้ง (ถ้ามี)</label>
@@ -1416,6 +1420,11 @@ function previewFixPhoto(input){
 function clearFixPhoto(){
   var pf=document.getElementById('e-photo'); if(pf)pf.value='';
   var pv=document.getElementById('e-photo-preview'); if(pv){pv.dataset.url='';pv.innerHTML='';}
+}
+function quickStart(){
+  if(!editingJob)return;
+  document.getElementById('e-status').value='กำลังดำเนินการ';
+  saveEdit();
 }
 async function saveEdit(){
   if(!editingJob)return;
@@ -2333,7 +2342,7 @@ function aRenderDash(){
   if(rrEl){
     var rr=calcRRT(fj);
     if(rr.nResp===0&&rr.nRep===0){
-      rrEl.innerHTML='<div class="rrt-card"><div class="rrt-head"><i class="ti ti-stopwatch"></i> วิเคราะห์เวลาซ่อม (MTTR Breakdown)</div><div class="rrt-sub">ยังไม่มีข้อมูล — ระบบจะเริ่มเก็บเมื่ออัปเดตงานเป็นสถานะ “กำลังดำเนินการ” ก่อนปิดงาน</div></div>';
+      rrEl.innerHTML='<div class="rrt-card"><div class="rrt-head"><i class="ti ti-stopwatch"></i> วิเคราะห์เวลาซ่อม (MTTR Breakdown)</div><div class="rrt-sub">ยังไม่มีข้อมูล — กดปุ่ม “รับงาน / เริ่มจับเวลาซ่อม” ตอนเริ่มซ่อม แล้วค่อยปิดงานเป็น “เสร็จสิ้น” · หากเพิ่งเปิดใช้ ตรวจสอบว่าเพิ่มคอลัมน์ startdate ใน Supabase แล้ว</div></div>';
     } else {
       var rH=rr.response||0, pH=rr.repair||0, tot=(rH+pH)||1;
       var rPct=Math.round(rH/tot*100), pPct=100-rPct;
