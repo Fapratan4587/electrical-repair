@@ -451,6 +451,18 @@ canvas{max-width:100%}
 #atab-dash .cs-val{font-size:30px;font-weight:800;color:#f1f5f9;line-height:1}
 #atab-dash .cs-unit{font-size:11px;color:#7e8aa3;margin-top:3px}
 
+/* Response/Repair breakdown card */
+#atab-dash .rrt-card{background:linear-gradient(120deg,#1a2336,#141b2b);border:1px solid #273150;border-radius:16px;padding:15px 18px;margin-bottom:16px}
+.rrt-head{font-size:13px;font-weight:700;color:#e8edf5;display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.rrt-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#222c44;margin-bottom:12px}
+.rrt-seg{height:100%;transition:width .5s}
+.rrt-rows{display:flex;flex-direction:column;gap:7px}
+.rrt-row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:#c2cbd9}
+.rrt-row .rrt-v{font-weight:800;font-size:15px}
+.rrt-dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:middle}
+.rrt-note{margin-top:12px;font-size:11.5px;color:#fbbf24;display:flex;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:8px 10px}
+.rrt-sub{font-size:10.5px;color:#7e8aa3;margin-top:8px}
+
 /* MTTR strip */
 .mttr-big{font-size:46px;font-weight:800;line-height:1;letter-spacing:-1px;flex-shrink:0}
 .mttr-meta{flex:1;min-width:0}
@@ -841,6 +853,7 @@ canvas{max-width:100%}
         <div class="kpi-card kpi-urgent"><div class="ktop"><span class="kpi-label">เร่งด่วน</span></div><div class="skel" style="width:40%;height:28px"></div></div>
       </div>
       <div id="a-mttr"></div>
+      <div id="a-rrt"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div class="dept-filter-row" id="dept-filter-row" style="margin-bottom:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
         <button class="df-btn active" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
         <button class="df-btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span class="df-dot" style="background:#1877F2"></span>Assembly</button>
@@ -1051,6 +1064,25 @@ let currentAdminTab='dash';
 let autoRefreshTimer=null;
 let PHOTO_COL_OK=true; // กลายเป็น false อัตโนมัติถ้าตาราง repairs ยังไม่มีคอลัมน์ photo (กันแอปพัง)
 let FIXPHOTO_COL_OK=true; // เช่นเดียวกัน สำหรับคอลัมน์ fixphoto (รูปหลังซ่อมจาก admin)
+let STARTDATE_COL_OK=true; // สำหรับคอลัมน์ startdate (เวลาที่ช่างเริ่มงาน) — กันแอปพังถ้ายังไม่มีคอลัมน์
+// เขียนลง Supabase แบบกันคอลัมน์ที่ยังไม่ได้สร้าง (photo/fixphoto/startdate) — ตัดคอลัมน์ที่ขาดออกแล้วลองใหม่ ไม่ให้แอปพัง
+async function sbWrite(url,method,row,label){
+  for(var attempt=0; attempt<4; attempt++){
+    var r=await fetch(url,{method:method,headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
+    if(r.ok) return r;
+    var t=await r.text();
+    var stripped=false, cols=['fixphoto','startdate','photo'];
+    for(var i=0;i<cols.length;i++){
+      var col=cols[i];
+      if(!stripped && (col in row) && new RegExp(col,'i').test(t)){
+        delete row[col]; stripped=true;
+        if(col==='photo')PHOTO_COL_OK=false; else if(col==='fixphoto')FIXPHOTO_COL_OK=false; else if(col==='startdate')STARTDATE_COL_OK=false;
+      }
+    }
+    if(!stripped) throw new Error((label||'write')+' failed: '+t);
+  }
+  throw new Error((label||'write')+' failed: too many column errors');
+}
 
 // ---- LOCAL / RESET ----
 function getRT(){const t=localStorage.getItem(RESET_KEY);return t?parseInt(t):null;}
@@ -1151,24 +1183,8 @@ async function callAPI(payload){
     const row=toRow(payload);
     if(!PHOTO_COL_OK) delete row.photo;
     if(!FIXPHOTO_COL_OK) delete row.fixphoto;
-    let r=await fetch(SUPABASE_URL+'/repairs',{
-      method:'POST',
-      headers:{...SB_HEADERS,'Prefer':'return=minimal'},
-      body:JSON.stringify(row)
-    });
-    if(!r.ok){
-      const t=await r.text();
-      if(FIXPHOTO_COL_OK && ('fixphoto' in row) && /fixphoto/i.test(t)){
-        FIXPHOTO_COL_OK=false; delete row.fixphoto;
-        r=await fetch(SUPABASE_URL+'/repairs',{method:'POST',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
-        if(!r.ok){const tf=await r.text();throw new Error('add failed: '+tf);}
-      } else if(PHOTO_COL_OK && ('photo' in row) && /photo/i.test(t)){
-        // ตารางยังไม่มีคอลัมน์ photo → ส่งใหม่โดยตัด photo ออก (กันแอปพัง)
-        PHOTO_COL_OK=false; delete row.photo;
-        r=await fetch(SUPABASE_URL+'/repairs',{method:'POST',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
-        if(!r.ok){const t2=await r.text();throw new Error('add failed: '+t2);}
-      } else { throw new Error('add failed: '+t); }
-    }
+    if(!STARTDATE_COL_OK) delete row.startdate;
+    await sbWrite(SUPABASE_URL+'/repairs','POST',row,'add');
     sendLineNotify(payload); // ส่ง LINE ผ่าน Apps Script
     return {success:true};
   }
@@ -1177,23 +1193,8 @@ async function callAPI(payload){
     const row=toRow(payload);
     if(!PHOTO_COL_OK) delete row.photo;
     if(!FIXPHOTO_COL_OK) delete row.fixphoto;
-    let r=await fetch(SUPABASE_URL+'/repairs?id=eq.'+encodeURIComponent(payload.id),{
-      method:'PATCH',
-      headers:{...SB_HEADERS,'Prefer':'return=minimal'},
-      body:JSON.stringify(row)
-    });
-    if(!r.ok){
-      const t=await r.text();
-      if(FIXPHOTO_COL_OK && ('fixphoto' in row) && /fixphoto/i.test(t)){
-        FIXPHOTO_COL_OK=false; delete row.fixphoto;
-        r=await fetch(SUPABASE_URL+'/repairs?id=eq.'+encodeURIComponent(payload.id),{method:'PATCH',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
-        if(!r.ok){const tf=await r.text();throw new Error('update failed: '+tf);}
-      } else if(PHOTO_COL_OK && ('photo' in row) && /photo/i.test(t)){
-        PHOTO_COL_OK=false; delete row.photo;
-        r=await fetch(SUPABASE_URL+'/repairs?id=eq.'+encodeURIComponent(payload.id),{method:'PATCH',headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
-        if(!r.ok){const t2=await r.text();throw new Error('update failed: '+t2);}
-      } else { throw new Error('update failed: '+t); }
-    }
+    if(!STARTDATE_COL_OK) delete row.startdate;
+    await sbWrite(SUPABASE_URL+'/repairs?id=eq.'+encodeURIComponent(payload.id),'PATCH',row,'update');
     sendLineNotify(payload,true); // ส่ง LINE update
     return {success:true};
   }
@@ -1215,7 +1216,7 @@ function toRow(p){
     location:p.location||'', type:p.type||'', detail:p.detail||'',
     status:p.status||'', priority:p.priority||'', tech:p.tech||'',
     cost:p.cost||0, date:p.date||'', donedate:p.doneDate||'',
-    note:p.note||'', repairdetail:p.repairDetail||'', photo:p.photo||'', fixphoto:p.fixPhoto||'', created:p.created||Date.now()
+    note:p.note||'', repairdetail:p.repairDetail||'', photo:p.photo||'', fixphoto:p.fixPhoto||'', startdate:p.startDate||'', created:p.created||Date.now()
   };
 }
 
@@ -1239,7 +1240,7 @@ function fromRow(r){
     id:r.id, dept:r.dept, reporter:r.reporter, location:r.location,
     type:r.type, detail:r.detail, status:r.status, priority:r.priority,
     tech:r.tech, cost:r.cost, date:r.date, doneDate:r.donedate,
-    note:r.note, repairDetail:r.repairdetail, photo:r.photo||'', fixPhoto:r.fixphoto||'', created:r.created
+    note:r.note, repairDetail:r.repairdetail, photo:r.photo||'', fixPhoto:r.fixphoto||'', startDate:r.startdate||'', created:r.created
   };
 }
 
@@ -1420,6 +1421,8 @@ async function saveEdit(){
   if(!editingJob)return;
   editingJob.tech=document.getElementById('e-tech').value.trim();
   editingJob.status=document.getElementById('e-status').value;
+  // เก็บเวลาเริ่มงานครั้งแรกที่เปลี่ยนเป็น 'กำลังดำเนินการ' (ใช้คำนวณ Response/Repair Time)
+  if(editingJob.status==='กำลังดำเนินการ' && !editingJob.startDate){ editingJob.startDate=new Date().toISOString(); }
   var doneDateVal = document.getElementById('e-donedate').value;
   // ถ้าสถานะเสร็จสิ้นและไม่ได้เลือกวันที่ ให้ใช้เวลาปัจจุบัน
   if(editingJob.status === 'เสร็จสิ้น' && !doneDateVal) {
@@ -1563,8 +1566,8 @@ async function uLoadJobs(silent){
       // ตัดงานของแผนกนี้ที่ถูกลบจากเซิร์ฟเวอร์แล้วออกจาก local + อัปเดตสถานะงานที่ยังอยู่
       localJobs=localJobs
         .filter(lj=>lj.dept!==currentDept||apiIds.has(lj.id))
-        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo,fixPhoto:f.fixPhoto||lj.fixPhoto||'',repairDetail:f.repairDetail||'',note:f.note||'',cost:f.cost||0}:lj;});
-      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',fixPhoto:aj.fixPhoto||'',repairDetail:aj.repairDetail||'',note:aj.note||'',cost:aj.cost||0,created:parseInt(aj.created)||0});});
+        .map(lj=>{const f=apiMine.find(aj=>aj.id===lj.id);return f?{...lj,status:f.status,tech:f.tech||lj.tech,doneDate:f.doneDate||lj.doneDate,photo:f.photo||lj.photo,fixPhoto:f.fixPhoto||lj.fixPhoto||'',startDate:f.startDate||lj.startDate||'',repairDetail:f.repairDetail||'',note:f.note||'',cost:f.cost||0}:lj;});
+      apiMine.forEach(aj=>{if(!localJobs.find(lj=>lj.id===aj.id))localJobs.push({id:aj.id,dept:aj.dept||'',reporter:aj.reporter||'',location:aj.location||'',type:aj.type||'',detail:aj.detail||'',status:aj.status||'รอดำเนินการ',tech:aj.tech||'',doneDate:aj.doneDate||'',date:aj.date||'',photo:aj.photo||'',fixPhoto:aj.fixPhoto||'',startDate:aj.startDate||'',repairDetail:aj.repairDetail||'',note:aj.note||'',cost:aj.cost||0,created:parseInt(aj.created)||0});});
       saveLocal();document.getElementById('u-sdot').className='sdot';document.getElementById('u-stxt').textContent='อัปเดตแล้ว';
       uRenderTrack();updateHomeDots();
     }
@@ -2263,7 +2266,7 @@ async function aLoad(silent){
   try{
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
-      allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',repairDetail:r.repairDetail||'',photo:r.photo||'',fixPhoto:r.fixphoto||r.fixPhoto||'',created:parseInt(r.created)||0}));
+      allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',repairDetail:r.repairDetail||'',photo:r.photo||'',fixPhoto:r.fixphoto||r.fixPhoto||'',startDate:r.startdate||r.startDate||'',created:parseInt(r.created)||0}));
       setSS('a-sdot','a-stxt','ok');
       if(!silent)toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
       aCheckAlerts();aRenderDash();aRenderList();
@@ -2282,6 +2285,19 @@ function aCheckAlerts(){
   else bar.classList.remove('show');
 }
 function getFiltered(){return deptFilter?allJobs.filter(j=>j.dept===deptFilter):allJobs;}
+// คำนวณ Response Time (แจ้ง→เริ่มงาน) และ Repair Time (เริ่มงาน→เสร็จ) เฉลี่ย (ชั่วโมง)
+function calcRRT(jobs){
+  var resp=[],rep=[];
+  jobs.forEach(function(j){
+    if(!j.date||!j.startDate)return;
+    var dt=new Date(j.date).getTime(), st=new Date(j.startDate).getTime();
+    if(isNaN(dt)||isNaN(st)||st<dt)return;
+    resp.push((st-dt)/3600000);
+    if(j.doneDate){ var dd=new Date(j.doneDate).getTime(); if(!isNaN(dd)&&dd>=st) rep.push((dd-st)/3600000); }
+  });
+  function avg(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:null;}
+  return {response:avg(resp), repair:avg(rep), nResp:resp.length, nRep:rep.length};
+}
 function aRenderDash(){
   const fj=getFiltered();
   const total=fj.length,done=fj.filter(j=>j.status==='เสร็จสิ้น').length,urgent=fj.filter(j=>j.status==='เร่งด่วน').length,inprog=fj.filter(j=>j.status==='กำลังดำเนินการ').length,wait=fj.filter(j=>j.status==='รอดำเนินการ').length,cost=fj.reduce((s,j)=>s+(j.cost||0),0);
@@ -2311,6 +2327,30 @@ function aRenderDash(){
   var mEl=document.getElementById('a-mttr');
   var avg=done?Math.round(cost/done):0;
   if(mEl)mEl.innerHTML='<div class="cost-summary"><div class="cs-cell"><div class="cs-lbl">ค่าอุปกรณ์รวม</div><div class="cs-val" style="color:#EAB308">'+cost.toLocaleString()+'</div><div class="cs-unit">บาท</div></div><div class="cs-div"></div><div class="cs-cell"><div class="cs-lbl">เฉลี่ยต่องานเสร็จ</div><div class="cs-val">'+avg.toLocaleString()+'</div><div class="cs-unit">บาท / งาน</div></div></div>';
+
+  // วิเคราะห์เวลา Response/Repair (หาคอขวด)
+  var rrEl=document.getElementById('a-rrt');
+  if(rrEl){
+    var rr=calcRRT(fj);
+    if(rr.nResp===0&&rr.nRep===0){
+      rrEl.innerHTML='<div class="rrt-card"><div class="rrt-head"><i class="ti ti-stopwatch"></i> วิเคราะห์เวลาซ่อม (MTTR Breakdown)</div><div class="rrt-sub">ยังไม่มีข้อมูล — ระบบจะเริ่มเก็บเมื่ออัปเดตงานเป็นสถานะ “กำลังดำเนินการ” ก่อนปิดงาน</div></div>';
+    } else {
+      var rH=rr.response||0, pH=rr.repair||0, tot=(rH+pH)||1;
+      var rPct=Math.round(rH/tot*100), pPct=100-rPct;
+      var respTxt=rr.response===null?'—':formatHours(rr.response);
+      var repTxt=rr.repair===null?'—':formatHours(rr.repair);
+      var note='';
+      if(rr.response!==null&&rr.repair!==null){
+        var bn=(rH>pH)?'รอช่างเข้างาน (Response)':'เวลาซ่อมจริง (Repair)';
+        note='<div class="rrt-note"><i class="ti ti-alert-triangle"></i> คอขวดหลัก: '+bn+' ใช้เวลามากกว่า ('+Math.max(rPct,pPct)+'% ของเวลารวม)</div>';
+      }
+      rrEl.innerHTML='<div class="rrt-card"><div class="rrt-head"><i class="ti ti-stopwatch"></i> วิเคราะห์เวลาซ่อม (MTTR Breakdown)</div>'+
+        '<div class="rrt-bar"><div class="rrt-seg" style="width:'+rPct+'%;background:#3b82f6"></div><div class="rrt-seg" style="width:'+pPct+'%;background:#22c55e"></div></div>'+
+        '<div class="rrt-rows"><div class="rrt-row"><span><span class="rrt-dot" style="background:#3b82f6"></span>เวลารอช่างเข้างาน (Response)</span><span class="rrt-v" style="color:#60a5fa">'+respTxt+'</span></div>'+
+        '<div class="rrt-row"><span><span class="rrt-dot" style="background:#22c55e"></span>เวลาซ่อมจริง (Repair)</span><span class="rrt-v" style="color:#4ade80">'+repTxt+'</span></div></div>'+
+        note+'<div class="rrt-sub">คำนวณจากงานที่ผ่านสถานะ “กำลังดำเนินการ” · Response '+rr.nResp+' งาน · Repair '+rr.nRep+' งาน</div></div>';
+    }
+  }
 
   // โดนัทสถานะงาน
   const sts=['รอดำเนินการ','กำลังดำเนินการ','เสร็จสิ้น','เร่งด่วน'],sC=['#F59E0B','#1877F2','#16A34A','#E8192C'],sD=sts.map(s=>fj.filter(j=>j.status===s).length);
