@@ -769,7 +769,7 @@ canvas{max-width:100%}
             <div class="fg" id="u-machine-fg"><label>เครื่องจักร *</label>
               <select id="u-machine"><option value="">-- เลือกเครื่องจักร --</option></select>
             </div>
-            <div class="fg" id="u-location-fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="u-location" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
+            <div class="fg" id="u-location-fg"><label>Line ผลิต *</label><select id="u-location-sel" onchange="onLocSelect()" style="margin-bottom:6px"></select><input id="u-location" placeholder="เลือกจากด้านบน หรือพิมพ์เอง"></div>
             <div class="fg" id="u-system-fg" style="display:none"><label>ประเภทระบบ *</label>
               <select id="u-system"><option value="">-- เลือกประเภทระบบ --</option><option>ระบบ Coolant Tank</option><option>ระบบ RO</option><option>Air Compressure</option><option>Fan Coil Unit</option><option>ระบบ AGV &amp; AGF</option><option>ระบบรางในไลน์ผลิต</option><option>เติมน้ำมัน SF33</option><option>เติมน้ำมัน AW10</option><option>เติมน้ำมัน AW46</option><option>ระบบแสงสว่าง</option><option>ห้องน้ำ</option><option>ระบบ Fire Alarm (แจ้งเหตุเพลิงไหม้)</option><option>รถ Stacker ไฟฟ้า</option><option>รถถูพื้น</option><option>รถ Hand lift</option><option>อื่น ๆ</option></select>
             </div>
@@ -1297,6 +1297,28 @@ function populateMachines(dept, selectId){
     list.map(function(m){return '<option>'+m+'</option>';}).join('')+
     '<option>อื่น ๆ</option>';
 }
+
+var LOCATIONS = {
+  'Assembly': ['A401','A402','A403','A404','A405','A406','A407','A408','A409','A410','A411','A412','A413','A414','A415','A416','A417','A418','A419','P400','P401','P402','P403','P404'],
+  'Grinding': ['IG401','IG402','IG403','IG404','IG405','IG406','IG407','IG408','IG409','IG410','IG411','IG412','IG413','IG414','IG415','IG416','IG417','IG418','IG419','IG420','IG421','IG422','IG423','IG424','IG425','IG426','IG427','IG428','IG429','IG430','IG431','IG432','IG433','IG434','IG435','IG436','IG437','IG438','IG439','IG440','IG441','OG401','OG402','OG403','OG404','OG405','OG406','OG407','OG408','OG409','OG410','OG411','OG412','OG413','OG414','OG415','OG416','OG417','OG418','OG419','OG420','OG421','OG422','OG423','OG424','OG425','OG426','OG427','OG428','OG429','OG430','OG431','OG432','OG433','OG434','OG435','OG436','OG437','OG438','OG439','OG440','OG441']
+};
+function populateLocations(dept){
+  var sel=document.getElementById('u-location-sel');
+  if(!sel)return;
+  var list=LOCATIONS[dept]||[];
+  if(!list.length){ sel.style.display='none'; sel.innerHTML=''; return; }
+  sel.style.display='';
+  sel.innerHTML='<option value="">-- เลือก Line ผลิต --</option>'+list.map(function(m){return '<option>'+m+'</option>';}).join('')+'<option value="__custom__">อื่น ๆ (พิมพ์เอง)</option>';
+  sel.selectedIndex=0;
+}
+function onLocSelect(){
+  var sel=document.getElementById('u-location-sel');
+  var inp=document.getElementById('u-location');
+  if(!sel||!inp)return;
+  if(sel.value==='__custom__'){ inp.value=''; inp.focus(); }
+  else if(sel.value){ inp.value=sel.value; }
+}
+
 function enterUser(dept){
   currentDept=dept;loadLocal();
   document.getElementById('u-dept-display').value=dept;
@@ -1317,6 +1339,7 @@ function enterUser(dept){
   document.getElementById('u-deptdisplay-fg').style.display = isEng ? 'none' : '';
   document.getElementById('u-type-fg').style.display = isEng ? 'none' : '';
   if(!isEng) populateMachines(dept,'u-machine');
+  if(!isEng) populateLocations(dept);
   const badge=document.getElementById('user-dept-badge');
   badge.textContent=dept;
   badge.className='badge '+(dept==='Assembly'?'b-doing':dept==='Grinding'?'b-done':dept==='Engineering'?'':'b-wait');
@@ -1581,7 +1604,7 @@ function uClearForm(){
   var sysEl=document.getElementById('u-system');if(sysEl)sysEl.selectedIndex=0;
   var edEl=document.getElementById('u-eng-dept');if(edEl)edEl.selectedIndex=0;
   var elEl=document.getElementById('u-eng-loc');if(elEl)elEl.value='';
-  document.getElementById('u-location').value='';document.getElementById('u-type').selectedIndex=0;
+  document.getElementById('u-location').value='';var lsEl=document.getElementById('u-location-sel');if(lsEl)lsEl.selectedIndex=0;document.getElementById('u-type').selectedIndex=0;
   document.getElementById('u-detail').value='';document.getElementById('u-urgent').checked=false;
   var pEl=document.getElementById('u-photo');if(pEl)pEl.value='';
   var ppEl=document.getElementById('u-photo-preview');if(ppEl)ppEl.innerHTML='';
