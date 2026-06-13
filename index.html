@@ -477,6 +477,14 @@ canvas{max-width:100%}
 .lb-fill{height:100%;border-radius:8px;min-width:0;transition:width .5s ease}
 .lb-val{width:30px;font-size:13px;font-weight:700;color:#e8edf5;flex-shrink:0}
 .lb-note{font-size:11.5px;color:#8896ad;margin-top:14px;display:flex;align-items:center;gap:6px;font-style:italic}
+.lb-mode{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:#cfd8e6;margin-bottom:14px;letter-spacing:.2px}
+.lb-mode-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
+.lb-tech-head{font-size:11px;font-weight:700;color:#9fb0c6;margin:16px 0 8px;display:flex;align-items:center;gap:6px;border-top:1px dashed #2a3650;padding-top:13px}
+.lb-tech{display:flex;align-items:center;gap:10px;margin:7px 0}
+.lb-tech-name{width:88px;font-size:11.5px;color:#c2cbd9;text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-tech-bar{flex:1;height:9px;background:#222c44;border-radius:99px;overflow:hidden}
+.lb-tech-bar>span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#f59e0bbb,#f59e0b)}
+.lb-tech-val{width:24px;font-size:12px;font-weight:700;color:#e8edf5;flex-shrink:0;text-align:right}
 
 @media(max-width:560px){
   .mttr-strip{gap:12px;padding:14px}
@@ -611,6 +619,40 @@ canvas{max-width:100%}
 .loc-item{padding:10px 13px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--border);font-family:var(--mono)}
 .loc-item:last-child{border-bottom:none}
 .loc-item:hover,.loc-item:active{background:var(--surface2)}
+.cs-click{cursor:pointer;border-radius:12px;transition:background .15s}
+.cs-click:hover{background:rgba(234,179,8,0.08)}
+.cost-modal-box{max-width:480px;max-height:88vh;overflow-y:auto;background:#141b2b;border:1px solid #273150;color:#e8edf5}
+.cm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cm-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;color:#f1f5f9}
+.cm-title .ti{color:#EAB308}
+.cm-x{background:#222c44;border:none;color:#c2cbd9;width:32px;height:32px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cm-x:hover{background:#2c3956}
+.cm-total{text-align:center;background:linear-gradient(120deg,#1a2336,#141b2b);border:1px solid #2f3a5a;border-radius:14px;padding:16px;margin-bottom:18px}
+.cm-total-lbl{font-size:11px;color:#8896ad;letter-spacing:.3px}
+.cm-total-val{font-size:30px;font-weight:800;color:#EAB308;margin:4px 0;font-family:var(--mono)}
+.cm-total-sub{font-size:11px;color:#9fb0c6}
+.cm-sec{font-size:12px;font-weight:700;color:#cfd8e6;margin:18px 0 11px;display:flex;align-items:center;gap:7px}
+.cm-sec .ti{color:#7c8aa3}
+.cm-row{margin-bottom:13px}
+.cm-row-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px}
+.cm-row-name{font-size:12.5px;color:#e2e8f2;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono)}
+.cm-row-cost{font-size:12.5px;font-weight:700;color:#f1f5f9;flex-shrink:0}
+.cm-row-cost em{color:#8896ad;font-style:normal;font-weight:500;font-size:11px}
+.cm-bar{height:9px;background:#222c44;border-radius:99px;overflow:hidden}
+.cm-bar>span{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+.cm-row-sub{font-size:10.5px;color:#7c8aa3;margin-top:4px}
+.cm-hint{margin-top:18px;font-size:11px;color:#9fb0c6;background:#1a2336;border:1px dashed #2f3a5a;border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:7px}
+.cm-hint .ti{color:#EAB308;margin-top:1px}
+.cm-empty{padding:2rem 1rem;text-align:center;color:#8896ad;font-size:12.5px}
+.gauge-card{background:linear-gradient(160deg,#161d2e,#11182680);border:1px solid #273150;border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.gauge-title{font-size:12px;font-weight:700;color:#cfd8e6;display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.gauge-title .ti{color:#7c8aa3}
+.gauge-wrap{display:flex;justify-content:center}
+.gauge-svg{width:100%;max-width:240px;height:auto}
+.gauge-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;flex-wrap:wrap}
+.gauge-tgt{font-size:11px;color:#9fb0c6;display:flex;align-items:center;gap:6px}
+.gauge-tick{width:10px;height:3px;background:#fff;border-radius:2px;display:inline-block}
+.gauge-delta{font-size:12.5px;font-weight:800}
 </style>
 </head>
 <body>
@@ -696,6 +738,13 @@ canvas{max-width:100%}
   <div class="modal-box" style="max-width:430px;max-height:88vh;overflow-y:auto">
     <div id="uview-body"></div>
     <button class="btn" style="width:100%;margin-top:14px" onclick="uCloseView()"><i class="ti ti-x"></i>ปิด</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cost-modal" onclick="if(event.target===this)closeCostModal()">
+  <div class="modal-box cost-modal-box">
+    <div class="cm-head"><div class="cm-title"><i class="ti ti-coin"></i> สรุปยอดค่าใช้จ่าย</div><button class="cm-x" onclick="closeCostModal()"><i class="ti ti-x"></i></button></div>
+    <div id="cost-modal-body"></div>
   </div>
 </div>
 
@@ -861,6 +910,7 @@ canvas{max-width:100%}
         <div class="kpi-card kpi-urgent"><div class="ktop"><span class="kpi-label">เร่งด่วน</span></div><div class="skel" style="width:40%;height:28px"></div></div>
       </div>
       <div id="a-mttr"></div>
+      <div id="a-gauge"></div>
       <div id="a-rrt"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div class="dept-filter-row" id="dept-filter-row" style="margin-bottom:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
         <button class="df-btn active" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
@@ -1436,6 +1486,44 @@ function openEditModal(id){
   document.getElementById('edit-modal').classList.add('show');
 }
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');editingJob=null;}
+function closeCostModal(){document.getElementById('cost-modal').classList.remove('show');}
+function openCostBreakdown(){
+  var fj=(typeof getFiltered==='function')?getFiltered():allJobs;
+  var wc=fj.filter(function(j){return (Number(j.cost)||0)>0;});
+  var total=wc.reduce(function(s,j){return s+(Number(j.cost)||0);},0);
+  var body=document.getElementById('cost-modal-body');
+  if(!body)return;
+  if(!wc.length){
+    body.innerHTML='<div class="cm-empty">ยังไม่มีข้อมูลค่าใช้จ่าย — ระบุราคาอุปกรณ์ตอนปิดงานเพื่อให้ระบบสรุปยอดได้</div>';
+    document.getElementById('cost-modal').classList.add('show'); return;
+  }
+  var dColors={'Assembly':'#3b82f6','Grinding':'#22c55e','First grinding':'#f97316','Engineering':'#a855f7'};
+  // by dept
+  var byDept={}; wc.forEach(function(j){ var d=j.dept||'อื่น ๆ'; if(!byDept[d])byDept[d]={cost:0,n:0}; byDept[d].cost+=Number(j.cost)||0; byDept[d].n++; });
+  var dArr=Object.keys(byDept).map(function(d){return [d,byDept[d].cost,byDept[d].n];}).sort(function(a,b){return b[1]-a[1];});
+  var dMax=dArr[0][1];
+  // by location
+  var byLoc={}; wc.forEach(function(j){ var l=(j.location||'-'); if(!byLoc[l])byLoc[l]={cost:0,n:0,dept:j.dept}; byLoc[l].cost+=Number(j.cost)||0; byLoc[l].n++; });
+  var lArr=Object.keys(byLoc).map(function(l){return [l,byLoc[l].cost,byLoc[l].n,byLoc[l].dept];}).sort(function(a,b){return b[1]-a[1];});
+  var lMax=lArr[0][1];
+  var fmt=function(n){return n.toLocaleString();};
+  var html='<div class="cm-total"><div class="cm-total-lbl">ค่าอุปกรณ์รวมทั้งหมด</div><div class="cm-total-val">฿'+fmt(total)+'</div><div class="cm-total-sub">'+wc.length+' งานที่มีค่าใช้จ่าย · เฉลี่ย ฿'+fmt(Math.round(total/wc.length))+'/งาน</div></div>';
+  // dept section
+  html+='<div class="cm-sec"><i class="ti ti-building-factory-2"></i> จมไปกับแผนกไหน</div>';
+  html+=dArr.map(function(p){
+    var pct=Math.round(p[1]/total*100), w=Math.round(p[1]/dMax*100), col=dColors[p[0]]||'#64748b';
+    return '<div class="cm-row"><div class="cm-row-top"><span class="cm-row-name">'+p[0]+'</span><span class="cm-row-cost">฿'+fmt(p[1])+' <em>('+pct+'%)</em></span></div><div class="cm-bar"><span style="width:'+w+'%;background:linear-gradient(90deg,'+col+'bb,'+col+')"></span></div><div class="cm-row-sub">'+p[2]+' งาน</div></div>';
+  }).join('');
+  // location section (top 8)
+  html+='<div class="cm-sec"><i class="ti ti-map-pin"></i> จมไปกับ Line / จุดไหนมากสุด (Top '+Math.min(8,lArr.length)+')</div>';
+  html+=lArr.slice(0,8).map(function(p){
+    var pct=Math.round(p[1]/total*100), w=Math.round(p[1]/lMax*100), col=dColors[p[3]]||'#64748b';
+    return '<div class="cm-row"><div class="cm-row-top"><span class="cm-row-name">'+p[0]+'</span><span class="cm-row-cost">฿'+fmt(p[1])+' <em>('+pct+'%)</em></span></div><div class="cm-bar"><span style="width:'+w+'%;background:linear-gradient(90deg,'+col+'bb,'+col+')"></span></div><div class="cm-row-sub">'+p[2]+' ครั้ง</div></div>';
+  }).join('');
+  html+='<div class="cm-hint"><i class="ti ti-bulb"></i> ใช้วางแผนงบซ่อมบำรุงไตรมาสถัดไป — โฟกัสจุดที่กินงบสูงสุด</div>';
+  body.innerHTML=html;
+  document.getElementById('cost-modal').classList.add('show');
+}
 
 async function deleteJob(){
   if(!editingJob)return;
@@ -1758,6 +1846,30 @@ function getAnalyticsJobs() {
   });
 }
 
+function renderMttrGauge(mttr){
+  var el=document.getElementById('a-gauge'); if(!el)return;
+  if(mttr===null||mttr===undefined){ el.innerHTML=''; return; }
+  var target=2, len=251.3;
+  var maxScale=Math.max(8, Math.ceil(mttr*1.15));
+  var fA=Math.min(mttr/maxScale,1), fT=Math.min(target/maxScale,1);
+  var col=(mttr<2)?'#22c55e':(mttr<4)?'#f59e0b':'#ef4444';
+  var ang=(180-fT*180)*Math.PI/180;
+  var tx=(100+80*Math.cos(ang)).toFixed(1), ty=(100-80*Math.sin(ang)).toFixed(1);
+  var ratio=mttr/target;
+  var deltaTxt = (mttr<=target) ? 'ถึงเป้าหมายแล้ว ✓' : ('ช้ากว่าเป้า ~'+(ratio>=10?Math.round(ratio):ratio.toFixed(1))+' เท่า');
+  el.innerHTML='<div class="gauge-card">'+
+    '<div class="gauge-title"><i class="ti ti-gauge"></i> MTTR เทียบเป้าหมาย</div>'+
+    '<div class="gauge-wrap"><svg viewBox="0 0 200 118" class="gauge-svg">'+
+      '<path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#2a3650" stroke-width="15" stroke-linecap="round"/>'+
+      '<path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="'+col+'" stroke-width="15" stroke-linecap="round" stroke-dasharray="'+(fA*len).toFixed(1)+' '+len.toFixed(1)+'"/>'+
+      '<line x1="'+tx+'" y1="'+ty+'" x2="'+(100+62*Math.cos(ang)).toFixed(1)+'" y2="'+(100-62*Math.sin(ang)).toFixed(1)+'" stroke="#fff" stroke-width="2.5"/>'+
+      '<circle cx="'+tx+'" cy="'+ty+'" r="4" fill="#fff"/>'+
+      '<text x="100" y="84" text-anchor="middle" font-size="23" font-weight="800" fill="'+col+'">'+formatHours(mttr)+'</text>'+
+      '<text x="100" y="103" text-anchor="middle" font-size="9" fill="#8896ad">ปัจจุบัน (Actual)</text>'+
+    '</svg></div>'+
+    '<div class="gauge-foot"><span class="gauge-tgt"><span class="gauge-tick"></span> เป้าหมาย '+target+' ชม.</span><span class="gauge-delta" style="color:'+col+'">'+deltaTxt+'</span></div>'+
+  '</div>';
+}
 function calcMTTR(jobs) {
   const done = jobs.filter(j => j.status === 'เสร็จสิ้น' && j.date && j.doneDate);
   if (!done.length) return null;
@@ -2421,7 +2533,8 @@ function aRenderDash(){
   // การ์ดสรุปมูลค่า (กว้างเต็มแถว)
   var mEl=document.getElementById('a-mttr');
   var avg=done?Math.round(cost/done):0;
-  if(mEl)mEl.innerHTML='<div class="cost-summary"><div class="cs-cell"><div class="cs-lbl">ค่าอุปกรณ์รวม</div><div class="cs-val" style="color:#EAB308">'+cost.toLocaleString()+'</div><div class="cs-unit">บาท</div></div><div class="cs-div"></div><div class="cs-cell"><div class="cs-lbl">เฉลี่ยต่องานเสร็จ</div><div class="cs-val">'+avg.toLocaleString()+'</div><div class="cs-unit">บาท / งาน</div></div></div>';
+  renderMttrGauge(mttr);
+  if(mEl)mEl.innerHTML='<div class="cost-summary"><div class="cs-cell cs-click" onclick="openCostBreakdown()"><div class="cs-lbl">ค่าอุปกรณ์รวม <i class="ti ti-chevron-right" style="font-size:11px;vertical-align:-1px"></i></div><div class="cs-val" style="color:#EAB308">'+cost.toLocaleString()+'</div><div class="cs-unit">บาท · แตะดูรายละเอียด</div></div><div class="cs-div"></div><div class="cs-cell"><div class="cs-lbl">เฉลี่ยต่องานเสร็จ</div><div class="cs-val">'+avg.toLocaleString()+'</div><div class="cs-unit">บาท / งาน</div></div></div>';
 
   // วิเคราะห์เวลา Response/Repair (หาคอขวด)
   var rrEl=document.getElementById('a-rrt');
@@ -2460,21 +2573,46 @@ function aRenderDash(){
     cS=new Chart(document.getElementById('a-cS')||cv,{type:'doughnut',data:{labels:sts,datasets:[{data:sD,backgroundColor:sC,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
   }
 
-  // Load bars การกระจายงานตามแผนก
+  // การกระจายงาน — Active load (ถ้ามีงานค้าง) / ยอดแจ้งซ่อมสะสมเดือนนี้ (ถ้าไม่มีงานค้าง)
   if(cD){cD.destroy();cD=null;}
   const depts=['Assembly','Grinding','First grinding','Engineering'],dC=['#3b82f6','#22c55e','#f97316','#a855f7'];
-  var act=depts.map(d=>allJobs.filter(j=>j.dept===d&&j.status!=='เสร็จสิ้น').length);
-  var mx=Math.max.apply(null,act.concat([1]));
+  var act=depts.map(function(d){return allJobs.filter(function(j){return j.dept===d&&j.status!=='เสร็จสิ้น';}).length;});
+  var totalAct=act.reduce(function(a,b){return a+b;},0);
   var lb=document.getElementById('a-loadbars');
   if(lb){
     if(!allJobs.length){ lb.innerHTML='<div class="empty" style="padding:1.5rem;font-size:12px">ยังไม่มีข้อมูล</div>'; }
-    else{
-      lb.innerHTML=depts.map(function(d,i){
+    else if(totalAct>0){
+      var mx=Math.max.apply(null,act.concat([1]));
+      var html='<div class="lb-mode"><span class="lb-mode-dot" style="background:#22c55e"></span>งานที่กำลังโหลด (Active) · '+totalAct+' งานค้าง</div>';
+      html+=depts.map(function(d,i){
         var w=Math.round(act[i]/mx*100); if(act[i]>0&&w<8)w=8;
         return '<div class="lb-row"><span class="lb-name">'+d+'</span><div class="lb-track"><div class="lb-fill" style="width:'+w+'%;background:linear-gradient(90deg,'+dC[i]+'bb,'+dC[i]+')"></div></div><span class="lb-val">'+act[i]+'</span></div>';
       }).join('');
+      var techLoad={};
+      allJobs.forEach(function(j){ if(j.status!=='เสร็จสิ้น'){ var t=((j.tech||'').trim())||'ยังไม่มอบหมาย'; techLoad[t]=(techLoad[t]||0)+1; } });
+      var techArr=Object.keys(techLoad).map(function(t){return [t,techLoad[t]];}).sort(function(a,b){return b[1]-a[1];});
+      if(techArr.length){
+        var tmax=techArr[0][1];
+        html+='<div class="lb-tech-head"><i class="ti ti-user-cog"></i> ภาระงานต่อช่าง (งานค้าง)</div>';
+        html+=techArr.slice(0,6).map(function(p){ return '<div class="lb-tech"><span class="lb-tech-name">'+p[0]+'</span><span class="lb-tech-bar"><span style="width:'+Math.round(p[1]/tmax*100)+'%"></span></span><span class="lb-tech-val">'+p[1]+'</span></div>'; }).join('');
+      }
       var mxv=Math.max.apply(null,act);
-      if(mxv>0) lb.innerHTML+='<div class="lb-note"><i class="ti ti-info-circle"></i> '+depts[act.indexOf(mxv)]+' มีงานค้างมากที่สุด — ควรจัดสรรช่างเพิ่ม</div>';
+      html+='<div class="lb-note"><i class="ti ti-info-circle"></i> '+depts[act.indexOf(mxv)]+' มีงานค้างมากที่สุด — ควรจัดสรรช่างเพิ่ม</div>';
+      lb.innerHTML=html;
+    } else {
+      var now=new Date(), ym=now.getFullYear()+'-'+now.getMonth();
+      var inMonth=function(j){ var t=j.created?new Date(Number(j.created)||Date.parse(j.created)):(j.date?new Date(j.date):null); return t&&!isNaN(t.getTime())&&(t.getFullYear()+'-'+t.getMonth())===ym; };
+      var mc=depts.map(function(d){return allJobs.filter(function(j){return j.dept===d&&inMonth(j);}).length;});
+      var totalM=mc.reduce(function(a,b){return a+b;},0);
+      var mxm=Math.max.apply(null,mc.concat([1]));
+      var html='<div class="lb-mode"><span class="lb-mode-dot" style="background:#3b82f6"></span>ไม่มีงานค้าง — แสดงยอดแจ้งซ่อมสะสมเดือนนี้ ('+totalM+' งาน)</div>';
+      html+=depts.map(function(d,i){
+        var w=Math.round(mc[i]/mxm*100); if(mc[i]>0&&w<8)w=8;
+        return '<div class="lb-row"><span class="lb-name">'+d+'</span><div class="lb-track"><div class="lb-fill" style="width:'+w+'%;background:linear-gradient(90deg,'+dC[i]+'bb,'+dC[i]+')"></div></div><span class="lb-val">'+mc[i]+'</span></div>';
+      }).join('');
+      if(totalM>0){ var topi=mc.indexOf(Math.max.apply(null,mc)); html+='<div class="lb-note"><i class="ti ti-flame"></i> '+depts[topi]+' เรียกซ่อมบ่อยที่สุดเดือนนี้ ('+Math.round(mc[topi]/totalM*100)+'%)</div>'; }
+      else html+='<div class="lb-note">เดือนนี้ยังไม่มีการแจ้งซ่อม</div>';
+      lb.innerHTML=html;
     }
   }
 
