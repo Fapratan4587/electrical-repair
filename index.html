@@ -1023,10 +1023,10 @@ canvas{max-width:100%}
         <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle">เพิ่มงานซ่อมใหม่ (Admin)</span></div>
         <div class="fbody">
           <div class="fgg">
-            <div class="fg"><label>แผนก *</label><select id="a-fl-dept" onchange="populateMachines(this.value,'a-fl-machine')"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option><option>อื่น ๆ</option></select></div>
+            <div class="fg"><label>แผนก *</label><select id="a-fl-dept" onchange="populateMachines(this.value,'a-fl-machine');aPopulateLocations(this.value)"><option value="">-- เลือกแผนก --</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option><option>อื่น ๆ</option></select></div>
             <div class="fg"><label>ผู้แจ้ง</label><input id="a-fl-reporter" placeholder="ชื่อผู้แจ้ง"></div>
             <div class="fg"><label>เครื่องจักร *</label><select id="a-fl-machine"><option value="">-- เลือกเครื่องจักร --</option></select></div>
-            <div class="fg"><label>จุดที่เสีย / ตำแหน่ง *</label><input id="a-fl" placeholder="เช่น Line 3 เครื่องที่ 5"></div>
+            <div class="fg" style="position:relative"><label>Line ผลิต *</label><input id="a-fl" autocomplete="off" placeholder="พิมพ์ค้นหา เช่น IG424, A415..." oninput="aLocFilter()" onfocus="aLocFilter()" onblur="aLocHide()"><div id="a-fl-drop" class="loc-drop"></div></div>
             <div class="fg"><label>ประเภทงาน *</label><select id="a-ft"><option value="">-- เลือกประเภท --</option><option>ไฟฟ้าขัดข้อง</option><option>เปลี่ยนอุปกรณ์</option><option>ตรวจสอบระบบ</option><option>ซ่อมสายไฟ</option><option>ซ่อมตู้ MDB</option><option>ซ่อมแอร์/พัดลม</option><option>ติดตั้งใหม่</option><option>อื่น ๆ</option></select></div>
             <div class="fg full"><label>รายละเอียด *</label><textarea id="a-fd" placeholder="อธิบายอาการเสีย สาเหตุ งานที่ทำ..."></textarea></div>
             <div class="fg"><label>สถานะ</label><select id="a-fst2"><option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option></select></div>
@@ -1331,6 +1331,26 @@ function locPick(v){
   var drop=document.getElementById('u-loc-drop'); if(drop)drop.style.display='none';
 }
 function locHide(){ setTimeout(function(){var d=document.getElementById('u-loc-drop'); if(d)d.style.display='none';},150); }
+// ===== Line ผลิต autocomplete สำหรับฟอร์ม Admin (a-fl) =====
+var ALOC_CURRENT=[];
+function aPopulateLocations(dept){
+  ALOC_CURRENT = LOCATIONS[dept] || [];
+  var drop=document.getElementById('a-fl-drop'); if(drop)drop.style.display='none';
+  var inp=document.getElementById('a-fl'); if(inp)inp.placeholder = ALOC_CURRENT.length ? 'พิมพ์ค้นหา Line เช่น IG424, A415...' : 'ระบุตำแหน่ง / Line';
+}
+function aLocFilter(){
+  var inp=document.getElementById('a-fl'), drop=document.getElementById('a-fl-drop');
+  if(!inp||!drop)return;
+  var list=ALOC_CURRENT||[];
+  if(!list.length){ drop.style.display='none'; return; }
+  var q=inp.value.trim().toUpperCase();
+  var matches=q?list.filter(function(x){return x.toUpperCase().indexOf(q)>=0;}):list;
+  if(!matches.length){ drop.style.display='none'; return; }
+  drop.innerHTML=matches.slice(0,60).map(function(x){return '<div class="loc-item" onmousedown="aLocPick(\''+x+'\')">'+x+'</div>';}).join('');
+  drop.style.display='block';
+}
+function aLocPick(v){ var inp=document.getElementById('a-fl'); if(inp)inp.value=v; var drop=document.getElementById('a-fl-drop'); if(drop)drop.style.display='none'; }
+function aLocHide(){ setTimeout(function(){var d=document.getElementById('a-fl-drop'); if(d)d.style.display='none';},150); }
 function onLocSelect(){
   var sel=document.getElementById('u-location-sel');
   var inp=document.getElementById('u-location');
