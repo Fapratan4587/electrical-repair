@@ -183,6 +183,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .b-doing{background:#EFF6FF;color:#1D4ED8}
 .b-done{background:#F0FDF4;color:#166534}
 .b-urgent{background:var(--red-light);color:var(--red-dark)}
+.b-supplier{background:#E0E7FF;color:#4338CA}
+.sup-section{background:#F5F6FF;border:1px solid #D7DCFB;border-radius:var(--r2);padding:12px}
+.sup-head{font-size:12.5px;font-weight:700;color:#4338CA;display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.sup-head .ti{font-size:15px}
+.sup-lbl{font-size:11.5px;color:var(--text3);margin-bottom:3px;display:block}
 .tw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;box-shadow:var(--sh)}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;border:1px solid var(--border)}
 th{text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);border-bottom:2px solid var(--border2);border-right:1px solid var(--border);background:var(--surface2);text-transform:uppercase;letter-spacing:.06em}th:last-child{border-right:none}
@@ -755,13 +760,21 @@ canvas{max-width:100%}
     <div class="efg"><label>ช่างผู้ซ่อม</label><input id="e-tech" placeholder="ชื่อช่าง / ทีม"></div>
     <div class="efg">
       <label>สถานะ</label>
-      <select id="e-status">
-        <option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option>
+      <select id="e-status" onchange="eSupToggle()">
+        <option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option><option>ส่งซ่อมภายนอก</option>
       </select>
     </div>
     <div class="efg" style="margin-top:-2px">
       <button class="btn" onclick="quickStart()" style="font-size:12.5px;padding:8px 14px;background:#1877F2;color:#fff;border:none;align-self:flex-start"><i class="ti ti-player-play"></i> รับงาน / เริ่มจับเวลาซ่อม</button>
       <div style="font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5">กดตอนช่างเริ่มลงมือซ่อม — ระบบจะบันทึก<strong>เวลาเริ่ม</strong> เพื่อแยกคำนวณ Response Time (แจ้ง→เริ่ม) และ Repair Time (เริ่ม→เสร็จ)</div>
+    </div>
+    <div class="efg sup-section" id="e-sup-section" style="display:none">
+      <div class="sup-head"><i class="ti ti-building-warehouse"></i> ส่งซ่อมภายนอก (Supplier) — กรณีช่างซ่อมเองไม่ได้</div>
+      <input id="e-sup-name" placeholder="ชื่อ Supplier / บริษัท" style="margin-bottom:8px">
+      <input id="e-sup-contact" placeholder="ผู้ติดต่อ / เบอร์โทร" style="margin-bottom:8px">
+      <label class="sup-lbl">วันที่นัด / คาดว่าเสร็จ</label>
+      <input type="date" id="e-sup-date" style="margin-bottom:8px">
+      <textarea id="e-sup-note" placeholder="หมายเหตุ / เลขใบเสนอราคา / อาการที่ส่งซ่อม..." style="min-height:52px;resize:vertical"></textarea>
     </div>
     <div class="efg"><label>วันที่ซ่อมเสร็จ</label><input type="date" id="e-donedate"></div>
     <div class="efg"><label>รายละเอียดการซ่อม / วิธีแก้ไข</label><textarea id="e-repair-detail" placeholder="เช่น เปลี่ยน breaker, ตรวจสอบสายไฟ, ปรับ parameter..." style="min-height:64px;resize:vertical"></textarea></div>
@@ -1123,18 +1136,19 @@ let autoRefreshTimer=null;
 let PHOTO_COL_OK=true; // กลายเป็น false อัตโนมัติถ้าตาราง repairs ยังไม่มีคอลัมน์ photo (กันแอปพัง)
 let FIXPHOTO_COL_OK=true; // เช่นเดียวกัน สำหรับคอลัมน์ fixphoto (รูปหลังซ่อมจาก admin)
 let STARTDATE_COL_OK=true; // สำหรับคอลัมน์ startdate (เวลาที่ช่างเริ่มงาน) — กันแอปพังถ้ายังไม่มีคอลัมน์
+let SUPPLIER_COL_OK=true; // สำหรับคอลัมน์ supplier (ข้อมูลผู้รับเหมา/ผู้ขายภายนอก) — กันแอปพังถ้ายังไม่มีคอลัมน์
 // เขียนลง Supabase แบบกันคอลัมน์ที่ยังไม่ได้สร้าง (photo/fixphoto/startdate) — ตัดคอลัมน์ที่ขาดออกแล้วลองใหม่ ไม่ให้แอปพัง
 async function sbWrite(url,method,row,label){
   for(var attempt=0; attempt<4; attempt++){
     var r=await fetch(url,{method:method,headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
     if(r.ok) return r;
     var t=await r.text();
-    var stripped=false, cols=['fixphoto','startdate','photo'];
+    var stripped=false, cols=['fixphoto','startdate','supplier','photo'];
     for(var i=0;i<cols.length;i++){
       var col=cols[i];
       if(!stripped && (col in row) && new RegExp(col,'i').test(t)){
         delete row[col]; stripped=true;
-        if(col==='photo')PHOTO_COL_OK=false; else if(col==='fixphoto')FIXPHOTO_COL_OK=false; else if(col==='startdate')STARTDATE_COL_OK=false;
+        if(col==='photo')PHOTO_COL_OK=false; else if(col==='fixphoto')FIXPHOTO_COL_OK=false; else if(col==='startdate')STARTDATE_COL_OK=false; else if(col==='supplier')SUPPLIER_COL_OK=false;
       }
     }
     if(!stripped) throw new Error((label||'write')+' failed: '+t);
@@ -1242,6 +1256,7 @@ async function callAPI(payload){
     if(!PHOTO_COL_OK) delete row.photo;
     if(!FIXPHOTO_COL_OK) delete row.fixphoto;
     if(!STARTDATE_COL_OK) delete row.startdate;
+    if(!SUPPLIER_COL_OK) delete row.supplier;
     await sbWrite(SUPABASE_URL+'/repairs','POST',row,'add');
     sendLineNotify(payload); // ส่ง LINE ผ่าน Apps Script
     return {success:true};
@@ -1252,6 +1267,7 @@ async function callAPI(payload){
     if(!PHOTO_COL_OK) delete row.photo;
     if(!FIXPHOTO_COL_OK) delete row.fixphoto;
     if(!STARTDATE_COL_OK) delete row.startdate;
+    if(!SUPPLIER_COL_OK) delete row.supplier;
     await sbWrite(SUPABASE_URL+'/repairs?id=eq.'+encodeURIComponent(payload.id),'PATCH',row,'update');
     sendLineNotify(payload,true); // ส่ง LINE update
     return {success:true};
@@ -1274,7 +1290,7 @@ function toRow(p){
     location:p.location||'', type:p.type||'', detail:p.detail||'',
     status:p.status||'', priority:p.priority||'', tech:p.tech||'',
     cost:p.cost||0, date:p.date||'', donedate:p.doneDate||'',
-    note:p.note||'', repairdetail:p.repairDetail||'', photo:p.photo||'', fixphoto:p.fixPhoto||'', startdate:p.startDate||'', created:p.created||Date.now()
+    note:p.note||'', repairdetail:p.repairDetail||'', photo:p.photo||'', fixphoto:p.fixPhoto||'', startdate:p.startDate||'', supplier:p.supplier||'', created:p.created||Date.now()
   };
 }
 
@@ -1298,7 +1314,7 @@ function fromRow(r){
     id:r.id, dept:r.dept, reporter:r.reporter, location:r.location,
     type:r.type, detail:r.detail, status:r.status, priority:r.priority,
     tech:r.tech, cost:r.cost, date:r.date, doneDate:r.donedate,
-    note:r.note, repairDetail:r.repairdetail, photo:r.photo||'', fixPhoto:r.fixphoto||'', startDate:r.startdate||'', created:r.created
+    note:r.note, repairDetail:r.repairdetail, photo:r.photo||'', fixPhoto:r.fixphoto||'', startDate:r.startdate||'', supplier:r.supplier||'', created:r.created
   };
 }
 
@@ -1323,7 +1339,7 @@ function formatDatetime(isoStr) {
 }
 function genId(){return 'E'+String(Date.now()).slice(-5);}
 function toast(msg,dur){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur||2400);}
-function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent'};return '<span class="badge '+( m[s]||'b-wait')+'">'+s+'</span>';}
+function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent','ส่งซ่อมภายนอก':'b-supplier'};return '<span class="badge '+( m[s]||'b-wait')+'">'+s+'</span>';}
 function deptBadge(d){const c=d==='Assembly'?'b-doing':d==='Grinding'?'b-done':d==='First grinding'?'b-wait':'';var custom=d==='Engineering'?'background:#F3E8FF;color:#7C3AED':(c?'':'background:#F3F4F6;color:#6B7280');return '<span class="badge '+c+'" style="'+custom+'">'+(d||'—')+'</span>';}
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{return JSON.parse(note.replace('[EQUIP]',''));}catch(e){return[];}}
@@ -1475,6 +1491,14 @@ function openEditModal(id){
   document.getElementById('e-status').value=editingJob.status||'รอดำเนินการ';
   document.getElementById('e-donedate').value=editingJob.doneDate||'';
   document.getElementById('e-repair-detail').value=editingJob.repairDetail||'';
+  (function(){
+    var sup={}; try{ if(editingJob.supplier) sup=JSON.parse(editingJob.supplier)||{}; }catch(e){ sup={}; }
+    document.getElementById('e-sup-name').value=sup.name||'';
+    document.getElementById('e-sup-contact').value=sup.contact||'';
+    document.getElementById('e-sup-date').value=sup.date||'';
+    document.getElementById('e-sup-note').value=sup.note||'';
+  })();
+  eSupToggle();
   document.getElementById('e-photo').value='';
   (function(){var pv=document.getElementById('e-photo-preview');if(editingJob.fixPhoto){pv.dataset.url=editingJob.fixPhoto;pv.innerHTML=fixPhotoPreviewHTML(editingJob.fixPhoto,true);}else{pv.dataset.url='';pv.innerHTML='';}})();
   document.getElementById('equip-list').innerHTML='';
@@ -1487,6 +1511,11 @@ function openEditModal(id){
 }
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');editingJob=null;}
 function closeCostModal(){document.getElementById('cost-modal').classList.remove('show');}
+function eSupToggle(){
+  var sec=document.getElementById('e-sup-section'), st=document.getElementById('e-status');
+  if(!sec||!st)return;
+  sec.style.display=(st.value==='ส่งซ่อมภายนอก')?'block':'none';
+}
 function openCostBreakdown(){
   var fj=(typeof getFiltered==='function')?getFiltered():allJobs;
   var wc=fj.filter(function(j){return (Number(j.cost)||0)>0;});
@@ -1620,6 +1649,15 @@ async function saveEdit(){
     editingJob.doneDate = '';
   }
   editingJob.repairDetail=document.getElementById('e-repair-detail').value.trim();
+  (function(){
+    var sn=document.getElementById('e-sup-name').value.trim();
+    var sc=document.getElementById('e-sup-contact').value.trim();
+    var sd=document.getElementById('e-sup-date').value;
+    var snote=document.getElementById('e-sup-note').value.trim();
+    if(editingJob.status==='ส่งซ่อมภายนอก' || sn||sc||sd||snote){
+      editingJob.supplier=JSON.stringify({name:sn,contact:sc,date:sd,note:snote});
+    } else { editingJob.supplier=''; }
+  })();
   const rows=document.querySelectorAll('.equip-row');
   const equips=[];let totalCost=0;
   rows.forEach(row=>{
@@ -1768,6 +1806,22 @@ function uViewJob(id){
     });
     equipHtml+='</div>';
   }
+  var supHtml='';
+  try{
+    if(j.supplier){
+      var sup=JSON.parse(j.supplier)||{};
+      if(sup.name||sup.contact||sup.date||sup.note){
+        supHtml='<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:12px;padding:12px;margin-bottom:14px">'+
+          '<div style="font-size:13px;font-weight:700;color:#4338CA;display:flex;align-items:center;gap:6px;margin-bottom:6px"><i class="ti ti-building-warehouse"></i> ส่งซ่อมภายนอก (Supplier)</div>'+
+          '<div style="font-size:13px;line-height:1.8">'+
+          (sup.name?'<div><span style="color:var(--text3)">บริษัท/ผู้ขาย:</span> '+sup.name+'</div>':'')+
+          (sup.contact?'<div><span style="color:var(--text3)">ติดต่อ:</span> '+sup.contact+'</div>':'')+
+          (sup.date?'<div><span style="color:var(--text3)">วันนัด/คาดว่าเสร็จ:</span> '+sup.date+'</div>':'')+
+          (sup.note?'<div style="margin-top:4px"><span style="color:var(--text3)">หมายเหตุ:</span> '+sup.note+'</div>':'')+
+          '</div></div>';
+      }
+    }
+  }catch(e){}
   var hasWork=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ'||j.repairDetail||j.tech||equips.length);
   var body=
     '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:12px;color:var(--text3)">'+j.id+'</span>'+bdg(j.status)+'</div>'+
@@ -1779,6 +1833,7 @@ function uViewJob(id){
       (j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+
       '<div style="font-size:11px;color:var(--text3);margin-top:8px">โดย '+(j.reporter||'—')+' · '+formatDatetime(j.date)+'</div>'+
     '</div>'+
+    supHtml+
     '<div style="font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-tool" style="color:#16A34A"></i>การดำเนินการซ่อม</div>';
   if(hasWork){
     body+='<div style="font-size:13px;line-height:1.9">'+
