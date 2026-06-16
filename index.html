@@ -763,7 +763,7 @@ canvas{max-width:100%}
     <div class="efg">
       <label>สถานะ</label>
       <select id="e-status" onchange="eSupToggle()">
-        <option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option><option>ส่งซ่อมภายนอก</option>
+        <option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option><option value="ส่งซ่อมภายนอก">ส่งซ่อมกับ Supplier</option>
       </select>
     </div>
     <div class="efg" style="margin-top:-2px">
@@ -771,7 +771,7 @@ canvas{max-width:100%}
       <div style="font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5">กดตอนช่างเริ่มลงมือซ่อม — ระบบจะบันทึก<strong>เวลาเริ่ม</strong> เพื่อแยกคำนวณ Response Time (แจ้ง→เริ่ม) และ Repair Time (เริ่ม→เสร็จ)</div>
     </div>
     <div class="efg sup-section" id="e-sup-section" style="display:none">
-      <div class="sup-head"><i class="ti ti-building-warehouse"></i> ส่งซ่อมภายนอก (Supplier) — กรณีช่างซ่อมเองไม่ได้</div>
+      <div class="sup-head"><i class="ti ti-building-warehouse"></i> ส่งซ่อมกับ Supplier — กรณีช่างซ่อมเองไม่ได้</div>
       <input id="e-sup-name" placeholder="ชื่อ Supplier / บริษัท" style="margin-bottom:8px">
       <input id="e-sup-contact" placeholder="ผู้ติดต่อ / เบอร์โทร" style="margin-bottom:8px">
       <label class="sup-lbl">วันที่นัด / คาดว่าเสร็จ</label>
@@ -1341,7 +1341,7 @@ function formatDatetime(isoStr) {
 }
 function genId(){return 'E'+String(Date.now()).slice(-5);}
 function toast(msg,dur){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur||2400);}
-function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent','ส่งซ่อมภายนอก':'b-supplier'};var pre=(s==='ส่งซ่อมภายนอก')?'★ ':'';return '<span class="badge '+( m[s]||'b-wait')+'">'+pre+s+'</span>';}
+function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent','ส่งซ่อมภายนอก':'b-supplier'};const lblm={'ส่งซ่อมภายนอก':'ส่งซ่อมกับ Supplier'};var pre=(s==='ส่งซ่อมภายนอก')?'★ ':'';return '<span class="badge '+( m[s]||'b-wait')+'">'+pre+(lblm[s]||s)+'</span>';}
 function deptBadge(d){const c=d==='Assembly'?'b-doing':d==='Grinding'?'b-done':d==='First grinding'?'b-wait':'';var custom=d==='Engineering'?'background:#F3E8FF;color:#7C3AED':(c?'':'background:#F3F4F6;color:#6B7280');return '<span class="badge '+c+'" style="'+custom+'">'+(d||'—')+'</span>';}
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{return JSON.parse(note.replace('[EQUIP]',''));}catch(e){return[];}}
@@ -1814,7 +1814,7 @@ function uViewJob(id){
       var sup=JSON.parse(j.supplier)||{};
       if(sup.name||sup.contact||sup.date||sup.note){
         supHtml='<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:12px;padding:12px;margin-bottom:14px">'+
-          '<div style="font-size:13px;font-weight:700;color:#4338CA;display:flex;align-items:center;gap:6px;margin-bottom:6px"><i class="ti ti-building-warehouse"></i> ส่งซ่อมภายนอก (Supplier)</div>'+
+          '<div style="font-size:13px;font-weight:700;color:#4338CA;display:flex;align-items:center;gap:6px;margin-bottom:6px"><i class="ti ti-building-warehouse"></i> ส่งซ่อมกับ Supplier</div>'+
           '<div style="font-size:13px;line-height:1.8">'+
           (sup.name?'<div><span style="color:var(--text3)">บริษัท/ผู้ขาย:</span> '+sup.name+'</div>':'')+
           (sup.contact?'<div><span style="color:var(--text3)">ติดต่อ:</span> '+sup.contact+'</div>':'')+
@@ -1866,7 +1866,7 @@ function uRenderTrack(){
   const c=document.getElementById('u-track-content');
   if(!mine.length){c.innerHTML='<div class="empty"><i class="ti ti-clipboard-x"></i>ยังไม่มีรายการแจ้งซ่อม<br><small style="margin-top:4px;display:block">กดแท็บ "แจ้งซ่อม" เพื่อส่งแจ้ง</small></div>';return;}
   c.innerHTML='<div class="status-grid">'+mine.map(function(j){
-    var clickable=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ');
+    var clickable=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ'||j.status==='ส่งซ่อมภายนอก');
     var cls='sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':j.status==='ส่งซ่อมภายนอก'?'sc-supplier':'sc-default');
     return '<div class="'+cls+'"'+(clickable?' onclick="uViewJob(\''+j.id+'\')" style="cursor:pointer"':'')+'><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<img src="'+j.photo+'" onclick="event.stopPropagation();window.open(\''+j.photo+'\',\'_blank\')" style="margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+(clickable?'<div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:2px">ดูรายละเอียดการซ่อม <i class="ti ti-chevron-right" style="font-size:13px"></i></div>':'')+'</div>';
   }).join('')+'</div>';
