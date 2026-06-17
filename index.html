@@ -782,8 +782,8 @@ canvas{max-width:100%}
     </div>
     <div class="efg"><label>วันที่ซ่อมเสร็จ</label><input type="date" id="e-donedate"></div>
     <div class="efg"><label>รายละเอียดการซ่อม / วิธีแก้ไข</label><textarea id="e-repair-detail" placeholder="เช่น เปลี่ยน breaker, ตรวจสอบสายไฟ, ปรับ parameter..." style="min-height:64px;resize:vertical"></textarea></div>
-    <div class="efg"><label>รูปหลังซ่อม / แนบส่งให้ผู้แจ้ง (ถ้ามี)</label>
-      <input type="file" id="e-photo" accept="image/*" onchange="previewFixPhoto(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer;border-radius:var(--r2);width:100%">
+    <div class="efg"><label>รูปหลังซ่อม / แนบส่งให้ผู้แจ้ง (สูงสุด 3 รูป)</label>
+      <input type="file" id="e-photo" accept="image/*" multiple onchange="previewFixPhoto(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer;border-radius:var(--r2);width:100%">
       <div id="e-photo-preview" data-url="" style="margin-top:8px"></div>
     </div>
     <div class="equip-section">
@@ -852,7 +852,7 @@ canvas{max-width:100%}
             </div>
             <div class="fg full"><label>รายละเอียดอาการเสีย *</label><textarea id="u-detail" placeholder="อธิบายอาการ เช่น ไฟดับทั้งไลน์ เครื่องไม่ทำงาน..."></textarea></div>
             <div class="fg full"><label>รูปภาพอาการเสีย <span style="font-size:10px;color:var(--text3);font-weight:400">(ไม่บังคับ · ถ่าย/แนบได้ 1 รูป)</span></label>
-              <input type="file" id="u-photo" accept="image/*" onchange="previewRepairPhoto(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer;border-radius:var(--r2);width:100%">
+              <input type="file" id="u-photo" accept="image/*" multiple onchange="previewRepairPhoto(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer;border-radius:var(--r2);width:100%">
               <div id="u-photo-preview" style="margin-top:8px"></div>
             </div>
             <div class="fg full">
@@ -1306,6 +1306,10 @@ function sendLineNotify(payload,isUpdate){
     window[cb]=()=>{delete window[cb];try{document.body.removeChild(s);}catch(e){}};
     s.onerror=()=>{delete window[cb];try{document.body.removeChild(s);}catch(e){}};
     const data={...payload,action:isUpdate?'lineUpdate':'lineNew'};
+    // LINE hero รองรับรูปเดียว — ส่งเฉพาะรูปแรกจากที่แนบหลายรูป
+    if(data.photo) data.photo=String(data.photo).split('\n')[0];
+    if(data.fixPhoto) data.fixPhoto=String(data.fixPhoto).split('\n')[0];
+    if(data.fixphoto) data.fixphoto=String(data.fixphoto).split('\n')[0];
     s.src=LINE_API+'?callback='+cb+'&data='+encodeURIComponent(JSON.stringify(data));
     document.body.appendChild(s);
     setTimeout(()=>{if(window[cb]){delete window[cb];try{document.body.removeChild(s);}catch(e){}}},10000);
@@ -1594,12 +1598,21 @@ function updateEquipTotal(){
   document.getElementById('equip-total').textContent=t.toLocaleString()+' บาท';
 }
 
-function fixPhotoPreviewHTML(url,existing){
-  return '<div style="position:relative;display:inline-block"><img src="'+url+'" style="max-width:150px;max-height:150px;border-radius:8px;border:1px solid var(--border);object-fit:cover"><button type="button" onclick="clearFixPhoto()" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:none;background:var(--red);color:#fff;cursor:pointer;font-size:14px;line-height:1">×</button></div>'+(existing?'<div style="font-size:11px;color:var(--text3);margin-top:4px">รูปที่แนบไว้แล้ว</div>':'');
+function fixPhotoPreviewHTML(val,existing){
+  var arr=photoArr(val);
+  var imgs='<div style="display:flex;gap:6px;flex-wrap:wrap">'+arr.map(function(u){return '<img src="'+u+'" style="width:92px;height:92px;border-radius:8px;border:1px solid var(--border);object-fit:cover">';}).join('')+'</div>';
+  return imgs+'<button type="button" onclick="clearFixPhoto()" style="margin-top:6px;border:none;background:var(--red);color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px">ลบรูปทั้งหมด</button>'+(existing?'<div style="font-size:11px;color:var(--text3);margin-top:4px">รูปที่แนบไว้แล้ว '+arr.length+' รูป</div>':'');
 }
 function previewFixPhoto(input){
   var pv=document.getElementById('e-photo-preview');
-  if(input.files&&input.files[0]){ var url=URL.createObjectURL(input.files[0]); pv.dataset.url=''; pv.innerHTML=fixPhotoPreviewHTML(url,false); }
+  var files=input.files;
+  if(!files||!files.length)return;
+  if(files.length>3) toast('แนบได้สูงสุด 3 รูป — ระบบจะใช้ 3 รูปแรก');
+  pv.dataset.url='';
+  var n=Math.min(files.length,3), html='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+  for(var i=0;i<n;i++){ html+='<img src="'+URL.createObjectURL(files[i])+'" style="width:92px;height:92px;border-radius:8px;border:1px solid var(--border);object-fit:cover">'; }
+  html+='</div><button type="button" onclick="clearFixPhoto()" style="margin-top:6px;border:none;background:var(--red);color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px">ลบรูปทั้งหมด</button>';
+  pv.innerHTML=html;
 }
 function clearFixPhoto(){
   var pf=document.getElementById('e-photo'); if(pf)pf.value='';
@@ -1675,7 +1688,7 @@ async function saveEdit(){
   // รูปหลังซ่อม (admin): อัปโหลดถ้ามีไฟล์ใหม่ / คงรูปเดิม / ลบถ้าเอาออก
   var _pf=document.getElementById('e-photo');
   var _pv=document.getElementById('e-photo-preview');
-  if(_pf&&_pf.files&&_pf.files[0]){ try{ editingJob.fixPhoto=await uploadRepairPhoto(_pf.files[0]); }catch(e){ toast('อัปโหลดรูปไม่สำเร็จ'); } }
+  if(_pf&&_pf.files&&_pf.files.length){ try{ editingJob.fixPhoto=await uploadRepairPhotos(_pf.files); }catch(e){ toast('อัปโหลดรูปไม่สำเร็จ'); } }
   else { editingJob.fixPhoto=(_pv&&_pv.dataset.url)?_pv.dataset.url:''; }
   document.getElementById('e-sving').style.display='flex';
   document.getElementById('e-save-btn').disabled=true;
@@ -1702,11 +1715,14 @@ function uGoTab(id,btn){
 }
 function previewRepairPhoto(input){
   var box=document.getElementById('u-photo-preview');
-  var f=input.files&&input.files[0];
-  if(!f){box.innerHTML='';return;}
-  if(f.size>10*1024*1024){toast('⚠ รูปใหญ่เกิน 10MB');input.value='';box.innerHTML='';return;}
-  var url=URL.createObjectURL(f);
-  box.innerHTML='<div style="position:relative;display:inline-block"><img src="'+url+'" style="max-width:150px;max-height:150px;border-radius:8px;border:1px solid var(--border);object-fit:cover"><button type="button" onclick="document.getElementById(\'u-photo\').value=\'\';document.getElementById(\'u-photo-preview\').innerHTML=\'\'" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:none;background:var(--red);color:#fff;cursor:pointer;font-size:14px;line-height:1">×</button></div>';
+  var files=input.files;
+  if(!files||!files.length){box.innerHTML='';return;}
+  for(var i=0;i<files.length;i++){ if(files[i].size>10*1024*1024){toast('⚠ รูปใหญ่เกิน 10MB');input.value='';box.innerHTML='';return;} }
+  if(files.length>3) toast('แนบได้สูงสุด 3 รูป — ระบบจะใช้ 3 รูปแรก');
+  var n=Math.min(files.length,3), html='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+  for(var i=0;i<n;i++){ html+='<img src="'+URL.createObjectURL(files[i])+'" style="width:92px;height:92px;border-radius:8px;border:1px solid var(--border);object-fit:cover">'; }
+  html+='</div><button type="button" onclick="document.getElementById(\'u-photo\').value=\'\';document.getElementById(\'u-photo-preview\').innerHTML=\'\'" style="margin-top:6px;border:none;background:var(--red);color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px">ลบรูปทั้งหมด</button>';
+  box.innerHTML=html;
 }
 // อัปโหลดรูปเข้า Supabase Storage (ใช้ bucket targets ที่ตั้งเป็น public อยู่แล้ว) คืนค่า public URL
 async function uploadRepairPhoto(file){
@@ -1720,6 +1736,19 @@ async function uploadRepairPhoto(file){
   });
   if(!up.ok){var t=await up.text();throw new Error('photo upload: '+t);}
   return SUPABASE_STORAGE+'/object/public/targets/'+fname;
+}
+// ----- รองรับหลายรูป (สูงสุด 3) -----
+function photoArr(v){ if(!v)return []; return String(v).split('\n').map(function(s){return s.trim();}).filter(Boolean).slice(0,3); }
+async function uploadRepairPhotos(files){
+  var out=[], n=Math.min(files.length,3);
+  for(var i=0;i<n;i++){ out.push(await uploadRepairPhoto(files[i])); }
+  return out.join('\n');
+}
+function photoGallery(val,maxh){
+  var arr=photoArr(val); if(!arr.length)return '';
+  maxh=maxh||'200px';
+  if(arr.length===1) return '<img src="'+arr[0]+'" onclick="event.stopPropagation();window.open(\''+arr[0]+'\',\'_blank\')" style="width:100%;max-height:'+maxh+';object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">';
+  return '<div style="display:flex;gap:6px;flex-wrap:wrap">'+arr.map(function(u){return '<img src="'+u+'" onclick="event.stopPropagation();window.open(\''+u+'\',\'_blank\')" style="flex:1 1 30%;min-width:0;height:110px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">';}).join('')+'</div>';
 }
 async function uSubmit(){
   const reporter=document.getElementById('u-reporter').value.trim();
@@ -1754,10 +1783,10 @@ async function uSubmit(){
   document.getElementById('u-stxt').textContent='กำลังส่ง...';
   try{
     var pf=document.getElementById('u-photo');
-    var pfile=pf&&pf.files&&pf.files[0];
-    if(pfile){
+    var pfiles=pf&&pf.files;
+    if(pfiles&&pfiles.length){
       document.getElementById('u-stxt').textContent='กำลังอัปโหลดรูป...';
-      try{ j.photo=await uploadRepairPhoto(pfile); }
+      try{ j.photo=await uploadRepairPhotos(pfiles); }
       catch(pe){ console.log(pe); toast('⚠ อัปโหลดรูปไม่สำเร็จ — ส่งงานต่อโดยไม่มีรูป'); }
     }
     await callAPI(j);
@@ -1834,7 +1863,7 @@ function uViewJob(id){
     '<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:14px">'+
       '<div style="font-size:12px;color:var(--text3);margin-bottom:4px">อาการที่แจ้ง</div>'+
       '<div style="font-size:14px;margin-bottom:6px">'+(j.detail||'-')+'</div>'+
-      (j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+
+      (j.photo?photoGallery(j.photo,'200px'):'')+
       '<div style="font-size:11px;color:var(--text3);margin-top:8px">โดย '+(j.reporter||'—')+' · '+formatDatetime(j.date)+'</div>'+
     '</div>'+
     supHtml+
@@ -1845,7 +1874,7 @@ function uViewJob(id){
       (j.doneDate?'<div><span style="color:var(--text3)">วันที่เสร็จ:</span> '+formatDatetime(j.doneDate)+'</div>':'')+
       '<div style="margin-top:6px"><span style="color:var(--text3)">วิธีซ่อม / สิ่งที่แก้ไข:</span><br>'+(j.repairDetail?j.repairDetail:'<span style="color:var(--text3)">— ไม่ได้ระบุ —</span>')+'</div>'+
     '</div>'+equipHtml+
-    (j.fixPhoto?'<div style="margin-top:12px"><div style="font-size:12px;color:var(--text3);margin-bottom:5px"><i class="ti ti-camera" style="font-size:12px;margin-right:3px"></i>รูปหลังซ่อมจากช่าง</div><img src="'+j.fixPhoto+'" onclick="window.open(\''+j.fixPhoto+'\',\'_blank\')" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)"></div>':'')+
+    (j.fixPhoto?'<div style="margin-top:12px"><div style="font-size:12px;color:var(--text3);margin-bottom:5px"><i class="ti ti-camera" style="font-size:12px;margin-right:3px"></i>รูปหลังซ่อมจากช่าง</div>'+photoGallery(j.fixPhoto,'220px')+'</div>':'')+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:2px solid var(--border);font-weight:700"><span>ค่าใช้จ่ายรวม</span><span style="color:var(--red);font-size:17px">'+(j.cost?Number(j.cost).toLocaleString():'0')+' บาท</span></div>';
   }else{
     body+='<div class="empty" style="padding:1rem;font-size:13px"><i class="ti ti-clock"></i> ยังไม่มีการดำเนินการซ่อม</div>';
@@ -1870,7 +1899,7 @@ function uRenderTrack(){
   c.innerHTML='<div class="status-grid">'+mine.map(function(j){
     var clickable=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ'||j.status==='ส่งซ่อมภายนอก');
     var cls='sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':j.status==='ส่งซ่อมภายนอก'?'sc-supplier':'sc-default');
-    return '<div class="'+cls+'"'+(clickable?' onclick="uViewJob(\''+j.id+'\')" style="cursor:pointer"':'')+'><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<img src="'+j.photo+'" onclick="event.stopPropagation();window.open(\''+j.photo+'\',\'_blank\')" style="margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+(clickable?'<div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:2px">ดูรายละเอียดการซ่อม <i class="ti ti-chevron-right" style="font-size:13px"></i></div>':'')+'</div>';
+    return '<div class="'+cls+'"'+(clickable?' onclick="uViewJob(\''+j.id+'\')" style="cursor:pointer"':'')+'><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<div style="margin-top:8px">'+photoGallery(j.photo,'170px')+'</div>':'')+((j.status==='เสร็จสิ้น'&&j.fixPhoto)?'<div style="margin-top:8px"><div style="font-size:11px;color:#16A34A;margin-bottom:4px;font-weight:600"><i class="ti ti-camera" style="font-size:11px;margin-right:3px"></i>รูปหลังซ่อมจากช่าง</div>'+photoGallery(j.fixPhoto,'170px')+'</div>':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+(clickable?'<div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:2px">ดูรายละเอียดการซ่อม <i class="ti ti-chevron-right" style="font-size:13px"></i></div>':'')+'</div>';
   }).join('')+'</div>';
 }
 
