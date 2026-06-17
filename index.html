@@ -194,8 +194,8 @@ th{text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--
 td{padding:10px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}td:last-child{border-right:none}
 tr:last-child td{border-bottom:none}
 tr:nth-child(even) td{background:var(--surface2)}tr:hover td{background:#F0EDE8}
-tr.urg td{background:linear-gradient(90deg,rgba(232,25,44,.11),rgba(232,25,44,.035))}
-tr.urg td:first-child{box-shadow:inset 4px 0 0 var(--red)}
+tr.urg td{background:rgba(232,25,44,.05)}
+tr.urg td:first-child{box-shadow:inset 6px 0 0 var(--red)}
 
 /* FORMS */
 .fbar{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
@@ -429,8 +429,8 @@ canvas{max-width:100%}
 #atab-dash th{background:#1b2436;color:#aab4c9;border-bottom:1px solid #2f3a5a}
 #atab-dash td{border-bottom:1px solid #232d45;color:#dbe2ee}
 #atab-dash tr:nth-child(even) td{background:rgba(255,255,255,.015)}
-#atab-dash tr.urg td{background:linear-gradient(90deg,rgba(255,71,87,.22),rgba(255,71,87,.06))}
-#atab-dash tr.urg td:first-child{box-shadow:inset 4px 0 0 #ff4757}
+#atab-dash tr.urg td{background:rgba(255,71,87,.10)}
+#atab-dash tr.urg td:first-child{box-shadow:inset 6px 0 0 #ff5566}
 #atab-dash .tw{border:1px solid #273150}
 #atab-dash .empty{color:#7e8aa3}
 #atab-dash .btn.outline-blue{background:transparent;border:1px solid #3b82f6;color:#7eb0ff}
@@ -783,7 +783,7 @@ canvas{max-width:100%}
     <div class="efg"><label>วันที่ซ่อมเสร็จ</label><input type="date" id="e-donedate"></div>
     <div class="efg"><label>รายละเอียดการซ่อม / วิธีแก้ไข</label><textarea id="e-repair-detail" placeholder="เช่น เปลี่ยน breaker, ตรวจสอบสายไฟ, ปรับ parameter..." style="min-height:64px;resize:vertical"></textarea></div>
     <div class="efg"><label>รูปหลังซ่อม / แนบส่งให้ผู้แจ้ง (ถ้ามี)</label>
-      <input type="file" id="e-photo" accept="image/*" capture="environment" onchange="previewFixPhoto(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer;border-radius:var(--r2);width:100%">
+      <input type="file" id="e-photo" accept="image/*" onchange="previewFixPhoto(this)" style="padding:8px;border:1.5px dashed var(--border2);background:var(--surface2);cursor:pointer;border-radius:var(--r2);width:100%">
       <div id="e-photo-preview" data-url="" style="margin-top:8px"></div>
     </div>
     <div class="equip-section">
