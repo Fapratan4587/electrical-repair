@@ -1191,7 +1191,7 @@ async function sbWrite(url,method,row,label){
       var col=cols[i];
       if(!stripped && (col in row) && new RegExp(col,'i').test(t)){
         delete row[col]; stripped=true;
-        if(col==='photo')PHOTO_COL_OK=false; else if(col==='fixphoto')FIXPHOTO_COL_OK=false; else if(col==='startdate')STARTDATE_COL_OK=false; else if(col==='supplier')SUPPLIER_COL_OK=false;
+        if(col==='photo')PHOTO_COL_OK=false; else if(col==='fixphoto')FIXPHOTO_COL_OK=false; else if(col==='startdate')STARTDATE_COL_OK=false; else if(col==='supplier'){SUPPLIER_COL_OK=false; if(!window._supWarn){window._supWarn=true; try{toast('⚠ ตาราง Supabase ยังไม่มีคอลัมน์ "supplier" — ข้อมูล Supplier Lead Time จะไม่ถูกบันทึก กรุณาเพิ่มคอลัมน์');}catch(e){}}}
       }
     }
     if(!stripped) throw new Error((label||'write')+' failed: '+t);
