@@ -662,6 +662,22 @@ canvas{max-width:100%}
 .gauge-tgt{font-size:11px;color:#9fb0c6;display:flex;align-items:center;gap:6px}
 .gauge-tick{width:10px;height:3px;background:#fff;border-radius:2px;display:inline-block}
 .gauge-delta{font-size:12.5px;font-weight:800}
+.ms-card{background:linear-gradient(160deg,#161d2e,#11182680);border:1px solid #273150;border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.ms-title{font-size:12px;font-weight:700;color:#cfd8e6;display:flex;align-items:center;gap:7px;margin-bottom:13px}
+.ms-title .ti{color:#7c8aa3}
+.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ms-cell{border-radius:12px;padding:13px 14px;border:1px solid #2a3650;background:#121a2b;position:relative;overflow:hidden}
+.ms-cell::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+.ms-int::before{background:linear-gradient(180deg,#34d399,#10b981)}
+.ms-sup::before{background:linear-gradient(180deg,#818cf8,#4f46e5)}
+.ms-lbl{font-size:11px;color:#9fb0c6;font-weight:600;margin-bottom:5px}
+.ms-val{font-size:23px;font-weight:800;color:#f1f5f9;font-family:var(--mono);line-height:1}
+.ms-int .ms-val{color:#34d399}
+.ms-sup .ms-val{color:#a5b4fc}
+.ms-sub{font-size:10.5px;color:#7c8aa3;margin-top:5px}
+.ms-sla{margin-top:13px;font-size:11.5px;color:#cfd8e6;background:#1a2336;border:1px dashed #2f3a5a;border-radius:9px;padding:9px 11px;display:flex;align-items:center;gap:7px}
+.ms-sla .ti{color:#34d399}
+@media(max-width:480px){.ms-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -929,6 +945,7 @@ canvas{max-width:100%}
       <div id="a-mttr"></div>
       <div id="a-gauge"></div>
       <div id="a-rrt"></div>
+      <div id="a-mttr-split"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div class="dept-filter-row" id="dept-filter-row" style="margin-bottom:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
         <button class="df-btn active" id="df-all" onclick="setDeptFilter('',this)">ทั้งหมด</button>
         <button class="df-btn" id="df-Assembly" onclick="setDeptFilter('Assembly',this)"><span class="df-dot" style="background:#1877F2"></span>Assembly</button>
@@ -1648,6 +1665,7 @@ async function quickStartJob(id){
 }
 async function saveEdit(){
   if(!editingJob)return;
+  var _prevStatus=editingJob.status;
   editingJob.tech=document.getElementById('e-tech').value.trim();
   editingJob.status=document.getElementById('e-status').value;
   // เก็บเวลาเริ่มงานครั้งแรกที่เปลี่ยนเป็น 'กำลังดำเนินการ' (ใช้คำนวณ Response/Repair Time)
@@ -1671,8 +1689,15 @@ async function saveEdit(){
     var sc=document.getElementById('e-sup-contact').value.trim();
     var sd=document.getElementById('e-sup-date').value;
     var snote=document.getElementById('e-sup-note').value.trim();
-    if(editingJob.status==='ส่งซ่อมภายนอก' || sn||sc||sd||snote){
-      editingJob.supplier=JSON.stringify({name:sn,contact:sc,date:sd,note:snote});
+    var sup={}; try{ if(editingJob.supplier) sup=JSON.parse(editingJob.supplier)||{}; }catch(e){ sup={}; }
+    sup.name=sn; sup.contact=sc; sup.date=sd; sup.note=snote;
+    var nowISO=new Date().toISOString();
+    // เริ่มจับเวลา Supplier เมื่อเปลี่ยนเป็น 'ส่งซ่อมภายนอก' (ส่งเครื่องไปซัพพลายเออร์)
+    if(editingJob.status==='ส่งซ่อมภายนอก' && !sup.sentDate){ sup.sentDate=nowISO; sup.returnDate=''; }
+    // หยุดจับเวลาเมื่อออกจากสถานะส่งซ่อม (รับเครื่องคืน)
+    if(_prevStatus==='ส่งซ่อมภายนอก' && editingJob.status!=='ส่งซ่อมภายนอก' && sup.sentDate && !sup.returnDate){ sup.returnDate=nowISO; }
+    if(editingJob.status==='ส่งซ่อมภายนอก' || sn||sc||sd||snote||sup.sentDate){
+      editingJob.supplier=JSON.stringify(sup);
     } else { editingJob.supplier=''; }
   })();
   const rows=document.querySelectorAll('.equip-row');
@@ -1956,6 +1981,64 @@ function renderMttrGauge(mttr){
       '<text x="100" y="103" text-anchor="middle" font-size="9" fill="#8896ad">ปัจจุบัน (Actual)</text>'+
     '</svg></div>'+
     '<div class="gauge-foot"><span class="gauge-tgt"><span class="gauge-tick"></span> เป้าหมาย '+target+' ชม.</span><span class="gauge-delta" style="color:'+col+'">'+deltaTxt+'</span></div>'+
+  '</div>';
+}
+// ----- แยกเวลาผู้รับผิดชอบ: Internal (ทีมช่าง) vs Supplier (ผู้ขายภายนอก) -----
+function supplierHours(j){
+  try{
+    if(!j.supplier) return 0;
+    var s=JSON.parse(j.supplier)||{};
+    if(!s.sentDate) return 0;
+    var start=new Date(s.sentDate).getTime();
+    var end=s.returnDate?new Date(s.returnDate).getTime():Date.now();
+    if(isNaN(start)||isNaN(end)||end<start) return 0;
+    return (end-start)/3600000;
+  }catch(e){ return 0; }
+}
+function calcMttrSplit(jobs){
+  var intArr=[], supArr=[], onTime=0, late=0, supCount=0;
+  jobs.forEach(function(j){
+    if(j.status==='เสร็จสิ้น'&&j.date&&j.doneDate){
+      var total=(new Date(j.doneDate)-new Date(j.date))/3600000;
+      if(!isNaN(total)&&total>=0){
+        var sup=supplierHours(j);
+        intArr.push(Math.max(total-sup,0));
+        if(sup>0) supArr.push(sup);
+      }
+    }
+  });
+  jobs.forEach(function(j){
+    try{ if(!j.supplier)return; var s=JSON.parse(j.supplier)||{};
+      if(s.sentDate){ supCount++;
+        if(s.returnDate&&s.date){
+          var ret=new Date(s.returnDate).getTime(), promised=new Date(s.date+'T23:59:59').getTime();
+          if(!isNaN(ret)&&!isNaN(promised)){ if(ret<=promised) onTime++; else late++; }
+        }
+      }
+    }catch(e){}
+  });
+  var avg=function(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:null;};
+  return {internal:avg(intArr), supplier:avg(supArr), nInternal:intArr.length, nSupplier:supArr.length, supCount:supCount, onTime:onTime, late:late};
+}
+function renderMttrSplit(jobs){
+  var el=document.getElementById('a-mttr-split'); if(!el)return;
+  var r=calcMttrSplit(jobs);
+  if(r.nInternal===0 && r.supCount===0){ el.innerHTML=''; return; }
+  var ih=(r.internal!==null)?formatHours(r.internal):'—';
+  var sh=(r.supplier!==null)?formatHours(r.supplier):'—';
+  var slaHtml='';
+  if(r.onTime+r.late>0){
+    var tot=r.onTime+r.late, pct=Math.round(r.onTime/tot*100);
+    slaHtml='<div class="ms-sla"><i class="ti ti-clipboard-check"></i> SLA ซัพพลายเออร์: ตรงเวลา '+r.onTime+'/'+tot+' งาน ('+pct+'%)'+(r.late>0?' · <span style="color:#ff6b78;font-weight:700">ช้ากว่ากำหนด '+r.late+' งาน</span>':'')+'</div>';
+  } else if(r.supCount>0){
+    slaHtml='<div class="ms-sla" style="color:#8896ad"><i class="ti ti-clock"></i> มีงานส่งซ่อม '+r.supCount+' งาน — ยังไม่มีข้อมูลเทียบวันนัด</div>';
+  }
+  el.innerHTML='<div class="ms-card">'+
+    '<div class="ms-title"><i class="ti ti-arrows-split-2"></i> MTTR แยกตามผู้รับผิดชอบ</div>'+
+    '<div class="ms-grid">'+
+      '<div class="ms-cell ms-int"><div class="ms-lbl">⚙ Internal MTTR</div><div class="ms-val">'+ih+'</div><div class="ms-sub">เวลาที่ทีมช่างใช้จริง · '+r.nInternal+' งาน</div></div>'+
+      '<div class="ms-cell ms-sup"><div class="ms-lbl">🏭 Supplier Lead Time</div><div class="ms-val">'+sh+'</div><div class="ms-sub">เวลาที่อยู่กับซัพพลายเออร์ · '+r.nSupplier+' งาน</div></div>'+
+    '</div>'+slaHtml+
   '</div>';
 }
 function calcMTTR(jobs) {
@@ -2622,6 +2705,7 @@ function aRenderDash(){
   var mEl=document.getElementById('a-mttr');
   var avg=done?Math.round(cost/done):0;
   renderMttrGauge(mttr);
+  renderMttrSplit(fj);
   if(mEl)mEl.innerHTML='<div class="cost-summary"><div class="cs-cell cs-click" onclick="openCostBreakdown()"><div class="cs-lbl">ค่าอุปกรณ์รวม <i class="ti ti-chevron-right" style="font-size:11px;vertical-align:-1px"></i></div><div class="cs-val" style="color:#EAB308">'+cost.toLocaleString()+'</div><div class="cs-unit">บาท · แตะดูรายละเอียด</div></div><div class="cs-div"></div><div class="cs-cell"><div class="cs-lbl">เฉลี่ยต่องานเสร็จ</div><div class="cs-val">'+avg.toLocaleString()+'</div><div class="cs-unit">บาท / งาน</div></div></div>';
 
   // วิเคราะห์เวลา Response/Repair (หาคอขวด)
