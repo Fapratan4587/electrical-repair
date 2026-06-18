@@ -772,6 +772,22 @@ canvas{max-width:100%}
   </div>
 </div>
 
+<div class="modal-overlay" id="export-modal" onclick="if(event.target===this)closeExportModal()">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-title"><i class="ti ti-file-export" style="color:#1877F2"></i>ส่งออกรายงาน</div>
+    <div style="font-size:12px;color:var(--text3);margin:-6px 0 14px">กรองข้อมูลก่อนส่งออก เพื่อทำรายงานสรุป KPI รายเดือน</div>
+    <div class="efg"><label>เดือน</label><select id="exp-month" onchange="updateExportCount()"></select></div>
+    <div class="efg"><label>แผนก</label><select id="exp-dept" onchange="updateExportCount()"><option value="">ทุกแผนก</option><option>Assembly</option><option>Grinding</option><option>First grinding</option><option>Engineering</option></select></div>
+    <div class="efg"><label>ช่างผู้ซ่อม</label><select id="exp-tech" onchange="updateExportCount()"></select></div>
+    <div id="exp-count" style="font-size:13px;font-weight:700;color:#1877F2;margin:8px 0 14px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;background:#16A34A;color:#fff;border:none" onclick="doExportExcel()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
+      <button class="btn" style="flex:1;background:#E8192C;color:#fff;border:none" onclick="doExportPDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>
+    </div>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="closeExportModal()"><i class="ti ti-x"></i>ปิด</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="cost-modal" onclick="if(event.target===this)closeCostModal()">
   <div class="modal-box cost-modal-box">
     <div class="cm-head"><div class="cm-title"><i class="ti ti-coin"></i> สรุปยอดค่าใช้จ่าย</div><button class="cm-x" onclick="closeCostModal()"><i class="ti ti-x"></i></button></div>
@@ -915,8 +931,8 @@ canvas{max-width:100%}
       <div class="sync-pill"><span class="sdot syncing" id="a-sdot"></span><span id="a-stxt">กำลังโหลด...</span></div>
       <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i><span class="btn-text">Sync</span></button>
       
-      <button class="btn outline-blue" onclick="exportCurrentPDF()"><i class="ti ti-file-type-pdf"></i><span class="btn-text">PDF</span></button>
-      <button class="btn outline-blue" onclick="exportAllExcel()" title="สำรองข้อมูลทั้งหมดเป็นไฟล์ Excel"><i class="ti ti-file-spreadsheet"></i><span class="btn-text">Excel</span></button>
+      <button class="btn outline-blue" onclick="openExportModal()"><i class="ti ti-file-export"></i><span class="btn-text">Export</span></button>
+      <button class="btn outline-blue" onclick="openExportModal()" title="ส่งออกรายงานแบบกรองข้อมูล"><i class="ti ti-file-spreadsheet"></i><span class="btn-text">รายงาน</span></button>
       <div style="width:1px;height:20px;background:var(--border2);margin:0 2px;flex-shrink:0"></div>
       <button class="btn outline-red" onclick="confirmClearAll()" title="ล้างข้อมูลทั้งหมด — ใช้ด้วยความระมัดระวัง" style="opacity:.7"><i class="ti ti-trash"></i><span class="btn-text">ล้างข้อมูล</span></button>
       <div style="width:1px;height:20px;background:var(--border2);margin:0 2px;flex-shrink:0"></div>
@@ -2961,6 +2977,74 @@ function printDash(){
   else toast('กรุณาอนุญาต popup');
 }
 
+function openExportModal(){
+  var months={};
+  (allJobs||[]).forEach(function(j){ var t=j.date?new Date(j.date):null; if(t&&!isNaN(t.getTime())){ var ym=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2); months[ym]=true; } });
+  var mkeys=Object.keys(months).sort().reverse();
+  var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var msel=document.getElementById('exp-month');
+  msel.innerHTML='<option value="">ทุกเดือน</option>'+mkeys.map(function(k){var p=k.split('-');return '<option value="'+k+'">'+thM[parseInt(p[1])-1]+' '+(parseInt(p[0])+543)+'</option>';}).join('');
+  var techs={};
+  (allJobs||[]).forEach(function(j){ if(j.tech&&j.tech.trim())techs[j.tech.trim()]=true; });
+  var tsel=document.getElementById('exp-tech');
+  tsel.innerHTML='<option value="">ทุกคน</option>'+Object.keys(techs).sort().map(function(t){return '<option>'+t+'</option>';}).join('');
+  document.getElementById('exp-dept').value=(typeof deptFilter!=='undefined'&&deptFilter)?deptFilter:'';
+  updateExportCount();
+  document.getElementById('export-modal').classList.add('show');
+}
+function closeExportModal(){document.getElementById('export-modal').classList.remove('show');}
+function getExportFiltered(){
+  var mo=document.getElementById('exp-month').value, dp=document.getElementById('exp-dept').value, tc=document.getElementById('exp-tech').value;
+  return (allJobs||[]).filter(function(j){
+    if(dp&&j.dept!==dp)return false;
+    if(tc&&(j.tech||'').trim()!==tc)return false;
+    if(mo){ var t=j.date?new Date(j.date):null; if(!t||isNaN(t.getTime()))return false; var ym=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2); if(ym!==mo)return false; }
+    return true;
+  });
+}
+function updateExportCount(){ var el=document.getElementById('exp-count'); if(el)el.textContent='พบ '+getExportFiltered().length+' รายการ'; }
+function expLabel(){
+  var mo=document.getElementById('exp-month'), dp=document.getElementById('exp-dept').value, tc=document.getElementById('exp-tech').value, parts=[];
+  if(mo.value)parts.push(mo.options[mo.selectedIndex].text);
+  if(dp)parts.push(dp);
+  if(tc)parts.push('ช่าง '+tc);
+  return parts.length?parts.join(' · '):'ทั้งหมด';
+}
+function doExportExcel(){
+  var jobs=getExportFiltered();
+  if(!jobs.length){toast('ไม่มีข้อมูลตามตัวกรอง');return;}
+  try{
+    var header=['รหัส','แผนก','ผู้แจ้ง','สถานที่','ประเภทงาน','รายละเอียดอาการ','สถานะ','ความสำคัญ','ช่างผู้ซ่อม','ค่าอุปกรณ์(บาท)','วันที่/เวลาแจ้ง','วันที่/เวลาเสร็จ','วิธีซ่อม','ลิงก์รูป'];
+    var rows=jobs.map(function(j){ return [j.id||'',j.dept||'',j.reporter||'',j.location||'',j.type||'',j.detail||'',j.status||'',j.priority||'',j.tech||'',j.cost||0,formatDatetime(j.date),j.doneDate?formatDatetime(j.doneDate):'',j.repairDetail||'',(j.photo||'').split('\n')[0]]; });
+    var ws=XLSX.utils.aoa_to_sheet([header].concat(rows));
+    ws['!cols']=[{wch:9},{wch:14},{wch:16},{wch:24},{wch:14},{wch:34},{wch:12},{wch:10},{wch:14},{wch:12},{wch:18},{wch:18},{wch:30},{wch:42}];
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'งานซ่อมไฟฟ้า');
+    var safe=expLabel().replace(/[^\wก-๙]+/g,'_');
+    XLSX.writeFile(wb,'NACHI_'+safe+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+    toast('ส่งออก Excel สำเร็จ ('+jobs.length+' รายการ)');
+    closeExportModal();
+  }catch(e){console.log(e);toast('ส่งออกไม่สำเร็จ');}
+}
+function doExportPDF(){
+  var jobs=getExportFiltered();
+  if(!jobs.length){toast('ไม่มีข้อมูลตามตัวกรอง');return;}
+  var date=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  var total=jobs.length, done=jobs.filter(function(j){return j.status==='เสร็จสิ้น';}).length, urgent=jobs.filter(function(j){return j.status==='เร่งด่วน';}).length, cost=jobs.reduce(function(s,j){return s+(j.cost||0);},0);
+  var pct=total?Math.round(done/total*100):0, mttr=(typeof calcMTTR==='function')?calcMTTR(jobs):null;
+  var kpiHtml='<div class="kr">'+
+    '<div class="kk"><div class="kv">'+total+'</div><div class="kl">ทั้งหมด</div></div>'+
+    '<div class="kk"><div class="kv" style="color:#16A34A">'+done+'</div><div class="kl">เสร็จสิ้น</div></div>'+
+    '<div class="kk"><div class="kv">'+pct+'%</div><div class="kl">% เสร็จ</div></div>'+
+    '<div class="kk"><div class="kv" style="color:#E8192C">'+urgent+'</div><div class="kl">เร่งด่วน</div></div>'+
+    '<div class="kk"><div class="kv">'+(mttr===null?'—':formatHours(mttr))+'</div><div class="kl">MTTR</div></div>'+
+    '<div class="kk"><div class="kv">'+cost.toLocaleString()+'</div><div class="kl">ค่าอุปกรณ์ (บ.)</div></div>'+
+  '</div>';
+  var headers='<th>รหัส</th><th>ผู้แจ้ง</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>สถานะ</th><th>ช่าง</th><th>วันที่แจ้ง</th><th>วันที่เสร็จ</th>';
+  var rows=jobs.map(function(j){return '<tr><td style="font-family:monospace;font-size:10px;color:#888">'+j.id+'</td><td style="font-weight:600">'+(j.reporter||'—')+'</td><td>'+(j.dept||'—')+'</td><td>'+j.location+'</td><td>'+j.type+'</td><td><span style="background:'+(j.status==='เสร็จสิ้น'?'#F0FDF4':j.status==='เร่งด่วน'?'#FEF2F2':'#EFF6FF')+';color:'+(j.status==='เสร็จสิ้น'?'#166534':j.status==='เร่งด่วน'?'#991B1B':'#1E40AF')+';padding:2px 8px;border-radius:99px;font-size:10px">'+j.status+'</span></td><td>'+(j.tech||'—')+'</td><td style="font-size:10px;color:#888">'+formatDatetime(j.date)+'</td><td style="font-size:10px;color:'+(j.doneDate?'#16A34A':'#888')+'">'+(j.doneDate?formatDatetime(j.doneDate):'—')+'</td></tr>';}).join('');
+  openPDF('รายงานสรุป — '+expLabel(),date,kpiHtml,headers,rows);
+  closeExportModal();
+}
 function exportAllExcel(){
   if(!allJobs||!allJobs.length){toast('ยังไม่มีข้อมูลให้ส่งออก');return;}
   try{
