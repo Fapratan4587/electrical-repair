@@ -1776,25 +1776,22 @@ function previewRepairPhoto(input){
 }
 // อัปโหลดรูปเข้า Supabase Storage (ใช้ bucket targets ที่ตั้งเป็น public อยู่แล้ว) คืนค่า public URL
 async function uploadRepairPhoto(file){
-  var ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+  var ext=(file.name.split('.').pop()||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!ext||ext.length>5){ ext=(file.type&&file.type.indexOf('/')>=0)?file.type.split('/')[1].replace(/[^a-z0-9]/g,''):'jpg'; }
+  ext=ext||'jpg';
   var fname='repair_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
   var ctype=file.type||'image/jpeg';
   var up=await fetch(SUPABASE_STORAGE+'/object/targets/'+fname,{
     method:'POST',
-    headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':ctype},
+    headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':ctype,'x-upsert':'true','cache-control':'3600'},
     body:file
   });
-  if(!up.ok){var t=await up.text();throw new Error('photo upload: '+t);}
-  var url=SUPABASE_STORAGE+'/object/public/targets/'+fname;
-  // ตรวจว่าเข้าถึงรูปแบบ public ได้จริง — ถ้า bucket ยังไม่เปิด Public จะได้ 404
-  try{
-    var chk=await fetch(url,{method:'HEAD',cache:'no-store'});
-    if(chk.status===404||chk.status===400){ throw new Error('NOT_PUBLIC'); }
-  }catch(e){
-    if(e&&e.message==='NOT_PUBLIC') throw new Error('NOT_PUBLIC');
-    // network/CORS อื่น ๆ ไม่บล็อก ปล่อยผ่าน
-  }
-  return url;
+  if(!up.ok){var t=await up.text();throw new Error('upload_http_'+up.status+': '+t);}
+  // POST สำเร็จ = ไฟล์ถูกบันทึกแล้ว — ไม่อ่านกลับผ่าน CDN (ดีเลย์ CDN ทำให้ false fail/ทิ้งรูป)
+  // อ้างชื่อไฟล์จริงจาก Key ที่เซิร์ฟเวอร์คืนมา กัน URL ไม่ตรง
+  var path=fname;
+  try{ var jr=await up.json(); if(jr&&jr.Key){ path=String(jr.Key).replace(/^targets\//,''); } }catch(e){}
+  return SUPABASE_STORAGE+'/object/public/targets/'+path;
 }
 // ----- รองรับหลายรูป (สูงสุด 3) -----
 function photoArr(v){ if(!v)return []; return String(v).split('\n').map(function(s){return s.trim();}).filter(Boolean).slice(0,3); }
