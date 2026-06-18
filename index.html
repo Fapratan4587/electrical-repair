@@ -812,11 +812,17 @@ canvas{max-width:100%}
     </div>
     <div class="efg sup-section" id="e-sup-section" style="display:none">
       <div class="sup-head"><i class="ti ti-building-warehouse"></i> ส่งซ่อมกับ Supplier — กรณีช่างซ่อมเองไม่ได้</div>
+      <label class="sup-lbl">รูปแบบการซ่อม</label>
+      <select id="e-sup-mode" style="margin-bottom:8px">
+        <option value="offsite">📦 ส่งออกไปซ่อมที่ Supplier (เครื่องออกจากโรงงาน)</option>
+        <option value="onsite">🔧 Supplier เข้ามาซ่อมที่บริษัท (on-site)</option>
+      </select>
       <input id="e-sup-name" placeholder="ชื่อ Supplier / บริษัท" style="margin-bottom:8px">
       <input id="e-sup-contact" placeholder="ผู้ติดต่อ / เบอร์โทร" style="margin-bottom:8px">
       <label class="sup-lbl">วันที่นัด / คาดว่าเสร็จ</label>
       <input type="date" id="e-sup-date" style="margin-bottom:8px">
       <textarea id="e-sup-note" placeholder="หมายเหตุ / เลขใบเสนอราคา / อาการที่ส่งซ่อม..." style="min-height:52px;resize:vertical"></textarea>
+      <div id="e-sup-timing" style="margin-top:8px;font-size:11.5px;line-height:1.7"></div>
     </div>
     <div class="efg"><label>วันที่ซ่อมเสร็จ</label><input type="date" id="e-donedate"></div>
     <div class="efg"><label>รายละเอียดการซ่อม / วิธีแก้ไข</label><textarea id="e-repair-detail" placeholder="เช่น เปลี่ยน breaker, ตรวจสอบสายไฟ, ปรับ parameter..." style="min-height:64px;resize:vertical"></textarea></div>
@@ -1547,6 +1553,25 @@ function openEditModal(id){
     document.getElementById('e-sup-contact').value=sup.contact||'';
     document.getElementById('e-sup-date').value=sup.date||'';
     document.getElementById('e-sup-note').value=sup.note||'';
+    document.getElementById('e-sup-mode').value=sup.mode||'offsite';
+    var t=document.getElementById('e-sup-timing');
+    if(t){
+      var onsite=(sup.mode==='onsite');
+      var lSent=onsite?'🔧 Supplier เริ่มซ่อม':'📤 ส่งออกไปซ่อม';
+      var lRet=onsite?'✅ Supplier ซ่อมเสร็จ':'📥 รับเครื่องคืน';
+      var lLead=onsite?'⏱ เวลาที่ Supplier ใช้ซ่อม':'⏱ Supplier Lead Time';
+      if(sup.sentDate){
+        var s='<span style="color:#4f46e5">'+lSent+': '+formatDatetime(sup.sentDate)+'</span>';
+        if(sup.returnDate){
+          s+='<br><span style="color:#16A34A">'+lRet+': '+formatDatetime(sup.returnDate)+'</span>';
+          var hh=(new Date(sup.returnDate)-new Date(sup.sentDate))/3600000;
+          if(!isNaN(hh)&&hh>=0) s+='<br><b style="color:#4f46e5">'+lLead+': '+formatHours(hh)+'</b>';
+        } else { s+='<br><span style="color:#d97706">⏳ ยังไม่จบงาน — ระบบจะจับเวลาเสร็จอัตโนมัติเมื่อเปลี่ยนเป็นสถานะอื่น</span>'; }
+        t.innerHTML=s;
+      } else {
+        t.innerHTML='<span style="color:var(--text3)">⏱ ระบบจะจับเวลา"เริ่ม"อัตโนมัติเมื่อกดบันทึกสถานะนี้</span>';
+      }
+    }
   })();
   eSupToggle();
   document.getElementById('e-photo').value='';
@@ -1716,11 +1741,12 @@ async function saveEdit(){
     var snote=document.getElementById('e-sup-note').value.trim();
     var sup={}; try{ if(editingJob.supplier) sup=JSON.parse(editingJob.supplier)||{}; }catch(e){ sup={}; }
     sup.name=sn; sup.contact=sc; sup.date=sd; sup.note=snote;
+    sup.mode=document.getElementById('e-sup-mode').value;
     var nowISO=new Date().toISOString();
     // เริ่มจับเวลา Supplier เมื่อเปลี่ยนเป็น 'ส่งซ่อมภายนอก' (ส่งเครื่องไปซัพพลายเออร์)
     if(editingJob.status==='ส่งซ่อมภายนอก' && !sup.sentDate){ sup.sentDate=nowISO; sup.returnDate=''; }
-    // หยุดจับเวลาเมื่อออกจากสถานะส่งซ่อม (รับเครื่องคืน)
-    if(_prevStatus==='ส่งซ่อมภายนอก' && editingJob.status!=='ส่งซ่อมภายนอก' && sup.sentDate && !sup.returnDate){ sup.returnDate=nowISO; }
+    // หยุดจับเวลาเมื่อออกจากสถานะส่งซ่อม (รับเครื่องคืน) — ไม่พึ่ง _prevStatus เพื่อความแข็งแรง
+    if(editingJob.status!=='ส่งซ่อมภายนอก' && sup.sentDate && !sup.returnDate){ sup.returnDate=nowISO; }
     if(editingJob.status==='ส่งซ่อมภายนอก' || sn||sc||sd||snote||sup.sentDate){
       editingJob.supplier=JSON.stringify(sup);
     } else { editingJob.supplier=''; }
@@ -1899,13 +1925,26 @@ function uViewJob(id){
   try{
     if(j.supplier){
       var sup=JSON.parse(j.supplier)||{};
-      if(sup.name||sup.contact||sup.date||sup.note){
+      if(sup.name||sup.contact||sup.date||sup.note||sup.sentDate){
+        var onsite=(sup.mode==='onsite');
+        var head=onsite?'🔧 Supplier เข้ามาซ่อม (on-site)':'📦 ส่งออกไปซ่อมกับ Supplier';
+        var lSent=onsite?'เริ่มซ่อม':'ส่งออกไปซ่อม', lRet=onsite?'ซ่อมเสร็จ':'รับเครื่องคืน', lLead=onsite?'เวลาที่ Supplier ใช้ซ่อม':'Supplier Lead Time';
+        var timeHtml='';
+        if(sup.sentDate){
+          timeHtml+='<div><span style="color:var(--text3)">'+lSent+':</span> '+formatDatetime(sup.sentDate)+'</div>';
+          if(sup.returnDate){
+            timeHtml+='<div><span style="color:var(--text3)">'+lRet+':</span> '+formatDatetime(sup.returnDate)+'</div>';
+            var hh=(new Date(sup.returnDate)-new Date(sup.sentDate))/3600000;
+            if(!isNaN(hh)&&hh>=0) timeHtml+='<div style="font-weight:700;color:#4338CA;margin-top:2px">⏱ '+lLead+': '+formatHours(hh)+'</div>';
+          } else { timeHtml+='<div style="color:#b45309">⏳ ยังไม่จบงาน</div>'; }
+        }
         supHtml='<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:12px;padding:12px;margin-bottom:14px">'+
-          '<div style="font-size:13px;font-weight:700;color:#4338CA;display:flex;align-items:center;gap:6px;margin-bottom:6px"><i class="ti ti-building-warehouse"></i> ส่งซ่อมกับ Supplier</div>'+
+          '<div style="font-size:13px;font-weight:700;color:#4338CA;display:flex;align-items:center;gap:6px;margin-bottom:6px"><i class="ti ti-building-warehouse"></i> '+head+'</div>'+
           '<div style="font-size:13px;line-height:1.8">'+
           (sup.name?'<div><span style="color:var(--text3)">บริษัท/ผู้ขาย:</span> '+sup.name+'</div>':'')+
           (sup.contact?'<div><span style="color:var(--text3)">ติดต่อ:</span> '+sup.contact+'</div>':'')+
           (sup.date?'<div><span style="color:var(--text3)">วันนัด/คาดว่าเสร็จ:</span> '+sup.date+'</div>':'')+
+          timeHtml+
           (sup.note?'<div style="margin-top:4px"><span style="color:var(--text3)">หมายเหตุ:</span> '+sup.note+'</div>':'')+
           '</div></div>';
       }
@@ -2068,7 +2107,7 @@ function renderMttrSplit(jobs){
     '<div class="ms-title"><i class="ti ti-arrows-split-2"></i> MTTR แยกตามผู้รับผิดชอบ</div>'+
     '<div class="ms-grid">'+
       '<div class="ms-cell ms-int"><div class="ms-lbl">⚙ Internal MTTR</div><div class="ms-val">'+ih+'</div><div class="ms-sub">เวลาที่ทีมช่างใช้จริง · '+r.nInternal+' งาน</div></div>'+
-      '<div class="ms-cell ms-sup"><div class="ms-lbl">🏭 Supplier Lead Time</div><div class="ms-val">'+sh+'</div><div class="ms-sub">เวลาที่อยู่กับซัพพลายเออร์ · '+r.nSupplier+' งาน</div></div>'+
+      '<div class="ms-cell ms-sup"><div class="ms-lbl">🏭 Supplier Lead Time</div><div class="ms-val">'+sh+'</div><div class="ms-sub">เวลาที่ Supplier รับผิดชอบ (ส่งออก+on-site) · '+r.nSupplier+' งาน</div></div>'+
     '</div>'+slaHtml+
   '</div>';
 }
