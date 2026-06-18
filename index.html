@@ -1738,7 +1738,7 @@ async function saveEdit(){
   // รูปหลังซ่อม (admin): อัปโหลดถ้ามีไฟล์ใหม่ / คงรูปเดิม / ลบถ้าเอาออก
   var _pf=document.getElementById('e-photo');
   var _pv=document.getElementById('e-photo-preview');
-  if(_pf&&_pf.files&&_pf.files.length){ try{ editingJob.fixPhoto=await uploadRepairPhotos(_pf.files); }catch(e){ toast('อัปโหลดรูปไม่สำเร็จ'); } }
+  if(_pf&&_pf.files&&_pf.files.length){ try{ editingJob.fixPhoto=await uploadRepairPhotos(_pf.files); }catch(e){ toast(e&&e.message==='NOT_PUBLIC'?'อัปโหลดรูปไม่ได้: bucket "targets" ยังไม่เปิด Public':'อัปโหลดรูปไม่สำเร็จ'); } }
   else { editingJob.fixPhoto=(_pv&&_pv.dataset.url)?_pv.dataset.url:''; }
   document.getElementById('e-sving').style.display='flex';
   document.getElementById('e-save-btn').disabled=true;
@@ -1785,7 +1785,16 @@ async function uploadRepairPhoto(file){
     body:file
   });
   if(!up.ok){var t=await up.text();throw new Error('photo upload: '+t);}
-  return SUPABASE_STORAGE+'/object/public/targets/'+fname;
+  var url=SUPABASE_STORAGE+'/object/public/targets/'+fname;
+  // ตรวจว่าเข้าถึงรูปแบบ public ได้จริง — ถ้า bucket ยังไม่เปิด Public จะได้ 404
+  try{
+    var chk=await fetch(url,{method:'HEAD',cache:'no-store'});
+    if(chk.status===404||chk.status===400){ throw new Error('NOT_PUBLIC'); }
+  }catch(e){
+    if(e&&e.message==='NOT_PUBLIC') throw new Error('NOT_PUBLIC');
+    // network/CORS อื่น ๆ ไม่บล็อก ปล่อยผ่าน
+  }
+  return url;
 }
 // ----- รองรับหลายรูป (สูงสุด 3) -----
 function photoArr(v){ if(!v)return []; return String(v).split('\n').map(function(s){return s.trim();}).filter(Boolean).slice(0,3); }
@@ -1797,8 +1806,8 @@ async function uploadRepairPhotos(files){
 function photoGallery(val,maxh){
   var arr=photoArr(val); if(!arr.length)return '';
   maxh=maxh||'200px';
-  if(arr.length===1) return '<img src="'+arr[0]+'" onclick="event.stopPropagation();window.open(\''+arr[0]+'\',\'_blank\')" style="width:100%;max-height:'+maxh+';object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">';
-  return '<div style="display:flex;gap:6px;flex-wrap:wrap">'+arr.map(function(u){return '<img src="'+u+'" onclick="event.stopPropagation();window.open(\''+u+'\',\'_blank\')" style="flex:1 1 30%;min-width:0;height:110px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">';}).join('')+'</div>';
+  if(arr.length===1) return '<img src="'+arr[0]+'" onerror="this.style.display=\'none\'" onclick="event.stopPropagation();window.open(\''+arr[0]+'\',\'_blank\')" style="width:100%;max-height:'+maxh+';object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">';
+  return '<div style="display:flex;gap:6px;flex-wrap:wrap">'+arr.map(function(u){return '<img src="'+u+'" onerror="this.style.display=\'none\'" onclick="event.stopPropagation();window.open(\''+u+'\',\'_blank\')" style="flex:1 1 30%;min-width:0;height:110px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)">';}).join('')+'</div>';
 }
 async function uSubmit(){
   const reporter=document.getElementById('u-reporter').value.trim();
@@ -1837,7 +1846,7 @@ async function uSubmit(){
     if(pfiles&&pfiles.length){
       document.getElementById('u-stxt').textContent='กำลังอัปโหลดรูป...';
       try{ j.photo=await uploadRepairPhotos(pfiles); }
-      catch(pe){ console.log(pe); toast('⚠ อัปโหลดรูปไม่สำเร็จ — ส่งงานต่อโดยไม่มีรูป'); }
+      catch(pe){ console.log(pe); toast(pe&&pe.message==='NOT_PUBLIC'?'⚠ อัปโหลดรูปไม่ได้: bucket "targets" ยังไม่เปิด Public':'⚠ อัปโหลดรูปไม่สำเร็จ — ส่งงานต่อโดยไม่มีรูป'); }
     }
     await callAPI(j);
     const lj={...j};delete lj.action;localJobs.unshift(lj);saveLocal();
@@ -2844,7 +2853,7 @@ function aRenderList(){
   fil.sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
   const b=document.getElementById('a-listBody');
   if(!fil.length){b.innerHTML='<tr><td colspan="11"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>';return;}
-  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><div style="display:flex;gap:4px;align-items:center">'+((j.status!=='กำลังดำเนินการ'&&j.status!=='เสร็จสิ้น'&&!j.startDate)?'<button class="btn icon" onclick="quickStartJob(\''+j.id+'\')" title="รับงาน / เริ่มจับเวลาซ่อม" style="background:#1877F2;color:#fff;border:none"><i class="ti ti-player-play"></i></button>':'')+'<button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></div></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+planFlag(j)+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+(j.photo?'<img src="'+j.photo+'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;vertical-align:middle;margin-right:6px" title="ดูรูปอาการเสีย">':'')+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td></tr>').join('');
+  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><div style="display:flex;gap:4px;align-items:center">'+((j.status!=='กำลังดำเนินการ'&&j.status!=='เสร็จสิ้น'&&!j.startDate)?'<button class="btn icon" onclick="quickStartJob(\''+j.id+'\')" title="รับงาน / เริ่มจับเวลาซ่อม" style="background:#1877F2;color:#fff;border:none"><i class="ti ti-player-play"></i></button>':'')+'<button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></div></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+planFlag(j)+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+(j.photo?'<img src="'+j.photo+'" onerror="this.style.display=\'none\'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;vertical-align:middle;margin-right:6px" title="ดูรูปอาการเสีย">':'')+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td></tr>').join('');
 }
 function aRenderUrgent(){
   const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
