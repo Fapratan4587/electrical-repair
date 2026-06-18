@@ -684,6 +684,11 @@ canvas{max-width:100%}
 .dcard .dstat-amber{background:#f59e0b;color:#1a1200;padding:3px 10px;border-radius:99px;font-weight:800}
 .dcard .dstat-red{background:#ef4444;color:#fff;padding:3px 10px;border-radius:99px;font-weight:800}
 .dc-avail-ok{color:#4ade80!important}
+.sup-chip{display:inline-block;background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;white-space:nowrap;margin-left:4px}
+tr.sup td{background:rgba(99,102,241,.07)}
+tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
+#atab-dash tr.sup td{background:rgba(129,140,248,.13)}
+#atab-dash tr.sup td:first-child{box-shadow:inset 5px 0 0 #818cf8}
 </style>
 </head>
 <body>
@@ -821,6 +826,11 @@ canvas{max-width:100%}
       <input id="e-sup-contact" placeholder="ผู้ติดต่อ / เบอร์โทร" style="margin-bottom:8px">
       <label class="sup-lbl">วันที่นัด / คาดว่าเสร็จ</label>
       <input type="date" id="e-sup-date" style="margin-bottom:8px">
+      <label class="sup-lbl">⏱ เวลาส่งซ่อม / เริ่ม (สำหรับคำนวณ Lead Time)</label>
+      <input type="datetime-local" id="e-sup-sent" style="margin-bottom:8px">
+      <label class="sup-lbl">⏱ เวลารับคืน / เสร็จ</label>
+      <input type="datetime-local" id="e-sup-return" style="margin-bottom:6px">
+      <div style="font-size:10.5px;color:var(--text3);margin-bottom:8px">เว้นว่างได้ — ระบบจับเวลาให้อัตโนมัติ หรือกรอกเองสำหรับงานย้อนหลัง (เช่น งานนี้ส่งซ่อมตั้งแต่วันแจ้ง)</div>
       <textarea id="e-sup-note" placeholder="หมายเหตุ / เลขใบเสนอราคา / อาการที่ส่งซ่อม..." style="min-height:52px;resize:vertical"></textarea>
       <div id="e-sup-timing" style="margin-top:8px;font-size:11.5px;line-height:1.7"></div>
     </div>
@@ -1554,6 +1564,8 @@ function openEditModal(id){
     document.getElementById('e-sup-date').value=sup.date||'';
     document.getElementById('e-sup-note').value=sup.note||'';
     document.getElementById('e-sup-mode').value=sup.mode||'offsite';
+    document.getElementById('e-sup-sent').value=toLocalDT(sup.sentDate);
+    document.getElementById('e-sup-return').value=toLocalDT(sup.returnDate);
     var t=document.getElementById('e-sup-timing');
     if(t){
       var onsite=(sup.mode==='onsite');
@@ -1589,7 +1601,8 @@ function closeCostModal(){document.getElementById('cost-modal').classList.remove
 function eSupToggle(){
   var sec=document.getElementById('e-sup-section'), st=document.getElementById('e-status');
   if(!sec||!st)return;
-  sec.style.display=(st.value==='ส่งซ่อมภายนอก')?'block':'none';
+  var hasSup=false; try{ if(editingJob&&editingJob.supplier){ var s=JSON.parse(editingJob.supplier)||{}; hasSup=!!(s.sentDate||s.name||s.mode); } }catch(e){}
+  sec.style.display=(st.value==='ส่งซ่อมภายนอก'||hasSup)?'block':'none';
 }
 function openCostBreakdown(){
   var fj=(typeof getFiltered==='function')?getFiltered():allJobs;
@@ -1743,10 +1756,15 @@ async function saveEdit(){
     sup.name=sn; sup.contact=sc; sup.date=sd; sup.note=snote;
     sup.mode=document.getElementById('e-sup-mode').value;
     var nowISO=new Date().toISOString();
-    // เริ่มจับเวลา Supplier เมื่อเปลี่ยนเป็น 'ส่งซ่อมภายนอก' (ส่งเครื่องไปซัพพลายเออร์)
-    if(editingJob.status==='ส่งซ่อมภายนอก' && !sup.sentDate){ sup.sentDate=nowISO; sup.returnDate=''; }
-    // หยุดจับเวลาเมื่อออกจากสถานะส่งซ่อม (รับเครื่องคืน) — ไม่พึ่ง _prevStatus เพื่อความแข็งแรง
-    if(editingJob.status!=='ส่งซ่อมภายนอก' && sup.sentDate && !sup.returnDate){ sup.returnDate=nowISO; }
+    // เวลาที่กรอกเอง (override) — รองรับงานย้อนหลัง
+    var sentVal=document.getElementById('e-sup-sent').value, retVal=document.getElementById('e-sup-return').value;
+    var sentISO = sentVal ? new Date(sentVal).toISOString() : (sup.sentDate||'');
+    var retISO  = retVal  ? new Date(retVal).toISOString()  : (sup.returnDate||'');
+    // เริ่มจับเวลาอัตโนมัติเมื่อเข้าสถานะ 'ส่งซ่อมภายนอก' ถ้ายังไม่มีเวลาส่ง
+    if(editingJob.status==='ส่งซ่อมภายนอก' && !sentISO){ sentISO=nowISO; }
+    // จบเวลาอัตโนมัติเมื่อออกจากสถานะส่งซ่อม (ใช้วันที่ซ่อมเสร็จถ้ามี ไม่งั้นใช้เวลาปัจจุบัน)
+    if(editingJob.status!=='ส่งซ่อมภายนอก' && sentISO && !retISO){ retISO=editingJob.doneDate||nowISO; }
+    sup.sentDate=sentISO; sup.returnDate=retISO;
     if(editingJob.status==='ส่งซ่อมภายนอก' || sn||sc||sd||snote||sup.sentDate){
       editingJob.supplier=JSON.stringify(sup);
     } else { editingJob.supplier=''; }
@@ -1994,7 +2012,7 @@ function uRenderTrack(){
   c.innerHTML='<div class="status-grid">'+mine.map(function(j){
     var clickable=(j.status==='เสร็จสิ้น'||j.status==='กำลังดำเนินการ'||j.status==='ส่งซ่อมภายนอก');
     var cls='sc '+(j.status==='เร่งด่วน'?'sc-urgent':j.status==='เสร็จสิ้น'?'sc-done':j.status==='ส่งซ่อมภายนอก'?'sc-supplier':'sc-default');
-    return '<div class="'+cls+'"'+(clickable?' onclick="uViewJob(\''+j.id+'\')" style="cursor:pointer"':'')+'><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<div style="margin-top:8px">'+photoGallery(j.photo,'170px')+'</div>':'')+((j.status==='เสร็จสิ้น'&&j.fixPhoto)?'<div style="margin-top:8px"><div style="font-size:11px;color:#16A34A;margin-bottom:4px;font-weight:600"><i class="ti ti-camera" style="font-size:11px;margin-right:3px"></i>รูปหลังซ่อมจากช่าง</div>'+photoGallery(j.fixPhoto,'170px')+'</div>':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+(clickable?'<div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:2px">ดูรายละเอียดการซ่อม <i class="ti ti-chevron-right" style="font-size:13px"></i></div>':'')+'</div>';
+    return '<div class="'+cls+'"'+(clickable?' onclick="uViewJob(\''+j.id+'\')" style="cursor:pointer"':'')+'><div class="sc-top"><span class="sc-id">'+j.id+'</span>'+bdg(j.status)+(isSupJob(j)?supChip(j):'')+'</div><div class="sc-loc"><i class="ti ti-map-pin" style="font-size:12px;margin-right:3px"></i>'+j.location+'</div><div class="sc-type">'+j.type+'</div><div class="sc-detail">'+j.detail+'</div>'+(j.photo?'<div style="margin-top:8px">'+photoGallery(j.photo,'170px')+'</div>':'')+((j.status==='เสร็จสิ้น'&&j.fixPhoto)?'<div style="margin-top:8px"><div style="font-size:11px;color:#16A34A;margin-bottom:4px;font-weight:600"><i class="ti ti-camera" style="font-size:11px;margin-right:3px"></i>รูปหลังซ่อมจากช่าง</div>'+photoGallery(j.fixPhoto,'170px')+'</div>':'')+'<div class="sc-footer"><span><i class="ti ti-user" style="font-size:11px;margin-right:2px"></i>'+(j.reporter||'—')+'</span><span>'+formatDatetime(j.date)+'</span></div>'+(j.tech?'<div style="font-size:11px;color:'+(j.status==='เสร็จสิ้น'?'#16A34A':'var(--text3)')+';margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><i class="ti ti-tool" style="font-size:11px;margin-right:3px"></i>ช่าง: '+j.tech+'</div>':'')+(j.doneDate?'<div style="font-size:11px;color:#16A34A;margin-top:4px"><i class="ti ti-check" style="font-size:11px;margin-right:3px"></i>เสร็จวันที่: '+formatDatetime(j.doneDate)+'</div>':'')+(clickable?'<div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:2px">ดูรายละเอียดการซ่อม <i class="ti ti-chevron-right" style="font-size:13px"></i></div>':'')+'</div>';
   }).join('')+'</div>';
 }
 
@@ -2060,11 +2078,15 @@ function supplierHours(j){
     var s=JSON.parse(j.supplier)||{};
     if(!s.sentDate) return 0;
     var start=new Date(s.sentDate).getTime();
-    var end=s.returnDate?new Date(s.returnDate).getTime():Date.now();
+    var end=s.returnDate?new Date(s.returnDate).getTime():(j.doneDate?new Date(j.doneDate).getTime():Date.now());
     if(isNaN(start)||isNaN(end)||end<start) return 0;
     return (end-start)/3600000;
   }catch(e){ return 0; }
 }
+function isSupJob(j){ try{ if(!j.supplier)return false; var s=JSON.parse(j.supplier)||{}; return !!(s.sentDate||s.name||s.mode); }catch(e){ return false; } }
+function supModeOf(j){ try{ var s=JSON.parse(j.supplier)||{}; return s.mode==='onsite'?'onsite':'offsite'; }catch(e){ return 'offsite'; } }
+function supChip(j){ if(!isSupJob(j))return ''; var on=(supModeOf(j)==='onsite'); return '<span class="sup-chip" title="'+(on?'Supplier เข้ามาซ่อม (on-site)':'ส่งออกไปซ่อมกับ Supplier')+'">🏭 '+(on?'Supplier (on-site)':'Supplier')+'</span>'; }
+function toLocalDT(iso){ if(!iso)return ''; var d=new Date(iso); if(isNaN(d.getTime()))return ''; var p=function(n){return ('0'+n).slice(-2);}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); }
 function calcMttrSplit(jobs){
   var intArr=[], supArr=[], onTime=0, late=0, supCount=0;
   jobs.forEach(function(j){
@@ -2872,7 +2894,7 @@ function aRenderDash(){
     if(j.status==='เสร็จสิ้น'&&j.date&&j.doneDate){ el='<span style="color:#22c55e">'+formatHours((new Date(j.doneDate)-new Date(j.date))/3600000)+'</span>'; }
     else if(j.date){ var h=(Date.now()-new Date(j.date))/3600000; var c=(j.status==='เร่งด่วน')?'#f87171':(h>24?'#fbbf24':'var(--text2)'); el='<span style="color:'+c+'">'+formatHours(h)+'</span>'; }
     else el='—';
-    return '<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><div style="display:flex;gap:4px;align-items:center">'+((j.status!=='กำลังดำเนินการ'&&j.status!=='เสร็จสิ้น'&&!j.startDate)?'<button class="btn icon" onclick="quickStartJob(\''+j.id+'\')" title="รับงาน / เริ่มจับเวลาซ่อม" style="background:#1877F2;color:#fff;border:none"><i class="ti ti-player-play"></i></button>':'')+'<button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></div></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+(j.reporter||'—')+'</td><td>'+(j.photo?'<i class="ti ti-photo" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="color:var(--red);cursor:pointer;margin-right:4px" title="มีรูป — กดดู"></i>':'')+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+'</td><td>'+(j.tech||'—')+'</td><td style="font-size:11px">'+el+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>';
+    return '<tr class="'+(j.status==='เร่งด่วน'?'urg':(isSupJob(j)?'sup':''))+'"><td><div style="display:flex;gap:4px;align-items:center">'+((j.status!=='กำลังดำเนินการ'&&j.status!=='เสร็จสิ้น'&&!j.startDate)?'<button class="btn icon" onclick="quickStartJob(\''+j.id+'\')" title="รับงาน / เริ่มจับเวลาซ่อม" style="background:#1877F2;color:#fff;border:none"><i class="ti ti-player-play"></i></button>':'')+'<button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></div></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td>'+deptBadge(j.dept)+'</td><td style="font-weight:500">'+(j.reporter||'—')+'</td><td>'+(j.photo?'<i class="ti ti-photo" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="color:var(--red);cursor:pointer;margin-right:4px" title="มีรูป — กดดู"></i>':'')+j.location+'</td><td>'+j.type+'</td><td>'+bdg(j.status)+(isSupJob(j)?'<br>'+supChip(j):'')+'</td><td>'+(j.tech||'—')+'</td><td style="font-size:11px">'+el+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td></tr>';
   }).join('')||'<tr><td colspan="10"><div class="empty"><i class="ti ti-inbox"></i>ยังไม่มีข้อมูล</div></td></tr>';
 }
 function planFlag(j){
@@ -2889,7 +2911,7 @@ function aRenderList(){
   fil.sort((a,b)=>(a.reporter||'').localeCompare(b.reporter||'','th'));
   const b=document.getElementById('a-listBody');
   if(!fil.length){b.innerHTML='<tr><td colspan="11"><div class="empty"><i class="ti ti-mood-empty"></i>ไม่พบรายการ</div></td></tr>';return;}
-  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':'')+'"><td><div style="display:flex;gap:4px;align-items:center">'+((j.status!=='กำลังดำเนินการ'&&j.status!=='เสร็จสิ้น'&&!j.startDate)?'<button class="btn icon" onclick="quickStartJob(\''+j.id+'\')" title="รับงาน / เริ่มจับเวลาซ่อม" style="background:#1877F2;color:#fff;border:none"><i class="ti ti-player-play"></i></button>':'')+'<button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></div></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+planFlag(j)+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+(j.photo?'<img src="'+j.photo+'" onerror="this.style.display=\'none\'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;vertical-align:middle;margin-right:6px" title="ดูรูปอาการเสีย">':'')+j.detail+'</td><td>'+bdg(j.status)+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td></tr>').join('');
+  b.innerHTML=fil.map(j=>'<tr class="'+(j.status==='เร่งด่วน'?'urg':(isSupJob(j)?'sup':''))+'"><td><div style="display:flex;gap:4px;align-items:center">'+((j.status!=='กำลังดำเนินการ'&&j.status!=='เสร็จสิ้น'&&!j.startDate)?'<button class="btn icon" onclick="quickStartJob(\''+j.id+'\')" title="รับงาน / เริ่มจับเวลาซ่อม" style="background:#1877F2;color:#fff;border:none"><i class="ti ti-player-play"></i></button>':'')+'<button class="btn icon outline-blue" onclick="openEditModal(\''+j.id+'\')" title="อัปเดต"><i class="ti ti-edit"></i></button></div></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+j.id+'</td><td style="font-weight:500">'+( j.reporter||'—')+'</td><td>'+deptBadge(j.dept)+'</td><td>'+j.location+planFlag(j)+'</td><td>'+j.type+'</td><td style="color:var(--text2)">'+(j.photo?'<img src="'+j.photo+'" onerror="this.style.display=\'none\'" onclick="window.open(\''+j.photo+'\',\'_blank\')" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;vertical-align:middle;margin-right:6px" title="ดูรูปอาการเสีย">':'')+j.detail+'</td><td>'+bdg(j.status)+(isSupJob(j)?'<br>'+supChip(j):'')+'</td><td>'+( j.tech||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+formatDatetime(j.date)+'</td><td style="font-size:11px;color:'+(j.doneDate?'#16A34A':'var(--text3)')+'">'+formatDatetime(j.doneDate)+'</td><td style="color:var(--text2);font-size:12px">'+(j.repairDetail||'—')+'</td></tr>').join('');
 }
 function aRenderUrgent(){
   const urg=allJobs.filter(j=>j.status==='เร่งด่วน');
