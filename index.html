@@ -678,6 +678,12 @@ canvas{max-width:100%}
 .ms-sla{margin-top:13px;font-size:11.5px;color:#cfd8e6;background:#1a2336;border:1px dashed #2f3a5a;border-radius:9px;padding:9px 11px;display:flex;align-items:center;gap:7px}
 .ms-sla .ti{color:#34d399}
 @media(max-width:480px){.ms-grid{grid-template-columns:1fr}}
+.dcard-warn{box-shadow:0 0 0 2px #f59e0b,0 0 24px rgba(245,158,11,.42)!important;border-color:#f59e0b!important}
+.dcard-alert{box-shadow:0 0 0 2px #ef4444,0 0 26px rgba(239,68,68,.5)!important;border-color:#ef4444!important;animation:dcardPulse 1.8s ease-in-out infinite}
+@keyframes dcardPulse{0%,100%{box-shadow:0 0 0 2px #ef4444,0 0 18px rgba(239,68,68,.4)}50%{box-shadow:0 0 0 2px #ef4444,0 0 30px rgba(239,68,68,.7)}}
+.dcard .dstat-amber{background:#f59e0b;color:#1a1200;padding:3px 10px;border-radius:99px;font-weight:800}
+.dcard .dstat-red{background:#ef4444;color:#fff;padding:3px 10px;border-radius:99px;font-weight:800}
+.dc-avail-ok{color:#4ade80!important}
 </style>
 </head>
 <body>
@@ -1226,19 +1232,22 @@ function renderHome(jobs){
   if(gid('m-mttr'))gid('m-mttr').textContent=(mttr===null?'—':formatHours(mttr));
   var wk=0,wkAgo=Date.now()-7*86400000;
   jobs.forEach(function(j){ if(j.status==='เสร็จสิ้น'&&j.date&&j.doneDate){var dd=new Date(j.doneDate).getTime(); if(dd>=wkAgo){var h=(dd-new Date(j.date).getTime())/3600000; if(h>0&&h<24*30)wk+=h;} } });
-  if(gid('m-week'))gid('m-week').textContent=formatHours(wk);
+  if(gid('m-week'))gid('m-week').textContent=Math.round(wk)+' ชม.';
   if(gid('m-crit'))gid('m-crit').textContent=urgent;
   // การ์ดแผนก
   [['Assembly','Assembly','#3b82f6'],['Grinding','Grinding','#22c55e'],['First grinding','FG','#f59e0b'],['Engineering','ENG','#a855f7']].forEach(function(p){
     var dj=jobs.filter(function(j){return j.dept===p[0];});
     var dtot=dj.length, ddone=dj.filter(function(j){return j.status==='เสร็จสิ้น';}).length;
     var a=dtot-ddone, u=dj.filter(function(j){return j.status==='เร่งด่วน';}).length;
-    var av=gid('av-'+p[1]); if(av)av.textContent='เสร็จ '+(dtot?Math.round(ddone/dtot*100):0)+'%';
+    var av=gid('av-'+p[1]);
+    if(av){ if(a===0){av.textContent='✓ ไม่มีงานค้าง';av.classList.add('dc-avail-ok');} else {av.textContent='เสร็จ '+Math.round(ddone/dtot*100)+'%';av.classList.remove('dc-avail-ok');} }
     var st=gid('st-'+p[1]);
     if(st){
       if(u>0){st.className='dstat dstat-red';st.textContent='● เร่งด่วน '+u;}
       else if(a>0){st.className='dstat dstat-amber';st.textContent='● งานค้าง '+a;}
       else{st.className='dstat dstat-green';st.textContent='● ปกติ';}
+      var card=st.closest?st.closest('.dcard'):null;
+      if(card){ card.classList.remove('dcard-warn','dcard-alert'); if(u>0)card.classList.add('dcard-alert'); else if(a>0)card.classList.add('dcard-warn'); }
     }
     var sp=gid('sp-'+p[1]);
     if(sp){ var c=homeLast7(jobs,p[0]); var mx=Math.max.apply(null,c.concat([1]));
