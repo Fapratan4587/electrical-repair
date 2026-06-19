@@ -1796,13 +1796,23 @@ async function saveEdit(){
   setSS('a-sdot','a-stxt','syncing');
   try{
     await callAPI({...editingJob,action:'update'});
+  }catch(e){
+    setSS('a-sdot','a-stxt','error');
+    toast('บันทึกไม่สำเร็จ: '+((e&&e.message)?String(e.message).slice(0,80):'เชื่อมต่อไม่ได้'));
+    document.getElementById('e-sving').style.display='none';
+    document.getElementById('e-save-btn').disabled=false;
+    return;
+  }
+  // เขียน DB สำเร็จแล้ว — อัปเดตหน้าจอ (กัน error ตอน render ไม่ให้ขึ้นว่า "บันทึกไม่สำเร็จ")
+  try{
     const li=localJobs.findIndex(j=>j.id===editingJob.id);
     if(li!==-1){localJobs[li].status=editingJob.status;localJobs[li].tech=editingJob.tech;localJobs[li].doneDate=editingJob.doneDate;saveLocal();}
     const ai=allJobs.findIndex(j=>j.id===editingJob.id);
     if(ai!==-1)allJobs[ai]={...editingJob};
-    setSS('a-sdot','a-stxt','ok');closeEditModal();aCheckAlerts();aRenderList();aRenderDash();updateHomeDots();
-    toast(editingJob.status==='เสร็จสิ้น'?'✓ อัปเดตเสร็จสิ้นแล้ว':'อัปเดตสำเร็จ');
-  }catch(e){setSS('a-sdot','a-stxt','error');toast('บันทึกไม่สำเร็จ');}
+    closeEditModal();aCheckAlerts();aRenderList();aRenderDash();updateHomeDots();
+  }catch(e){ console.log('post-save render error:',e); }
+  setSS('a-sdot','a-stxt','ok');
+  toast(editingJob.status==='เสร็จสิ้น'?'✓ อัปเดตเสร็จสิ้นแล้ว':'อัปเดตสำเร็จ');
   document.getElementById('e-sving').style.display='none';
   document.getElementById('e-save-btn').disabled=false;
 }
@@ -2743,7 +2753,7 @@ async function aLoad(silent){
   try{
     const data=await callAPI({action:'get'});
     if(Array.isArray(data)){
-      allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',repairDetail:r.repairDetail||'',photo:r.photo||'',fixPhoto:r.fixphoto||r.fixPhoto||'',startDate:r.startdate||r.startDate||'',created:parseInt(r.created)||0}));
+      allJobs=data.map(r=>({id:r.id||'',dept:r.dept||'',reporter:r.reporter||'',location:r.location||'',type:r.type||'',detail:r.detail||'',status:r.status||'รอดำเนินการ',priority:r.priority||'ปานกลาง',tech:r.tech||'',cost:parseFloat(r.cost)||0,date:r.date||'',doneDate:r.doneDate||'',note:r.note||'',repairDetail:r.repairDetail||'',photo:r.photo||'',fixPhoto:r.fixphoto||r.fixPhoto||'',startDate:r.startdate||r.startDate||'',supplier:r.supplier||'',created:parseInt(r.created)||0}));
       setSS('a-sdot','a-stxt','ok');
       if(!silent)toast('โหลดข้อมูลสำเร็จ ('+allJobs.length+' รายการ)');
       aCheckAlerts();aRenderDash();aRenderList();
