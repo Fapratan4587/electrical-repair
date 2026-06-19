@@ -815,6 +815,10 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
       <button class="btn" onclick="quickStart()" style="font-size:12.5px;padding:8px 14px;background:#1877F2;color:#fff;border:none;align-self:flex-start"><i class="ti ti-player-play"></i> รับงาน / เริ่มจับเวลาซ่อม</button>
       <div style="font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5">กดตอนช่างเริ่มลงมือซ่อม — ระบบจะบันทึก<strong>เวลาเริ่ม</strong> เพื่อแยกคำนวณ Response Time (แจ้ง→เริ่ม) และ Repair Time (เริ่ม→เสร็จ)</div>
     </div>
+    <div class="efg" style="display:flex;align-items:center;gap:9px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:11px 13px">
+      <input type="checkbox" id="e-sup-toggle" onchange="eSupToggle()" style="width:18px;height:18px;cursor:pointer;accent-color:#6366f1;flex-shrink:0">
+      <label for="e-sup-toggle" style="cursor:pointer;font-weight:700;color:#4338CA;font-size:13px;margin:0">🏭 งานนี้ส่งซ่อม / เกี่ยวข้องกับ Supplier (ติ๊กเพื่อบันทึกข้อมูล แม้สถานะเสร็จสิ้นแล้ว)</label>
+    </div>
     <div class="efg sup-section" id="e-sup-section" style="display:none">
       <div class="sup-head"><i class="ti ti-building-warehouse"></i> ส่งซ่อมกับ Supplier — กรณีช่างซ่อมเองไม่ได้</div>
       <label class="sup-lbl">รูปแบบการซ่อม</label>
@@ -1566,6 +1570,7 @@ function openEditModal(id){
     document.getElementById('e-sup-mode').value=sup.mode||'offsite';
     document.getElementById('e-sup-sent').value=toLocalDT(sup.sentDate);
     document.getElementById('e-sup-return').value=toLocalDT(sup.returnDate);
+    document.getElementById('e-sup-toggle').checked=(editingJob.status==='ส่งซ่อมภายนอก'||!!(sup.sentDate||sup.name||sup.mode));
     var t=document.getElementById('e-sup-timing');
     if(t){
       var onsite=(sup.mode==='onsite');
@@ -1599,10 +1604,11 @@ function openEditModal(id){
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');editingJob=null;}
 function closeCostModal(){document.getElementById('cost-modal').classList.remove('show');}
 function eSupToggle(){
-  var sec=document.getElementById('e-sup-section'), st=document.getElementById('e-status');
-  if(!sec||!st)return;
-  var hasSup=false; try{ if(editingJob&&editingJob.supplier){ var s=JSON.parse(editingJob.supplier)||{}; hasSup=!!(s.sentDate||s.name||s.mode); } }catch(e){}
-  sec.style.display=(st.value==='ส่งซ่อมภายนอก'||hasSup)?'block':'none';
+  var sec=document.getElementById('e-sup-section'), st=document.getElementById('e-status'), cb=document.getElementById('e-sup-toggle');
+  if(!sec)return;
+  // เลือกสถานะ "ส่งซ่อมกับ Supplier" → ติ๊ก checkbox ให้อัตโนมัติ
+  if(st&&st.value==='ส่งซ่อมภายนอก'&&cb&&!cb.checked) cb.checked=true;
+  sec.style.display=(cb&&cb.checked)?'block':'none';
 }
 function openCostBreakdown(){
   var fj=(typeof getFiltered==='function')?getFiltered():allJobs;
@@ -1756,16 +1762,17 @@ async function saveEdit(){
     sup.name=sn; sup.contact=sc; sup.date=sd; sup.note=snote;
     sup.mode=document.getElementById('e-sup-mode').value;
     var nowISO=new Date().toISOString();
+    var supOn=document.getElementById('e-sup-toggle').checked;
     // เวลาที่กรอกเอง (override) — รองรับงานย้อนหลัง
     var sentVal=document.getElementById('e-sup-sent').value, retVal=document.getElementById('e-sup-return').value;
     var sentISO = sentVal ? new Date(sentVal).toISOString() : (sup.sentDate||'');
     var retISO  = retVal  ? new Date(retVal).toISOString()  : (sup.returnDate||'');
-    // เริ่มจับเวลาอัตโนมัติเมื่อเข้าสถานะ 'ส่งซ่อมภายนอก' ถ้ายังไม่มีเวลาส่ง
-    if(editingJob.status==='ส่งซ่อมภายนอก' && !sentISO){ sentISO=nowISO; }
-    // จบเวลาอัตโนมัติเมื่อออกจากสถานะส่งซ่อม (ใช้วันที่ซ่อมเสร็จถ้ามี ไม่งั้นใช้เวลาปัจจุบัน)
+    // เวลาเริ่ม: เพิ่งเข้าสถานะ supplier → เวลาปัจจุบัน; งานย้อนหลังที่ติ๊ก Supplier → ใช้วันแจ้งเป็นค่าตั้งต้น (แก้ได้)
+    if(!sentISO){ if(editingJob.status==='ส่งซ่อมภายนอก') sentISO=nowISO; else if(supOn) sentISO=editingJob.date||nowISO; }
+    // เวลาจบ: ออกจากสถานะ supplier และมีเวลาส่งแล้ว → ใช้วันที่ซ่อมเสร็จถ้ามี
     if(editingJob.status!=='ส่งซ่อมภายนอก' && sentISO && !retISO){ retISO=editingJob.doneDate||nowISO; }
     sup.sentDate=sentISO; sup.returnDate=retISO;
-    if(editingJob.status==='ส่งซ่อมภายนอก' || sn||sc||sd||snote||sup.sentDate){
+    if(supOn || editingJob.status==='ส่งซ่อมภายนอก'){
       editingJob.supplier=JSON.stringify(sup);
     } else { editingJob.supplier=''; }
   })();
