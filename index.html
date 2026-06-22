@@ -1063,6 +1063,12 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
         <div id="an-mtbf-content"></div>
       </div>
 
+      <!-- Maintenance KPIs: Backlog / Downtime -->
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="card-title"><i class="ti ti-gauge" style="font-size:14px;color:#1877F2"></i>KPI การบำรุงรักษา — Backlog &amp; Downtime</div>
+        <div id="an-mkpi-content"></div>
+      </div>
+
       <!-- Repair trend chart -->
       <div class="card">
         <div class="card-title"><i class="ti ti-chart-bar" style="font-size:14px;color:var(--text3)"></i>แนวโน้มการแจ้งซ่อมรายวัน</div>
@@ -2161,6 +2167,30 @@ function calcMTTR(jobs) {
   return (total / done.length / 3600000);
 }
 
+// Backlog (งานค้าง) คิดเป็นชั่วโมงงาน = จำนวนงานค้าง × เวลาซ่อมเฉลี่ยต่องาน
+function calcBacklogHours(jobs){
+  var pend=jobs.filter(function(j){return j.status!=='เสร็จสิ้น';});
+  var per=null;
+  if(typeof calcRRT==='function'){ var r=calcRRT(jobs); if(r&&r.repair)per=r.repair; }
+  if(per==null) per=calcMTTR(jobs);
+  return {count:pend.length, per:per, hours:(per&&per>0)?pend.length*per:null};
+}
+// Downtime เดือนนี้ = ผลรวมเวลาที่เครื่องหยุด (แจ้ง→ซ่อมเสร็จ) ของงานที่เสร็จเดือนนี้
+function calcDowntime(jobs){
+  var now=new Date(), y=now.getFullYear(), mo=now.getMonth();
+  var daysInMonth=new Date(y,mo+1,0).getDate();
+  var done=jobs.filter(function(j){ if(j.status!=='เสร็จสิ้น'||!j.date||!j.doneDate)return false; var d=new Date(j.doneDate); return d.getFullYear()===y&&d.getMonth()===mo; });
+  var totalHrs=0, machines={};
+  done.forEach(function(j){
+    var h=(new Date(j.doneDate)-new Date(j.date))/3600000;
+    if(!isNaN(h)&&h>0) totalHrs+=h;
+    machines[j.location||((j.dept||'')+':'+(j.type||''))]=true;
+  });
+  var nM=Object.keys(machines).length, perMachine=nM?totalHrs/nM:0, basis=24*daysInMonth;
+  var pct=(nM&&basis)?(perMachine/basis*100):0;
+  return {totalHrs:totalHrs, nMachines:nM, perMachine:perMachine, pct:pct, days:daysInMonth};
+}
+
 function calcMTBF(jobs) {
   const byLoc = {};
   jobs.filter(j => j.date).forEach(j => {
@@ -2233,6 +2263,17 @@ function renderAnalytics() {
       </div>`;
   });
   document.getElementById('an-mttr-content').innerHTML = mttrHTML || '<div class="empty" style="padding:1rem">ไม่มีข้อมูล</div>';
+
+  try{
+    var bk=calcBacklogHours(jobs), dt=calcDowntime(jobs);
+    var mk='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">'+
+      '<div class="kpi-card"><div class="kpi-top"><span class="kpi-label">Backlog (งานค้าง)</span><span class="kpi-ico" style="background:#FEF3C7;color:#B45309"><i class="ti ti-stack-2"></i></span></div><div class="kpi-val" style="font-size:22px;color:#B45309">'+(bk.hours!=null?formatHours(bk.hours):'—')+'</div><div class="kpi-foot">'+bk.count+' งานค้าง'+(bk.per?' × '+formatHours(bk.per)+'/งาน':'')+'</div></div>'+
+      '<div class="kpi-card"><div class="kpi-top"><span class="kpi-label">Downtime เดือนนี้</span><span class="kpi-ico" style="background:var(--red-light);color:var(--red)"><i class="ti ti-player-pause"></i></span></div><div class="kpi-val" style="font-size:22px;color:var(--red)">'+formatHours(dt.totalHrs)+'</div><div class="kpi-foot">'+dt.nMachines+' เครื่อง · เฉลี่ย '+formatHours(dt.perMachine)+'/เครื่อง</div></div>'+
+      '<div class="kpi-card"><div class="kpi-top"><span class="kpi-label">Downtime % (ประมาณ)</span><span class="kpi-ico" style="background:#EFF6FF;color:#1877F2"><i class="ti ti-percentage"></i></span></div><div class="kpi-val" style="font-size:22px;color:#1877F2">'+(dt.nMachines?dt.pct.toFixed(1)+'%':'—')+'</div><div class="kpi-foot">Availability ~'+(dt.nMachines?(100-dt.pct).toFixed(1)+'%':'—')+'</div></div>'+
+    '</div>'+
+    '<div style="font-size:10.5px;color:var(--text3);margin-top:10px;line-height:1.6"><i class="ti ti-info-circle"></i> Backlog = งานค้าง × เวลาซ่อมเฉลี่ย (Repair Time) เพื่อเช็กว่ากำลังช่างพอไหม · Downtime% = เวลาเสียเฉลี่ยต่อเครื่อง ÷ เวลาทั้งเดือน (สมมติเดินเครื่อง 24 ชม./วัน) — ค่าประมาณจากเครื่องที่แจ้งซ่อมเดือนนี้</div>';
+    document.getElementById('an-mkpi-content').innerHTML=mk;
+  }catch(e){ console.log('mkpi render',e); }
 
   const locCount = {};
   jobs.forEach(j => {
