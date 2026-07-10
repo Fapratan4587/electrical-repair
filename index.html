@@ -763,11 +763,18 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
 <div class="modal-overlay" id="admin-modal">
   <div class="modal-box">
     <div class="modal-title"><i class="ti ti-shield-lock" style="color:var(--red)"></i>Admin Login</div>
-    <div class="modal-err" id="login-err">รหัสผ่านไม่ถูกต้อง</div>
-    <input type="password" class="modal-input" id="admin-pw" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()">
-    <div class="modal-btns">
-      <button class="btn" onclick="closeAdminModal()">ยกเลิก</button>
-      <button class="btn red" onclick="doLogin()"><i class="ti ti-login"></i>เข้าสู่ระบบ</button>
+    <div id="bio-login-section" style="display:none;margin-bottom:12px">
+      <button class="btn primary" onclick="loginBiometric()" style="width:100%;justify-content:center;font-size:14px;padding:12px" id="bio-login-btn"><i class="ti ti-face-id"></i>สแกนหน้า / ลายนิ้วมือ</button>
+      <div style="text-align:center;margin-top:8px"><a href="javascript:void(0)" onclick="toggleBioMode(false)" style="font-size:12px;color:var(--text3);text-decoration:underline">ใช้รหัสผ่านแทน</a></div>
+    </div>
+    <div id="pw-login-section">
+      <div class="modal-err" id="login-err">รหัสผ่านไม่ถูกต้อง</div>
+      <input type="password" class="modal-input" id="admin-pw" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="text-align:center;margin:8px 0;display:none" id="bio-switch-link"><a href="javascript:void(0)" onclick="toggleBioMode(true)" style="font-size:12px;color:var(--text3);text-decoration:underline"><i class="ti ti-face-id"></i> ใช้สแกนหน้า/ลายนิ้วมือแทน</a></div>
+      <div class="modal-btns">
+        <button class="btn" onclick="closeAdminModal()">ยกเลิก</button>
+        <button class="btn red" onclick="doLogin()"><i class="ti ti-login"></i>เข้าสู่ระบบ</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1546,8 +1553,77 @@ function enterUser(dept){
 }
 
 // ---- ADMIN LOGIN ----
-function showAdminLogin(){document.getElementById('admin-pw').value='';document.getElementById('login-err').classList.remove('show');document.getElementById('admin-modal').classList.add('show');setTimeout(()=>document.getElementById('admin-pw').focus(),100);}
+// ===== Biometric login (Face ID / ลายนิ้วมือ) ผ่าน WebAuthn — ใช้ตัวสแกนของเครื่องมือถือ/โน้ตบุ๊กเอง =====
+const BIO_KEY='nachi_admin_biocred', BIO_DECLINED_KEY='nachi_admin_bio_declined';
+function bioSupported(){ return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create); }
+async function bioPlatformAvailable(){ try{ return bioSupported() && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }catch(e){ return false; } }
+function b64FromBuf(buf){ return btoa(String.fromCharCode.apply(null,new Uint8Array(buf))); }
+function bufFromB64(b64){ var s=atob(b64),a=new Uint8Array(s.length); for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i); return a; }
+
+async function registerBiometric(silent){
+  try{
+    var cred=await navigator.credentials.create({publicKey:{
+      challenge: crypto.getRandomValues(new Uint8Array(32)),
+      rp:{ name:'NACHI Factory 4 Admin', id: location.hostname },
+      user:{ id: crypto.getRandomValues(new Uint8Array(16)), name:'admin', displayName:'Admin Engineering' },
+      pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+      authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required' },
+      timeout:60000
+    }});
+    if(cred){ localStorage.setItem(BIO_KEY, b64FromBuf(cred.rawId)); if(!silent) toast('✅ เปิดใช้สแกนหน้า/ลายนิ้วมือแล้ว ครั้งต่อไปไม่ต้องพิมพ์รหัสผ่าน'); return true; }
+  }catch(e){ if(!silent) toast('เปิดใช้งานไม่สำเร็จ: อุปกรณ์นี้อาจไม่รองรับ'); }
+  return false;
+}
+
+async function loginBiometric(){
+  var stored=localStorage.getItem(BIO_KEY);
+  if(!stored) return;
+  try{
+    var assertion=await navigator.credentials.get({publicKey:{
+      challenge: crypto.getRandomValues(new Uint8Array(32)),
+      allowCredentials:[{ id:bufFromB64(stored), type:'public-key', transports:['internal'] }],
+      userVerification:'required', timeout:60000, rpId: location.hostname
+    }});
+    if(assertion){ closeAdminModal(); enterAdmin(); }
+  }catch(e){ toast('ยืนยันตัวตนไม่สำเร็จ กรุณาใช้รหัสผ่าน'); toggleBioMode(false); }
+}
+
+function toggleBioMode(showBio){
+  document.getElementById('bio-login-section').style.display=showBio?'block':'none';
+  document.getElementById('pw-login-section').style.display=showBio?'none':'block';
+}
+
+function enterAdmin(){
+  document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
+  showPage('page-admin');aLoad();startAutoRefresh('admin');
+}
+
+async function showAdminLogin(){
+  document.getElementById('admin-pw').value='';
+  document.getElementById('login-err').classList.remove('show');
+  var hasBio=!!localStorage.getItem(BIO_KEY);
+  var avail=hasBio && await bioPlatformAvailable();
+  document.getElementById('bio-switch-link').style.display=avail?'block':'none';
+  toggleBioMode(avail);
+  document.getElementById('admin-modal').classList.add('show');
+  if(!avail) setTimeout(()=>document.getElementById('admin-pw').focus(),100);
+}
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('show');}
+async function doLogin(){
+  if(document.getElementById('admin-pw').value===ADMIN_PW){
+    closeAdminModal();
+    enterAdmin();
+    // ล็อกอินด้วยรหัสผ่านสำเร็จ — ถ้าเครื่องรองรับสแกนหน้า/ลายนิ้วมือและยังไม่เคยตั้งค่า/ปฏิเสธ ให้ชวนเปิดใช้
+    if(!localStorage.getItem(BIO_KEY) && !localStorage.getItem(BIO_DECLINED_KEY) && await bioPlatformAvailable()){
+      setTimeout(async function(){
+        if(confirm('ต้องการเปิดใช้สแกนหน้า/ลายนิ้วมือ สำหรับเข้าสู่ระบบครั้งต่อไปในเครื่องนี้หรือไม่?')){
+          await registerBiometric();
+        } else { localStorage.setItem(BIO_DECLINED_KEY,'1'); }
+      },400);
+    }
+  }else{document.getElementById('login-err').classList.add('show');document.getElementById('admin-pw').value='';document.getElementById('admin-pw').focus();}
+}
+function adminLogout(){stopAutoRefresh();goHome();}
 function startAutoRefresh(mode){
   stopAutoRefresh();
   autoRefreshTimer=setInterval(function(){
@@ -1563,15 +1639,6 @@ function startAutoRefresh(mode){
 function stopAutoRefresh(){
   if(autoRefreshTimer){clearInterval(autoRefreshTimer);autoRefreshTimer=null;}
 }
-
-function doLogin(){
-  if(document.getElementById('admin-pw').value===ADMIN_PW){
-    closeAdminModal();
-    document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
-    showPage('page-admin');aLoad();startAutoRefresh('admin');
-  }else{document.getElementById('login-err').classList.add('show');document.getElementById('admin-pw').value='';document.getElementById('admin-pw').focus();}
-}
-function adminLogout(){stopAutoRefresh();goHome();}
 
 // ---- EDIT MODAL ----
 function openEditModal(id){
