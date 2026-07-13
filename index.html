@@ -1554,7 +1554,8 @@ function enterUser(dept){
 
 // ---- ADMIN LOGIN ----
 // ===== Biometric login (Face ID / ลายนิ้วมือ) ผ่าน WebAuthn — ใช้ตัวสแกนของเครื่องมือถือ/โน้ตบุ๊กเอง =====
-const BIO_KEY='nachi_admin_biocred', BIO_DECLINED_KEY='nachi_admin_bio_declined';
+const BIO_KEY='nachi_admin_biocred_v2', BIO_DECLINED_KEY='nachi_admin_bio_declined';
+localStorage.removeItem('nachi_admin_biocred'); // ล้างของเดิม (เคยลงทะเบียนเป็น Passkey แบบ sync iCloud ทำให้ต้องยืนยันก่อนสแกนหน้าเสมอ)
 function bioSupported(){ return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create); }
 async function bioPlatformAvailable(){ try{ return bioSupported() && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }catch(e){ return false; } }
 function b64FromBuf(buf){ return btoa(String.fromCharCode.apply(null,new Uint8Array(buf))); }
@@ -1567,7 +1568,7 @@ async function registerBiometric(silent){
       rp:{ name:'NACHI Factory 4 Admin', id: location.hostname },
       user:{ id: crypto.getRandomValues(new Uint8Array(16)), name:'admin', displayName:'Admin Engineering' },
       pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
-      authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required' },
+      authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged', requireResidentKey:false },
       timeout:60000
     }});
     if(cred){ localStorage.setItem(BIO_KEY, b64FromBuf(cred.rawId)); if(!silent) toast('✅ เปิดใช้สแกนหน้า/ลายนิ้วมือแล้ว ครั้งต่อไปไม่ต้องพิมพ์รหัสผ่าน'); return true; }
