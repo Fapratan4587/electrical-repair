@@ -764,7 +764,7 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
   <div class="modal-box">
     <div class="modal-title"><i class="ti ti-shield-lock" style="color:var(--red)"></i>Admin Login</div>
     <div id="bio-login-section" style="display:none;margin-bottom:12px">
-      <button class="btn primary" onclick="loginBiometric()" style="width:100%;justify-content:center;font-size:14px;padding:12px" id="bio-login-btn"><i class="ti ti-face-id"></i>สแกนหน้า / ลายนิ้วมือ</button>
+      <button class="btn primary" onclick="retryBiometric()" style="width:100%;justify-content:center;font-size:14px;padding:12px" id="bio-login-btn"><i class="ti ti-face-id"></i>สแกนหน้า / ลายนิ้วมือ</button>
       <div style="text-align:center;margin-top:8px"><a href="javascript:void(0)" onclick="toggleBioMode(false)" style="font-size:12px;color:var(--text3);text-decoration:underline">ใช้รหัสผ่านแทน</a></div>
     </div>
     <div id="pw-login-section">
@@ -1575,17 +1575,22 @@ async function registerBiometric(silent){
   return false;
 }
 
-async function loginBiometric(){
+async function loginBiometric(manual){
   var stored=localStorage.getItem(BIO_KEY);
-  if(!stored) return;
+  if(!stored) return false;
   try{
     var assertion=await navigator.credentials.get({publicKey:{
       challenge: crypto.getRandomValues(new Uint8Array(32)),
       allowCredentials:[{ id:bufFromB64(stored), type:'public-key', transports:['internal'] }],
       userVerification:'required', timeout:60000, rpId: location.hostname
     }});
-    if(assertion){ closeAdminModal(); enterAdmin(); }
-  }catch(e){ toast('ยืนยันตัวตนไม่สำเร็จ กรุณาใช้รหัสผ่าน'); toggleBioMode(false); }
+    if(assertion){ closeAdminModal(); enterAdmin(); return true; }
+  }catch(e){ if(manual) toast('ยืนยันตัวตนไม่สำเร็จ กรุณาใช้รหัสผ่าน'); }
+  return false;
+}
+async function retryBiometric(){
+  var ok=await loginBiometric(true);
+  if(!ok) toggleBioMode(false);
 }
 
 function toggleBioMode(showBio){
@@ -1598,15 +1603,21 @@ function enterAdmin(){
   showPage('page-admin');aLoad();startAutoRefresh('admin');
 }
 
+// กดเข้าหน้า Admin: ถ้าเครื่องนี้เคยลงทะเบียนสแกนหน้า/ลายนิ้วมือไว้ ให้เด้งสแกนทันที (ไม่ต้องเปิด modal ก่อน)
+// ถ้าไม่ผ่าน/ยกเลิก หรือยังไม่เคยลงทะเบียน ค่อย fallback มาเป็นหน้ารหัสผ่าน
 async function showAdminLogin(){
   document.getElementById('admin-pw').value='';
   document.getElementById('login-err').classList.remove('show');
   var hasBio=!!localStorage.getItem(BIO_KEY);
   var avail=hasBio && await bioPlatformAvailable();
+  if(avail){
+    var ok=await loginBiometric();
+    if(ok) return; // เข้าสำเร็จ ไม่ต้องเปิด modal เลย
+  }
   document.getElementById('bio-switch-link').style.display=avail?'block':'none';
-  toggleBioMode(avail);
+  toggleBioMode(false);
   document.getElementById('admin-modal').classList.add('show');
-  if(!avail) setTimeout(()=>document.getElementById('admin-pw').focus(),100);
+  setTimeout(()=>document.getElementById('admin-pw').focus(),100);
 }
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('show');}
 async function doLogin(){
