@@ -692,6 +692,20 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
 #atab-dash tr.sup td{background:rgba(129,140,248,.13)}
 #atab-dash tr.sup td:first-child{box-shadow:inset 5px 0 0 #818cf8}
 </style>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    window.OneSignal = OneSignal;
+    try{
+      await OneSignal.init({
+        appId: "60885e55-9e5a-41c6-a775-943d53a7e4ae",
+        serviceWorkerPath: "OneSignalSDKWorker.js",
+        serviceWorkerParam: { scope: "/electrical-repair/" }
+      });
+    }catch(e){ console.log('OneSignal init error', e); }
+  });
+</script>
 </head>
 <body>
 
@@ -1602,6 +1616,19 @@ function toggleBioMode(showBio){
 function enterAdmin(){
   document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
   showPage('page-admin');aLoad();startAutoRefresh('admin');
+  setTimeout(requestPushPermission, 900);
+}
+
+// ขอสิทธิ์ Push Notification — ถามเฉพาะตอนเข้าหน้า Admin (ช่าง) และไม่ถามซ้ำถ้าเคยตอบแล้ว
+async function requestPushPermission(){
+  try{
+    if(!window.OneSignal) return;
+    if(OneSignal.Notifications.permission) return; // อนุญาตอยู่แล้ว
+    if(localStorage.getItem('nachi_push_declined')) return; // เคยปฏิเสธไว้ ไม่ถามซ้ำทุกครั้ง
+    var ok=confirm('เปิดการแจ้งเตือน (Push) บนมือถือ/เครื่องนี้ สำหรับงานแจ้งซ่อมใหม่หรือไม่?\n\n(จะแจ้งแม้ปิดแอปอยู่)');
+    if(!ok){ localStorage.setItem('nachi_push_declined','1'); return; }
+    await OneSignal.Notifications.requestPermission();
+  }catch(e){ console.log('requestPushPermission error', e); }
 }
 
 // กดเข้าหน้า Admin: ถ้าเครื่องนี้เคยลงทะเบียนสแกนหน้า/ลายนิ้วมือไว้ ให้เด้งสแกนทันที (ไม่ต้องเปิด modal ก่อน)
