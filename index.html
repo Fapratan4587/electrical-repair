@@ -1625,11 +1625,19 @@ function enterAdmin(){
 // ขอสิทธิ์ Push Notification — ถามเฉพาะตอนเข้าหน้า Admin (ช่าง) และไม่ถามซ้ำถ้าเคยตอบแล้ว
 async function requestPushPermission(){
   try{
+    // 1) เคยถามในเครื่องนี้ไปแล้ว (ไม่ว่าตอบตกลงหรือยกเลิก) -> ไม่ถามซ้ำอีก
+    if(localStorage.getItem('nachi_push_asked')) return;
+    // 2) เช็คสิทธิ์จากเบราว์เซอร์โดยตรง ถ้าตอบไปแล้ว (granted/denied) -> ไม่ต้องถาม
+    if(typeof Notification!=='undefined' && Notification.permission!=='default'){
+      localStorage.setItem('nachi_push_asked','1');
+      return;
+    }
     if(!window.OneSignal) return;
-    if(OneSignal.Notifications.permission) return; // อนุญาตอยู่แล้ว
-    if(localStorage.getItem('nachi_push_declined')) return; // เคยปฏิเสธไว้ ไม่ถามซ้ำทุกครั้ง
+    try{ if(OneSignal.Notifications.permission){ localStorage.setItem('nachi_push_asked','1'); return; } }catch(e){}
+
     var ok=confirm('เปิดการแจ้งเตือน (Push) บนมือถือ/เครื่องนี้ สำหรับงานแจ้งซ่อมใหม่หรือไม่?\n\n(จะแจ้งแม้ปิดแอปอยู่)');
-    if(!ok){ localStorage.setItem('nachi_push_declined','1'); return; }
+    localStorage.setItem('nachi_push_asked','1'); // จำไว้ทันที ไม่ถามซ้ำอีกในเครื่องนี้
+    if(!ok) return;
     await OneSignal.Notifications.requestPermission();
   }catch(e){ console.log('requestPushPermission error', e); }
 }
