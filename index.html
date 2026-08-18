@@ -188,6 +188,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .b-urgent{background:var(--red-light);color:var(--red-dark)}
 .b-supplier{background:linear-gradient(135deg,#6366F1,#4F46E5);color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(79,70,229,.35);letter-spacing:.2px}
 .b-waitpart{background:#FEF3C7;color:#92400E;font-weight:700}
+body.tech-mode .tech-hide{display:none !important;}
 .sup-section{background:#F5F6FF;border:1px solid #D7DCFB;border-radius:var(--r2);padding:12px}
 .sup-head{font-size:12.5px;font-weight:700;color:#4338CA;display:flex;align-items:center;gap:6px;margin-bottom:10px}
 .sup-head .ti{font-size:15px}
@@ -986,11 +987,11 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
       <div class="sync-pill"><span class="sdot syncing" id="a-sdot"></span><span id="a-stxt">กำลังโหลด...</span></div>
       <button class="btn" onclick="aLoad()" id="a-btnR"><i class="ti ti-refresh"></i><span class="btn-text">Sync</span></button>
       
-      <button class="btn outline-blue" onclick="openExportModal()"><i class="ti ti-file-export"></i><span class="btn-text">Export</span></button>
-      <button class="btn outline-blue" onclick="openExportModal()" title="ส่งออกรายงานแบบกรองข้อมูล"><i class="ti ti-file-spreadsheet"></i><span class="btn-text">รายงาน</span></button>
-      <div style="width:1px;height:20px;background:var(--border2);margin:0 2px;flex-shrink:0"></div>
-      <button class="btn outline-red" onclick="confirmClearAll()" title="ล้างข้อมูลทั้งหมด — ใช้ด้วยความระมัดระวัง" style="opacity:.7"><i class="ti ti-trash"></i><span class="btn-text">ล้างข้อมูล</span></button>
-      <div style="width:1px;height:20px;background:var(--border2);margin:0 2px;flex-shrink:0"></div>
+      <button class="btn outline-blue tech-hide" onclick="openExportModal()"><i class="ti ti-file-export"></i><span class="btn-text">Export</span></button>
+      <button class="btn outline-blue tech-hide" onclick="openExportModal()" title="ส่งออกรายงานแบบกรองข้อมูล"><i class="ti ti-file-spreadsheet"></i><span class="btn-text">รายงาน</span></button>
+      <div class="tech-hide" style="width:1px;height:20px;background:var(--border2);margin:0 2px;flex-shrink:0"></div>
+      <button class="btn outline-red tech-hide" onclick="confirmClearAll()" title="ล้างข้อมูลทั้งหมด — ใช้ด้วยความระมัดระวัง" style="opacity:.7"><i class="ti ti-trash"></i><span class="btn-text">ล้างข้อมูล</span></button>
+      <div class="tech-hide" style="width:1px;height:20px;background:var(--border2);margin:0 2px;flex-shrink:0"></div>
       <button class="btn primary" onclick="adminLogout()" style="margin-left:4px"><i class="ti ti-logout"></i><span class="btn-text">ออก</span></button>
     </div>
   </div>
@@ -1001,13 +1002,13 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
       <button style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px" onclick="document.getElementById('a-abar').classList.remove('show')">×</button>
     </div>
     <div class="tab-nav">
-      <button class="tnb active" onclick="aGoTab('dash',this)"><i class="ti ti-layout-dashboard"></i>ภาพรวม</button>
+      <button class="tnb active tech-hide" onclick="aGoTab('dash',this)"><i class="ti ti-layout-dashboard"></i>ภาพรวม</button>
       <button class="tnb" onclick="aGoTab('list',this)"><i class="ti ti-list-details"></i>รายการงาน</button>
-      <button class="tnb" onclick="aGoTab('urgent',this)"><i class="ti ti-alert-triangle"></i>เร่งด่วน<span class="ndot" id="a-ndot" style="display:none"></span></button>
-      <button class="tnb" onclick="aGoTab('analytics',this)"><i class="ti ti-chart-line"></i>Analytics</button>
-      <button class="tnb" onclick="aGoTab('target',this)"><i class="ti ti-target"></i>Target/แผนงาน</button>
-      <button class="tnb" onclick="aGoTab('pm',this)"><i class="ti ti-calendar-repeat"></i>PM/บำรุงรักษา<span class="ndot" id="pm-ndot" style="display:none"></span></button>
-      <button class="tnb" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
+      <button class="tnb tech-hide" onclick="aGoTab('urgent',this)"><i class="ti ti-alert-triangle"></i>เร่งด่วน<span class="ndot" id="a-ndot" style="display:none"></span></button>
+      <button class="tnb tech-hide" onclick="aGoTab('analytics',this)"><i class="ti ti-chart-line"></i>Analytics</button>
+      <button class="tnb tech-hide" onclick="aGoTab('target',this)"><i class="ti ti-target"></i>Target/แผนงาน</button>
+      <button class="tnb tech-hide" onclick="aGoTab('pm',this)"><i class="ti ti-calendar-repeat"></i>PM/บำรุงรักษา<span class="ndot" id="pm-ndot" style="display:none"></span></button>
+      <button class="tnb tech-hide" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
     </div>
 
     <!-- DASH TAB -->
@@ -1227,6 +1228,8 @@ const SB_HEADERS={
   'Content-Type':'application/json'
 };
 const ADMIN_PW='admin1234';
+const TECH_PW='Nachi4t001';   // โหมดช่าง: เห็นแค่รายการงาน + รับงาน/ปิดงาน (ซ่อน Export/รายงาน/ล้างข้อมูล/Dashboard/Analytics)
+let techMode=false;
 const STORE_KEY='elec_local_v3';
 const RESET_KEY='elec_reset_v3';
 const RESET_HOURS=24;
@@ -1619,6 +1622,7 @@ function toggleBioMode(showBio){
 function enterAdmin(){
   document.getElementById('a-fdate').value=new Date().toISOString().split('T')[0];
   showPage('page-admin');aLoad();startAutoRefresh('admin');
+  if(techMode){ setTimeout(function(){ var b=document.querySelector('.tab-nav .tnb[onclick*="list"]'); if(b) aGoTab('list', b); }, 60); }
   setTimeout(requestPushPermission, 900);
 }
 
@@ -1660,7 +1664,17 @@ async function showAdminLogin(){
 }
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('show');}
 async function doLogin(){
-  if(document.getElementById('admin-pw').value===ADMIN_PW){
+  var pw=document.getElementById('admin-pw').value;
+  if(pw===TECH_PW){
+    techMode=true;
+    document.body.classList.add('tech-mode');
+    closeAdminModal();
+    enterAdmin();
+    return;
+  }
+  if(pw===ADMIN_PW){
+    techMode=false;
+    document.body.classList.remove('tech-mode');
     closeAdminModal();
     enterAdmin();
     // ล็อกอินด้วยรหัสผ่านสำเร็จ — ถ้าเครื่องรองรับสแกนหน้า/ลายนิ้วมือและยังไม่เคยตั้งค่า/ปฏิเสธ ให้ชวนเปิดใช้
@@ -1673,7 +1687,7 @@ async function doLogin(){
     }
   }else{document.getElementById('login-err').classList.add('show');document.getElementById('admin-pw').value='';document.getElementById('admin-pw').focus();}
 }
-function adminLogout(){stopAutoRefresh();goHome();}
+function adminLogout(){techMode=false;document.body.classList.remove('tech-mode');stopAutoRefresh();goHome();}
 function startAutoRefresh(mode){
   stopAutoRefresh();
   autoRefreshTimer=setInterval(function(){
