@@ -188,6 +188,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .b-urgent{background:var(--red-light);color:var(--red-dark)}
 .b-supplier{background:linear-gradient(135deg,#6366F1,#4F46E5);color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(79,70,229,.35);letter-spacing:.2px}
 .b-waitpart{background:#FEF3C7;color:#92400E;font-weight:700}
+.b-followup{background:#CCFBF1;color:#0F766E;font-weight:700}
 body.tech-mode .tech-hide{display:none !important;}
 .sup-section{background:#F5F6FF;border:1px solid #D7DCFB;border-radius:var(--r2);padding:12px}
 .sup-head{font-size:12.5px;font-weight:700;color:#4338CA;display:flex;align-items:center;gap:6px;margin-bottom:10px}
@@ -835,7 +836,7 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
     <div class="efg">
       <label>สถานะ</label>
       <select id="e-status" onchange="eSupToggle();ePartsToggle()">
-        <option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option value="รออะไหล่">รออะไหล่ / รอของ</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option><option value="ส่งซ่อมภายนอก">ส่งซ่อมกับ Supplier</option>
+        <option>รอดำเนินการ</option><option>กำลังดำเนินการ</option><option value="รออะไหล่">รออะไหล่ / รอของ</option><option value="ติดตามอาการ">แก้ไขแล้ว กำลังติดตามอาการ (Follow up)</option><option>เสร็จสิ้น</option><option>เร่งด่วน</option><option value="ส่งซ่อมภายนอก">ส่งซ่อมกับ Supplier</option>
       </select>
     </div>
     <div class="efg" style="margin-top:-2px">
@@ -1456,7 +1457,7 @@ function formatDatetime(isoStr) {
 }
 function genId(){return 'E'+String(Date.now()).slice(-5);}
 function toast(msg,dur){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur||2400);}
-function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent','ส่งซ่อมภายนอก':'b-supplier','รออะไหล่':'b-waitpart'};const lblm={'ส่งซ่อมภายนอก':'ส่งซ่อมกับ Supplier'};var pre=(s==='ส่งซ่อมภายนอก')?'★ ':(s==='รออะไหล่'?'⏳ ':'');return '<span class="badge '+( m[s]||'b-wait')+'">'+pre+(lblm[s]||s)+'</span>';}
+function bdg(s){const m={รอดำเนินการ:'b-wait',กำลังดำเนินการ:'b-doing',เสร็จสิ้น:'b-done',เร่งด่วน:'b-urgent','ส่งซ่อมภายนอก':'b-supplier','รออะไหล่':'b-waitpart','ติดตามอาการ':'b-followup'};const lblm={'ส่งซ่อมภายนอก':'ส่งซ่อมกับ Supplier','ติดตามอาการ':'ติดตามอาการ (Follow up)'};var pre=(s==='ส่งซ่อมภายนอก')?'★ ':(s==='รออะไหล่'?'⏳ ':(s==='ติดตามอาการ'?'👁 ':''));return '<span class="badge '+( m[s]||'b-wait')+'">'+pre+(lblm[s]||s)+'</span>';}
 function deptBadge(d){const c=d==='Assembly'?'b-doing':d==='Grinding'?'b-done':d==='First grinding'?'b-wait':'';var custom=d==='Engineering'?'background:#F3E8FF;color:#7C3AED':(c?'':'background:#F3F4F6;color:#6B7280');return '<span class="badge '+c+'" style="'+custom+'">'+(d||'—')+'</span>';}
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function parseEquip(note){if(!note||!note.startsWith('[EQUIP]'))return[];try{return JSON.parse(note.replace('[EQUIP]',''));}catch(e){return[];}}
