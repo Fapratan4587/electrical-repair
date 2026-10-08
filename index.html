@@ -929,7 +929,7 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
         <div class="fhdr"><i class="ti ti-file-plus" style="font-size:15px;color:var(--text3)"></i><span class="fhtitle" id="u-form-title"><span id="u-form-prefix">แจ้งซ่อมไฟฟ้า — </span><span id="u-form-dept" style="color:var(--red)"></span></span></div>
         <div class="fbody">
           <div class="fgg">
-            <div class="fg"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" placeholder="ชื่อ-นามสกุล"></div>
+            <div class="fg" style="position:relative"><label>ชื่อผู้แจ้ง *</label><input id="u-reporter" autocomplete="off" placeholder="พิมพ์ค้นหาชื่อ แล้วแตะเลือก" oninput="repFilter()" onfocus="repFilter()" onblur="repHide()"><div id="u-rep-drop" class="loc-drop"></div></div>
             <div class="fg" id="u-deptdisplay-fg"><label>แผนก</label><input id="u-dept-display" readonly style="background:var(--surface2);cursor:default"></div>
             <div class="fg" id="u-machine-fg"><label>เครื่องจักร *</label>
               <select id="u-machine"><option value="">-- เลือกเครื่องจักร --</option></select>
@@ -1486,6 +1486,13 @@ function populateMachines(dept, selectId){
     '<option>อื่น ๆ</option>';
 }
 
+var EMPLOYEES = {
+  'Assembly': ['Ms. Pichaya Booranaphan','Ms. Dungnet Nakkaro','Ms. Patcharee Uthaiseri','Mr. Narongdetch Peertid','Mr. Apisit Sanewong','Mr. Nipon Chankctkaew','Mr. Suksan Wanlada','Mr. Jirayu Uttamacha','Mr. Ratchata Munthong','Mr. Weerawat Meepat','Mr. Supakorn Boontod','Mr. Kroekkiad Rueanphan','Mr. Natthawut Thongnok','Mr. Jiraphat Choomhom','Mr. Natthawut Molanil','Mr. Weerayuth Singto','Mr. Pattarathep Sujitwong','Mr. Wisarut Chachum','Ms. Janjira Autthiya','Ms. Nuengruethai Benchaphrm','Ms. Suchada Boonlek','Ms. Wannarat Kaewkwan','Ms. Onanong Bootsabong','Ms. Sujitar Chaiyata','Ms. Sirimol Chaygad','Ms. Natthanan Silarat','Ms. Onuma Mapong','Ms. Sutasinee Jumruntsang','Ms. Chonradi Dongnangram','Ms. Siriluk Paipanom','Ms. Siriluk Thongdoon','Ms. Sujittra Khongthon','Ms. Lalida Seetao','Ms. Wanwimon Rueangrot','Ms. Thananya Khansukan','Ms. Sunisa Sinvichai','Ms. Sutheraporn Phawakhot','Ms. Phonnudcha Prowsri','Ms. Praenicha Yommaha','Ms. Kittima Damma','Ms. Supawadee Oupapontean','Ms. Khanyanee Noinamkham','Mr. Wiphop Sangkapan','Mr. Sirichai Boonma','Ms. Chadarat Singnetnok','Ms. Phimphilai Aintanam','Mr. Sittichok Khetnatthi','Ms. Kandawadee Intajak','Mr. Bunwitit Promitti','Mr. Yotin Korilam','Mr. Titiphong Ngamjit','Ms. Kanyarat Yuennan','Ms. Rungnapha Tapoud','Ms. Jitlada Srisanga','Ms. Arjaree Khamjai','Mr. Thotsawat Chonhom','Ms. Kanokwan Onat','Mr. Jitti Arerattanachot','Mr. Ampon Seesoda','Ms. Kanyapak Ketkaeo','Ms. Pijittra Appakarat','Ms. Churalak Jaidee','Ms. Wimol Polsri','Ms. Bowia Pongprayoon','Mr. Narin Thanu','Mr. Wongsathorn Kayaisaeng','Ms. Sutasinee Dairosdee','Ms. Patthama Kingthuaihan','Ms. Supranee Sukhamat','Mr. Sathapron Dontako','Mr. Aomkit Promwijit','Mr. Taveesap Roobkhum'],
+  'Grinding': ['Mr. Payongsak Chaiyaruk','Mr. Prawit Jaikaew','Ms. Ganniga Chernchom','Ms. Wassana Sathianrat','Mr. A Jaisan','Mr. Manaschai Wangmoon','Mr. Thoekiar Takhamithiang','Mr. Patiwat Netthip','Mr. Santi Jawana','Mr. Adisak Saychumdee','Mr. Tanawoot Manmueng','Mr. Phongsathon Samleng','Mr. Santiphap Bunyuen','Mr. Karoekkiad Phianset','Mr. Kittiphum Tangam','Mr. Metha Yangchaiyaphum','Mr. Thanawat Boonprasert','Mr. Patsapon Porka','Ms. Nantana Saybau','Ms. Nalinee Thongsin','Ms. Vipawan Homsiri','Mr. Thossawat Mapon','Ms. Siriporn Thongnok','Mr. Padungpong Wirodkultong','Ms. Khanittha Saidaw','Ms. Thawika Namgan','Ms. Wannisa Longsanthia','Ms. Walaporn Daenmeang','Mr. Ka-nin Teechairam','Mr. Nanthawat Maloet','Mr. Suthit Ainnoi','Ms. Thidarat Dokmaithong','Ms. Nobpamas Phanchanang','Ms. Anunida Paphaiwipat','Mr. Churtsak Yeunsuk','Mr. Nanthawat Artson','Mr. Teesasak Simpee','Ms. Nijira Sriraksa','Ms. Isaraporn Permthong','Mr. Tapana Korilam','Ms. Busaya Phoudom','Ms. Warunee Phuphalai','Mr. Chatchanan Seeda','Ms. Wilaiwan Khumsang'],
+  'First grinding': ['Mr. Komsan Ruankul','Mr. Sastra Thamwiset','Mr. Thitisorn Suda','Mr. Noppakaow Wandee','Mr. Panuwat Thipthong','Mr. Natthaphon Jabthaisong','Mr. Thanawan Thongnok','Mr. Annop Panklin','Mr. Weeraporn Hongjumpol','Mr. Watcharapon Pratumchat','Mr. Monthon Junangrong','Mr. Somsak Saefung','Mr. Chaturong Boonprakam','Mr. Watcharakon Singtho','Mr. Chayanon Prathipthong','Mr. Bundid Thongjumpa','Mr. Jamrong Prommit','Mr. Pornchai Butkosa','Mr. Watcharaphon Takhamthiang','Mr. Thodsaphon Namyothee'],
+  'Engineering': ['Mr. Attawit Dee','Ms. Suchirawadee Thongmak','Mr. Fapratan Plangklang','Mr. Saichon Saengthong','Mr. Wutthichai Saengno','Mr. Saharit Phonylamsaen','Ms. Supakkanan Luengsaardkul','Ms. Natthaporn Onruksa','Ms. Thicomporn Kulchartiwong','Ms. Sornsamol Seeda'],
+};
+var REP_CURRENT=[];
 var LOCATIONS = {
   'Assembly': ['A401','A402','A403','A404','A405','A406','A407','A408','A409','A410','A411','A412','A413','A414','A415','A416','A417','A418','A419','P400','P401','P402','P403','P404'],
   'Grinding': ['IG401','IG402','IG403','IG404','IG405','IG406','IG407','IG408','IG409','IG410','IG411','IG412','IG413','IG414','IG415','IG416','IG417','IG418','IG419','IG420','IG421','IG422','IG423','IG424','IG425','IG426','IG427','IG428','IG429','IG430','IG431','IG432','IG433','IG434','IG435','IG436','IG437','IG438','IG439','IG440','IG441','OG401','OG402','OG403','OG404','OG405','OG406','OG407','OG408','OG409','OG410','OG411','OG412','OG413','OG414','OG415','OG416','OG417','OG418','OG419','OG420','OG421','OG422','OG423','OG424','OG425','OG426','OG427','OG428','OG429','OG430','OG431','OG432','OG433','OG434','OG435','OG436','OG437','OG438','OG439','OG440','OG441']
@@ -1515,6 +1522,24 @@ function locPick(v){
   var drop=document.getElementById('u-loc-drop'); if(drop)drop.style.display='none';
 }
 function locHide(){ setTimeout(function(){var d=document.getElementById('u-loc-drop'); if(d)d.style.display='none';},150); }
+// ===== ผู้แจ้ง (combobox ค้นหา เลือกจากรายชื่อพนักงานในแผนก) =====
+function repFilter(){
+  var inp=document.getElementById('u-reporter');
+  var drop=document.getElementById('u-rep-drop');
+  if(!inp||!drop)return;
+  var list=REP_CURRENT||[];
+  if(!list.length){ drop.style.display='none'; return; }
+  var q=inp.value.trim().toLowerCase();
+  var matches = q ? list.filter(function(x){return x.toLowerCase().indexOf(q)>=0;}) : list;
+  if(!matches.length){ drop.style.display='none'; return; }
+  drop.innerHTML=matches.slice(0,80).map(function(x){return '<div class="loc-item" onmousedown="repPick(\''+x.replace(/'/g,"\\'")+'\')">'+x+'</div>';}).join('');
+  drop.style.display='block';
+}
+function repPick(v){
+  var inp=document.getElementById('u-reporter'); if(inp)inp.value=v;
+  var drop=document.getElementById('u-rep-drop'); if(drop)drop.style.display='none';
+}
+function repHide(){ setTimeout(function(){var d=document.getElementById('u-rep-drop'); if(d)d.style.display='none';},150); }
 // ===== Line ผลิต autocomplete สำหรับฟอร์ม Admin (a-fl) =====
 var ALOC_CURRENT=[];
 function aPopulateLocations(dept){
@@ -1570,6 +1595,10 @@ function enterUser(dept){
   if(dept==='Engineering'){badge.style.cssText='background:#F3E8FF;color:#7C3AED';}else{badge.style.cssText='';}
   document.getElementById('u-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('u-reporter').value='';
+  REP_CURRENT = EMPLOYEES[dept] || [];
+  var repInp=document.getElementById('u-reporter');
+  if(repInp) repInp.placeholder = REP_CURRENT.length ? 'พิมพ์ค้นหาชื่อ แล้วแตะเลือก' : 'ชื่อ-นามสกุล';
+  var repDrop=document.getElementById('u-rep-drop'); if(repDrop) repDrop.style.display='none';
   showPage('page-user');startCountdown();uRenderTrack();uLoadJobs(true);loadPlanLines();startAutoRefresh('user');
 }
 
