@@ -1010,6 +1010,7 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
       <button class="tnb tech-hide" onclick="aGoTab('target',this)"><i class="ti ti-target"></i>Target/แผนงาน</button>
       <button class="tnb tech-hide" onclick="aGoTab('pm',this)"><i class="ti ti-calendar-repeat"></i>PM/บำรุงรักษา<span class="ndot" id="pm-ndot" style="display:none"></span></button>
       <button class="tnb tech-hide" onclick="aGoTab('addnew',this)"><i class="ti ti-plus"></i>เพิ่มงาน</button>
+      <button class="tnb tech-hide" onclick="aGoTab('agf',this)"><i class="ti ti-forklift"></i>AGF</button>
     </div>
 
     <!-- DASH TAB -->
@@ -1209,6 +1210,41 @@ tr.sup td:first-child{box-shadow:inset 5px 0 0 #6366f1}
           <button class="btn" onclick="aClearForm()">ล้างข้อมูล</button>
           <button class="btn red" onclick="aSaveJob()" id="a-btnSave"><i class="ti ti-device-floppy"></i>บันทึก</button>
         </div>
+      </div>
+    </div>
+
+    <!-- AGF TAB -->
+    <div id="atab-agf" class="tab">
+      <div class="fcard" style="margin-bottom:1.25rem">
+        <div class="fhdr"><i class="ti ti-forklift" style="font-size:15px;color:#EA580C"></i><span class="fhtitle" id="agf-form-title">บันทึกความผิดปกติรถ AGF</span></div>
+        <div class="fbody">
+          <div class="fgg">
+            <div class="fg"><label>เลขรถ AGF *</label><select id="agf-unit"><option value="">-- เลือกรถ --</option></select></div>
+            <div class="fg"><label>วันเวลาที่เกิด * <span style="font-size:10px;color:var(--text3);font-weight:400">(ตั้งย้อนหลังได้)</span></label><input type="datetime-local" id="agf-datetime"></div>
+            <div class="fg"><label>จุดที่เกิด / เส้นทาง *</label><input id="agf-location" placeholder="เช่น หน้า IG408, ทางแยกโซน B, สถานีชาร์จ"></div>
+            <div class="fg"><label>สถานะ</label><select id="agf-status"><option value="เปิด">🔴 เปิด (ยังไม่แก้)</option><option value="กำลังแก้ไข">🛠️ กำลังแก้ไข</option><option value="แก้ไขแล้ว">✅ แก้ไขแล้ว</option></select></div>
+            <div class="fg full"><label>อาการผิดปกติ *</label><textarea id="agf-symptom" placeholder="อธิบายอาการ เช่น หยุดกลางทาง, แจ้ง error E12, เซนเซอร์กันชนทำงานผิดพลาด, แบตเตอรี่หมดเร็ว..."></textarea></div>
+            <div class="fg full"><label>รายละเอียด / การแก้ไข <span style="font-size:10px;color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label><textarea id="agf-detail" placeholder="สาเหตุที่พบ, วิธีแก้ไข, อะไหล่ที่เปลี่ยน..."></textarea></div>
+            <div class="fg"><label>ผู้บันทึก <span style="font-size:10px;color:var(--text3);font-weight:400">(ไม่บังคับ)</span></label><input id="agf-recorder" placeholder="ชื่อผู้บันทึก"></div>
+          </div>
+        </div>
+        <div class="fftr">
+          <div class="sving" id="agf-sving"><i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:13px"></i>กำลังบันทึก...</div>
+          <button class="btn" onclick="agfResetForm()" id="agf-clear-btn">ล้างฟอร์ม</button>
+          <button class="btn red" onclick="agfSave()" id="agf-save-btn"><i class="ti ti-device-floppy"></i>บันทึกเหตุการณ์</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span style="display:flex;align-items:center;gap:6px"><i class="ti ti-history" style="font-size:14px;color:var(--text3)"></i>ประวัติความผิดปกติ AGF</span>
+          <span style="display:flex;gap:6px;align-items:center">
+            <select id="agf-filter-unit" onchange="agfRenderList()" style="font-size:12px;padding:4px 8px;border:1px solid var(--border2);border-radius:8px;background:var(--surface)"><option value="">ทุกคัน</option></select>
+            <select id="agf-filter-status" onchange="agfRenderList()" style="font-size:12px;padding:4px 8px;border:1px solid var(--border2);border-radius:8px;background:var(--surface)"><option value="">ทุกสถานะ</option><option value="เปิด">เปิด</option><option value="กำลังแก้ไข">กำลังแก้ไข</option><option value="แก้ไขแล้ว">แก้ไขแล้ว</option></select>
+            <button class="btn" onclick="loadAGF()" style="font-size:11px;padding:4px 10px;height:auto"><i class="ti ti-refresh" style="font-size:12px"></i>รีเฟรช</button>
+          </span>
+        </div>
+        <div id="agf-list-content"><div class="empty" style="padding:1rem">กดแท็บ AGF เพื่อโหลดข้อมูล</div></div>
       </div>
     </div>
   </div>
@@ -3068,6 +3104,147 @@ function aGoTab(id,btn){
   document.getElementById('atab-'+id).classList.add('active');btn.classList.add('active');
   if(id==='dash')aRenderDash();if(id==='list')aRenderList();if(id==='urgent')aRenderUrgent();if(id==='analytics')renderAnalytics();if(id==='target')loadTargets();
   if(id==='pm'){if(!document.getElementById('pm-start').value)document.getElementById('pm-start').value=pmFmt(pmToday());populateAllMachines('pm-machine');loadPM();}
+  if(id==='agf'){ agfInit(); loadAGF(); }
+}
+
+// ===================== ระบบบันทึกความผิดปกติรถ AGF =====================
+var AGF_UNITS=['AGF-01','AGF-02','AGF-03'];
+var agfEvents=[];
+var agfEditingId=null;
+function toLocalDTInput(iso){ if(!iso)return ''; try{var d=new Date(iso); if(isNaN(d))return ''; var p=function(n){return('0'+n).slice(-2);}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); }catch(e){return '';} }
+function agfInit(){
+  // เติมดรอปดาวน์เลขรถ (ฟอร์ม + ฟิลเตอร์) ครั้งเดียว
+  var sel=document.getElementById('agf-unit');
+  if(sel && sel.options.length<=1){ AGF_UNITS.forEach(function(u){ var o=document.createElement('option'); o.value=u; o.textContent=u; sel.appendChild(o); }); }
+  var fsel=document.getElementById('agf-filter-unit');
+  if(fsel && fsel.options.length<=1){ AGF_UNITS.forEach(function(u){ var o=document.createElement('option'); o.value=u; o.textContent=u; fsel.appendChild(o); }); }
+  var dt=document.getElementById('agf-datetime');
+  if(dt && !dt.value){ dt.value=toLocalDTInput(new Date().toISOString()); }
+}
+function agfBadge(s){
+  var map={'เปิด':'b-urgent','กำลังแก้ไข':'b-doing','แก้ไขแล้ว':'b-done'};
+  var pre=(s==='เปิด')?'🔴 ':(s==='กำลังแก้ไข'?'🛠️ ':(s==='แก้ไขแล้ว'?'✅ ':''));
+  return '<span class="badge '+(map[s]||'b-wait')+'">'+pre+(s||'-')+'</span>';
+}
+function agfFmtDT(iso){ if(!iso)return '-'; try{var d=new Date(iso); if(isNaN(d))return iso; var p=function(n){return('0'+n).slice(-2);}; return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+(d.getFullYear()+543)+' '+p(d.getHours())+':'+p(d.getMinutes()); }catch(e){return iso;} }
+async function loadAGF(){
+  var box=document.getElementById('agf-list-content');
+  if(box) box.innerHTML='<div class="empty" style="padding:1rem"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> กำลังโหลด...</div>';
+  try{
+    var r=await fetch(SUPABASE_URL+'/agf_events?select=*&order=eventdate.desc',{headers:SB_HEADERS});
+    if(!r.ok){ var t=await r.text(); throw new Error(t); }
+    var data=await r.json();
+    agfEvents=Array.isArray(data)?data:[];
+    agfRenderList();
+  }catch(e){
+    if(box){
+      var miss=/relation|does not exist|agf_events|404|not find/i.test(String(e.message));
+      box.innerHTML='<div class="empty" style="padding:1.25rem;font-size:13px;line-height:1.7">'+
+        (miss?'<i class="ti ti-database-off" style="color:#EA580C;font-size:22px;display:block;margin-bottom:8px"></i><strong>ยังไม่มีตาราง agf_events ใน Supabase</strong><br>กรุณารัน SQL สร้างตารางก่อน (ดูข้อความสรุปจากผู้พัฒนา) แล้วกดรีเฟรช':
+        '<i class="ti ti-alert-triangle" style="color:var(--red);font-size:22px;display:block;margin-bottom:8px"></i>โหลดข้อมูลไม่สำเร็จ: '+e.message)+'</div>';
+    }
+  }
+}
+function agfRenderList(){
+  var box=document.getElementById('agf-list-content'); if(!box)return;
+  var fu=(document.getElementById('agf-filter-unit')||{}).value||'';
+  var fs=(document.getElementById('agf-filter-status')||{}).value||'';
+  var list=agfEvents.filter(function(e){ return (!fu||e.agf===fu)&&(!fs||e.status===fs); });
+  if(!list.length){ box.innerHTML='<div class="empty" style="padding:1.25rem">ยังไม่มีบันทึกเหตุการณ์'+(fu||fs?' (ตามตัวกรอง)':'')+'</div>'; return; }
+  var open=agfEvents.filter(function(e){return e.status!=='แก้ไขแล้ว';}).length;
+  var html='<div style="font-size:12px;color:var(--text3);margin-bottom:10px">พบ '+list.length+' เหตุการณ์'+(open?' · <span style="color:var(--red);font-weight:700">ค้างอยู่ '+open+'</span>':'')+'</div>';
+  html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr>'+
+    '<th style="text-align:left;padding:7px 9px;background:var(--surface2);white-space:nowrap">วันเวลาที่เกิด</th>'+
+    '<th style="text-align:left;padding:7px 9px;background:var(--surface2);white-space:nowrap">เลขรถ</th>'+
+    '<th style="text-align:left;padding:7px 9px;background:var(--surface2);white-space:nowrap">จุดที่เกิด</th>'+
+    '<th style="text-align:left;padding:7px 9px;background:var(--surface2)">อาการ / การแก้ไข</th>'+
+    '<th style="text-align:left;padding:7px 9px;background:var(--surface2);white-space:nowrap">สถานะ</th>'+
+    '<th style="text-align:center;padding:7px 9px;background:var(--surface2);white-space:nowrap">จัดการ</th>'+
+    '</tr></thead><tbody>';
+  list.forEach(function(e){
+    var det=e.detail?'<div style="color:var(--text3);font-size:11.5px;margin-top:3px"><i class="ti ti-tool" style="font-size:11px"></i> '+esc(e.detail)+'</div>':'';
+    var rec=e.recorder?'<div style="color:var(--text3);font-size:10.5px;margin-top:2px">โดย '+esc(e.recorder)+'</div>':'';
+    html+='<tr style="border-bottom:1px solid var(--border)">'+
+      '<td style="padding:7px 9px;white-space:nowrap;vertical-align:top">'+agfFmtDT(e.eventdate)+'</td>'+
+      '<td style="padding:7px 9px;white-space:nowrap;vertical-align:top;font-weight:700;color:#EA580C">'+esc(e.agf||'-')+'</td>'+
+      '<td style="padding:7px 9px;vertical-align:top">'+esc(e.location||'-')+'</td>'+
+      '<td style="padding:7px 9px;vertical-align:top"><div>'+esc(e.symptom||'-')+'</div>'+det+rec+'</td>'+
+      '<td style="padding:7px 9px;white-space:nowrap;vertical-align:top">'+agfBadge(e.status)+'</td>'+
+      '<td style="padding:7px 9px;white-space:nowrap;vertical-align:top;text-align:center">'+
+        '<button class="btn" style="padding:3px 7px;font-size:11px" onclick="agfEdit(\''+e.id+'\')"><i class="ti ti-edit" style="font-size:12px"></i></button> '+
+        '<button class="btn" style="padding:3px 7px;font-size:11px;color:var(--red)" onclick="agfDelete(\''+e.id+'\')"><i class="ti ti-trash" style="font-size:12px"></i></button>'+
+      '</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  box.innerHTML=html;
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+async function agfSave(){
+  var unit=document.getElementById('agf-unit').value;
+  var dt=document.getElementById('agf-datetime').value;
+  var loc=document.getElementById('agf-location').value.trim();
+  var sym=document.getElementById('agf-symptom').value.trim();
+  var st=document.getElementById('agf-status').value;
+  var det=document.getElementById('agf-detail').value.trim();
+  var rec=document.getElementById('agf-recorder').value.trim();
+  if(!unit){ toast('⚠ เลือกเลขรถ AGF'); return; }
+  if(!dt){ toast('⚠ ระบุวันเวลาที่เกิด'); return; }
+  if(!loc){ toast('⚠ ระบุจุดที่เกิด'); return; }
+  if(!sym){ toast('⚠ ระบุอาการผิดปกติ'); return; }
+  var sv=document.getElementById('agf-sving'); if(sv)sv.style.display='inline-flex';
+  var btn=document.getElementById('agf-save-btn'); if(btn)btn.disabled=true;
+  var row={ agf:unit, eventdate:new Date(dt).toISOString(), location:loc, symptom:sym, status:st, detail:det, recorder:rec };
+  try{
+    var url, method;
+    if(agfEditingId){ url=SUPABASE_URL+'/agf_events?id=eq.'+encodeURIComponent(agfEditingId); method='PATCH'; }
+    else { row.id='AGF'+Date.now()+Math.random().toString(36).slice(2,5); row.created=Date.now(); url=SUPABASE_URL+'/agf_events'; method='POST'; }
+    var r=await fetch(url,{method:method,headers:{...SB_HEADERS,'Prefer':'return=minimal'},body:JSON.stringify(row)});
+    if(!r.ok){ var t=await r.text(); throw new Error(t); }
+    toast(agfEditingId?'✅ แก้ไขเหตุการณ์แล้ว':'✅ บันทึกเหตุการณ์แล้ว');
+    agfResetForm();
+    await loadAGF();
+  }catch(e){
+    var miss=/relation|does not exist|agf_events|not find/i.test(String(e.message));
+    toast(miss?'❌ ยังไม่มีตาราง agf_events — กรุณารัน SQL ก่อน':('บันทึกไม่สำเร็จ: '+e.message), 4200);
+  }finally{
+    if(sv)sv.style.display='none'; if(btn)btn.disabled=false;
+  }
+}
+function agfResetForm(){
+  agfEditingId=null;
+  document.getElementById('agf-unit').value='';
+  document.getElementById('agf-location').value='';
+  document.getElementById('agf-symptom').value='';
+  document.getElementById('agf-detail').value='';
+  document.getElementById('agf-recorder').value='';
+  document.getElementById('agf-status').value='เปิด';
+  document.getElementById('agf-datetime').value=toLocalDTInput(new Date().toISOString());
+  document.getElementById('agf-form-title').textContent='บันทึกความผิดปกติรถ AGF';
+  var btn=document.getElementById('agf-save-btn'); if(btn)btn.innerHTML='<i class="ti ti-device-floppy"></i>บันทึกเหตุการณ์';
+}
+function agfEdit(id){
+  var e=agfEvents.find(function(x){return x.id===id;}); if(!e)return;
+  agfEditingId=id;
+  document.getElementById('agf-unit').value=e.agf||'';
+  document.getElementById('agf-datetime').value=toLocalDTInput(e.eventdate);
+  document.getElementById('agf-location').value=e.location||'';
+  document.getElementById('agf-symptom').value=e.symptom||'';
+  document.getElementById('agf-status').value=e.status||'เปิด';
+  document.getElementById('agf-detail').value=e.detail||'';
+  document.getElementById('agf-recorder').value=e.recorder||'';
+  document.getElementById('agf-form-title').textContent='แก้ไขเหตุการณ์ '+(e.agf||'');
+  var btn=document.getElementById('agf-save-btn'); if(btn)btn.innerHTML='<i class="ti ti-device-floppy"></i>บันทึกการแก้ไข';
+  try{ document.getElementById('atab-agf').scrollIntoView({behavior:'smooth',block:'start'}); }catch(_){}
+}
+async function agfDelete(id){
+  var e=agfEvents.find(function(x){return x.id===id;}); if(!e)return;
+  if(!confirm('⚠️ ลบเหตุการณ์นี้?\n\n'+(e.agf||'')+' · '+agfFmtDT(e.eventdate)+'\n'+(e.symptom||'')+'\n\nไม่สามารถย้อนกลับได้')) return;
+  try{
+    var r=await fetch(SUPABASE_URL+'/agf_events?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:{...SB_HEADERS,'Prefer':'return=minimal'}});
+    if(!r.ok){ var t=await r.text(); throw new Error(t); }
+    toast('🗑️ ลบแล้ว');
+    await loadAGF();
+  }catch(e2){ toast('ลบไม่สำเร็จ: '+e2.message, 4000); }
 }
 async function aLoad(silent){
   if(!silent){setSS('a-sdot','a-stxt','syncing');document.getElementById('a-btnR').disabled=true;}
